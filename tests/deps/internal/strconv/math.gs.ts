@@ -10,29 +10,29 @@ import "@goscript/math/bits/index.js"
 import "./pow10tab.gs.ts"
 
 export class uint128 {
-	public get Hi(): number {
+	public get Hi(): bigint {
 		return this._fields.Hi.value
 	}
-	public set Hi(value: number) {
+	public set Hi(value: bigint) {
 		this._fields.Hi.value = value
 	}
 
-	public get Lo(): number {
+	public get Lo(): bigint {
 		return this._fields.Lo.value
 	}
-	public set Lo(value: number) {
+	public set Lo(value: bigint) {
 		this._fields.Lo.value = value
 	}
 
 	public _fields: {
-		Hi: $.VarRef<number>
-		Lo: $.VarRef<number>
+		Hi: $.VarRef<bigint>
+		Lo: $.VarRef<bigint>
 	}
 
-	constructor(init?: Partial<{Hi?: number, Lo?: number}>) {
+	constructor(init?: Partial<{Hi?: bigint, Lo?: bigint}>) {
 		this._fields = {
-			Hi: $.varRef(init?.Hi ?? (0 as unknown as number)),
-			Lo: $.varRef(init?.Lo ?? (0 as unknown as number))
+			Hi: $.varRef(init?.Hi ?? (0n as unknown as bigint)),
+			Lo: $.varRef(init?.Lo ?? (0n as unknown as bigint))
 		}
 	}
 
@@ -56,27 +56,25 @@ export class uint128 {
 
 export const maxUint64: number = 18446744073709551615
 
-export function umul128(x: number, y: number): uint128 {
-	let __goscriptTuple0: any = bits.Mul64($.uint(x, 64), $.uint(y, 64))
-	let hi = $.uint(__goscriptTuple0[0], 64)
-	let lo = $.uint(__goscriptTuple0[1], 64)
-	return $.markAsStructValue(new uint128({Hi: $.uint(hi, 64), Lo: $.uint(lo, 64)}))
+export function umul128(x: bigint, y: bigint): uint128 {
+	let [hi, lo] = bits.Mul64(x, y)
+	return $.markAsStructValue(new uint128({Hi: hi, Lo: lo}))
 }
 
-export function umul192(x: number, y: uint128): [number, number, number] {
-	let hi: number = 0
-	let mid: number = 0
-	let lo: number = 0
-	let __goscriptTuple1: any = bits.Mul64($.uint(x, 64), $.uint(y.Lo, 64))
-	let mid1 = $.uint(__goscriptTuple1[0], 64)
-	lo = $.uint(__goscriptTuple1[1], 64)
-	let __goscriptTuple2: any = bits.Mul64($.uint(x, 64), $.uint(y.Hi, 64))
-	hi = $.uint(__goscriptTuple2[0], 64)
-	let mid2 = $.uint(__goscriptTuple2[1], 64)
-	let __goscriptTuple3: any = bits.Add64($.uint(mid1, 64), $.uint(mid2, 64), $.uint(0, 64))
-	mid = $.uint(__goscriptTuple3[0], 64)
-	let carry = $.uint(__goscriptTuple3[1], 64)
-	return [$.uint($.uint64Add(hi, carry), 64), $.uint(mid, 64), $.uint(lo, 64)]
+export function umul192(x: bigint, y: uint128): [bigint, bigint, bigint] {
+	let hi: bigint = 0n
+	let mid: bigint = 0n
+	let lo: bigint = 0n
+	let __goscriptTuple0: any = bits.Mul64(x, y.Lo)
+	let mid1 = __goscriptTuple0[0]
+	lo = __goscriptTuple0[1]
+	let __goscriptTuple1: any = bits.Mul64(x, y.Hi)
+	hi = __goscriptTuple1[0]
+	let mid2 = __goscriptTuple1[1]
+	let __goscriptTuple2: any = bits.Add64(mid1, mid2, 0n)
+	mid = __goscriptTuple2[0]
+	let carry = __goscriptTuple2[1]
+	return [$.uint64Add(hi, carry), mid, lo]
 }
 
 export function pow10(e: number): [uint128, number, boolean] {
@@ -106,17 +104,17 @@ export function bool2uint(b: boolean): number {
 	return 0
 }
 
-export function divisiblePow5(x: number, p: number): boolean {
+export function divisiblePow5(x: bigint, p: number): boolean {
 	return ((1 <= p) && (p <= 22)) && (($.uint64Mul(x, div5Tab[p - 1][0])) <= div5Tab[p - 1][1])
 }
 
-export let div5Tab: number[][] = [[$.uint("14757395258967641293", 64), $.uint("3689348814741910323", 64)], [$.uint("10330176681277348905", 64), $.uint("737869762948382064", 64)], [$.uint("2066035336255469781", 64), $.uint("147573952589676412", 64)], [$.uint("15170602326218735249", 64), $.uint("29514790517935282", 64)], [$.uint("6723469279985657373", 64), $.uint($.uint64Div((29514790517935282), 5), 64)], [$.uint("8723391485480952121", 64), $.uint($.uint64Div((Math.trunc((29514790517935282) / 5)), 5), 64)], [$.uint("16502073556063831717", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)), 5), 64)], [$.uint("14368461155438497313", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)), 5), 64)], [$.uint("10252389860571520109", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("5739826786856214345", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("1147965357371242869", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("3918941886216158897", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("11851834821468962749", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("6059715779035702873", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("8590640785290961221", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("16475523416025833537", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("14363151127430897677", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("13940676669711910505", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("2788135333942382101", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("15315022325756117713", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("10441702094635044189", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)], [$.uint("5777689233668919161", 64), $.uint($.uint64Div((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((Math.trunc((29514790517935282) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)) / 5)), 5), 64)]]
+export let div5Tab: bigint[][] = [[14757395258967641293n, 3689348814741910323n], [10330176681277348905n, 737869762948382064n], [2066035336255469781n, 147573952589676412n], [15170602326218735249n, 29514790517935282n], [6723469279985657373n, 5902958103587056n], [8723391485480952121n, 1180591620717411n], [16502073556063831717n, 236118324143482n], [14368461155438497313n, 47223664828696n], [10252389860571520109n, 9444732965739n], [5739826786856214345n, 1888946593147n], [1147965357371242869n, 377789318629n], [3918941886216158897n, 75557863725n], [11851834821468962749n, 15111572745n], [6059715779035702873n, 3022314549n], [8590640785290961221n, 604462909n], [16475523416025833537n, 120892581n], [14363151127430897677n, 24178516n], [13940676669711910505n, 4835703n], [2788135333942382101n, 967140n], [15315022325756117713n, 193428n], [10441702094635044189n, 38685n], [5777689233668919161n, 7737n]]
 
-export function __goscript_set_div5Tab(__goscriptValue: number[][]): void {
+export function __goscript_set_div5Tab(__goscriptValue: bigint[][]): void {
 	div5Tab = __goscriptValue
 }
 
-export function trimZeros(x: number): [number, number] {
+export function trimZeros(x: bigint): [bigint, number] {
 	const div1e8m: number = 14368461155438497313
 	const div1e8le: number = 184467440737
 	const div1e4m: number = 15170602326218735249
@@ -137,30 +135,30 @@ export function trimZeros(x: number): [number, number] {
 
 	// Cut 8 zeros, then 4, then 2, then 1.
 	let p = 0
-	for (let d = $.uint(bits.RotateLeft64($.uint($.uint64Mul(x, 14368461155438497313), 64), -8), 64); d <= 184467440737; d = $.uint(bits.RotateLeft64($.uint($.uint64Mul(x, 14368461155438497313), 64), -8), 64)) {
-		x = $.uint(d, 64)
+	for (let d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8); d <= 184467440737; d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8)) {
+		x = d
 		p = p + (8)
 	}
 	{
-		let d = $.uint(bits.RotateLeft64($.uint($.uint64Mul(x, 15170602326218735249), 64), -4), 64)
+		let d = bits.RotateLeft64($.uint64Mul(x, 15170602326218735249), -4)
 		if (d <= 1844674407370955) {
-			x = $.uint(d, 64)
+			x = d
 			p = p + (4)
 		}
 	}
 	{
-		let d = $.uint(bits.RotateLeft64($.uint($.uint64Mul(x, 10330176681277348905), 64), -2), 64)
+		let d = bits.RotateLeft64($.uint64Mul(x, 10330176681277348905), -2)
 		if (d <= 184467440737095516) {
-			x = $.uint(d, 64)
+			x = d
 			p = p + (2)
 		}
 	}
 	{
-		let d = $.uint(bits.RotateLeft64($.uint($.uint64Mul(x, 14757395258967641293), 64), -1), 64)
+		let d = bits.RotateLeft64($.uint64Mul(x, 14757395258967641293), -1)
 		if (d <= 1844674407370955161) {
-			x = $.uint(d, 64)
+			x = d
 			p = p + (1)
 		}
 	}
-	return [$.uint(x, 64), p]
+	return [x, p]
 }

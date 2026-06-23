@@ -93,8 +93,8 @@ export class Addr {
 			}
 			default:
 			{
-				b = byteorder.BEAppendUint64(b, $.uint(ip.addr.hi, 64))
-				b = byteorder.BEAppendUint64(b, $.uint(ip.addr.lo, 64))
+				b = byteorder.BEAppendUint64(b, ip.addr.hi)
+				b = byteorder.BEAppendUint64(b, ip.addr.lo)
 				b = $.appendSlice(b, $.stringToBytes($.markAsStructValue($.cloneStructValue(ip)).Zone()))
 				break
 			}
@@ -135,8 +135,8 @@ export class Addr {
 	public As16(): Uint8Array {
 		const ip = this
 		let a16: Uint8Array = new Uint8Array(16)
-		byteorder.BEPutUint64($.goSlice(a16, undefined, 8), $.uint(ip.addr.hi, 64))
-		byteorder.BEPutUint64($.goSlice(a16, 8, undefined), $.uint(ip.addr.lo, 64))
+		byteorder.BEPutUint64($.goSlice(a16, undefined, 8), ip.addr.hi)
+		byteorder.BEPutUint64($.goSlice(a16, 8, undefined), ip.addr.lo)
 		return a16
 	}
 
@@ -172,8 +172,8 @@ export class Addr {
 			default:
 			{
 				let ret: Uint8Array = new Uint8Array(16)
-				byteorder.BEPutUint64($.goSlice(ret, undefined, 8), $.uint(ip.addr.hi, 64))
-				byteorder.BEPutUint64($.goSlice(ret, 8, undefined), $.uint(ip.addr.lo, 64))
+				byteorder.BEPutUint64($.goSlice(ret, undefined, 8), ip.addr.hi)
+				byteorder.BEPutUint64($.goSlice(ret, 8, undefined), ip.addr.lo)
 				return $.goSlice(ret, undefined, undefined)
 				break
 			}
@@ -208,16 +208,16 @@ export class Addr {
 		if (f1 > f2) {
 			return 1
 		}
-		let hi1 = $.uint(ip.addr.hi, 64)
-		let hi2 = $.uint(ip2.addr.hi, 64)
+		let hi1 = ip.addr.hi
+		let hi2 = ip2.addr.hi
 		if (hi1 < hi2) {
 			return -1
 		}
 		if (hi1 > hi2) {
 			return 1
 		}
-		let lo1 = $.uint(ip.addr.lo, 64)
-		let lo2 = $.uint(ip2.addr.lo, 64)
+		let lo1 = ip.addr.lo
+		let lo2 = ip2.addr.lo
 		if (lo1 < lo2) {
 			return -1
 		}
@@ -244,7 +244,7 @@ export class Addr {
 
 	public Is4In6(): boolean {
 		const ip = this
-		return ($.markAsStructValue($.cloneStructValue(ip)).Is6() && ($.uint(ip.addr.hi, 64) == $.uint(0, 64))) && ($.uint(($.uint64Shr(ip.addr.lo, 32)), 64) == $.uint(0xffff, 64))
+		return ($.markAsStructValue($.cloneStructValue(ip)).Is6() && (ip.addr.hi == 0n)) && (($.uint64Shr(ip.addr.lo, 32)) == 65535n)
 	}
 
 	public Is6(): boolean {
@@ -334,7 +334,7 @@ export class Addr {
 		// IP Version 6 Addressing Architecture (2.4 Address Type Identification)
 		// https://datatracker.ietf.org/doc/html/rfc4291#section-2.4
 		if ($.markAsStructValue($.cloneStructValue(ip)).Is6()) {
-			return ($.uint(ip.addr.hi, 64) == $.uint(0, 64)) && ($.uint(ip.addr.lo, 64) == $.uint(1, 64))
+			return (ip.addr.hi == 0n) && (ip.addr.lo == 1n)
 		}
 		return false
 	}
@@ -353,7 +353,7 @@ export class Addr {
 		// IP Version 6 Addressing Architecture (2.4 Address Type Identification)
 		// https://datatracker.ietf.org/doc/html/rfc4291#section-2.4
 		if ($.markAsStructValue($.cloneStructValue(ip)).Is6()) {
-			return $.uint(($.uint64Shr(ip.addr.hi, (64 - 8))), 64) == $.uint(0xff, 64)
+			return ($.uint64Shr(ip.addr.hi, (64 - 8))) == 255n
 		}
 		return false
 	}
@@ -760,12 +760,12 @@ export class Addr {
 
 	public v6(i: number): number {
 		const ip = this
-		return $.uint($.uint($.uint64Shr($.pointerValue<number>((ip.addr.halves()[(Math.trunc(i / 8)) % 2])), ((7 - (i % 8)) * 8)), 8), 8)
+		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>((ip.addr.halves()[(Math.trunc(i / 8)) % 2])), ((7 - (i % 8)) * 8)), 8), 8)
 	}
 
 	public v6u16(i: number): number {
 		const ip = this
-		return $.uint($.uint($.uint64Shr($.pointerValue<number>((ip.addr.halves()[(Math.trunc(i / 4)) % 2])), ((3 - (i % 4)) * 16)), 16), 16)
+		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>((ip.addr.halves()[(Math.trunc(i / 4)) % 2])), ((3 - (i % 4)) * 16)), 16), 16)
 	}
 
 	public withoutZone(): Addr {
@@ -978,7 +978,7 @@ export class AddrPort {
 			}
 		}
 		b = $.append(b, $.uint(58, 8))
-		b = strconv.AppendUint(b, $.uint($.uint(p.port, 64), 64), 10)
+		b = strconv.AppendUint(b, $.uint64(p.port), 10)
 		return b
 	}
 
@@ -1066,7 +1066,7 @@ export class AddrPort {
 			}
 		}
 		b = $.append(b, $.uint(58, 8))
-		b = strconv.AppendUint(b, $.uint($.uint(p.port, 64), 64), 10)
+		b = strconv.AppendUint(b, $.uint64(p.port), 10)
 		return $.bytesToString(b)
 	}
 
@@ -1483,11 +1483,11 @@ export function IPv4Unspecified(): Addr {
 }
 
 export function AddrFrom4(addr: Uint8Array): Addr {
-	return $.markAsStructValue(new Addr({addr: $.markAsStructValue(new __goscript_uint128.uint128({hi: $.uint(0, 64), lo: $.uint($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(0xffff00000000, ($.uint64Shl($.uint(addr[0], 64), 24)))), ($.uint64Shl($.uint(addr[1], 64), 16)))), ($.uint64Shl($.uint(addr[2], 64), 8)))), $.uint(addr[3], 64)), 64)})), z: $.markAsStructValue($.cloneStructValue(z4))}))
+	return $.markAsStructValue(new Addr({addr: $.markAsStructValue(new __goscript_uint128.uint128({hi: 0n, lo: $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(0xffff00000000, ($.uint64Shl($.uint64(addr[0]), 24)))), ($.uint64Shl($.uint64(addr[1]), 16)))), ($.uint64Shl($.uint64(addr[2]), 8)))), $.uint64(addr[3]))})), z: $.markAsStructValue($.cloneStructValue(z4))}))
 }
 
 export function AddrFrom16(addr: Uint8Array): Addr {
-	return $.markAsStructValue(new Addr({addr: (() => { const __goscriptLiteralField0 = $.uint(byteorder.BEUint64($.goSlice(addr, undefined, 8)), 64); const __goscriptLiteralField1 = $.uint(byteorder.BEUint64($.goSlice(addr, 8, undefined)), 64); return $.markAsStructValue(new __goscript_uint128.uint128({hi: __goscriptLiteralField0, lo: __goscriptLiteralField1})) })(), z: $.markAsStructValue($.cloneStructValue(z6noz))}))
+	return $.markAsStructValue(new Addr({addr: (() => { const __goscriptLiteralField0 = byteorder.BEUint64($.goSlice(addr, undefined, 8)); const __goscriptLiteralField1 = byteorder.BEUint64($.goSlice(addr, 8, undefined)); return $.markAsStructValue(new __goscript_uint128.uint128({hi: __goscriptLiteralField0, lo: __goscriptLiteralField1})) })(), z: $.markAsStructValue($.cloneStructValue(z6noz))}))
 }
 
 export function ParseAddr(s: string): [Addr, $.GoError] {
@@ -1819,7 +1819,7 @@ export function ParseAddrPort(s: string): [AddrPort, $.GoError] {
 		return [$.markAsStructValue($.cloneStructValue(ipp)), err]
 	}
 	let __goscriptTuple3: any = strconv.ParseUint(port, 10, 16)
-	let port16 = $.uint(__goscriptTuple3[0], 64)
+	let port16 = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
 	if (err != null) {
 		return [$.markAsStructValue($.cloneStructValue(ipp)), errors.New((("invalid port " + strconv.Quote(port)) + " parsing ") + strconv.Quote(s))]

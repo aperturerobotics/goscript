@@ -358,7 +358,7 @@ describe('Function Type Detection', () => {
     })
     const tupleResult = asArray(await ValueOf(tupleFunc).Call(arrayToSlice([])))
     expect(tupleResult).toHaveLength(2)
-    expect(tupleResult[0].Int()).toBe(1)
+    expect(tupleResult[0].Int()).toBe(1n)
     expect(tupleResult[1].String()).toBe('ok')
 
     const sliceFunc = functionValue(() => [1, 2], {
@@ -384,7 +384,7 @@ describe('Function Type Detection', () => {
       await ValueOf(namedResultFunc).Call(arrayToSlice([])),
     )
     expect(namedResult[0].Type().String()).toBe('main.MyInt')
-    expect(namedResult[0].Int()).toBe(7)
+    expect(namedResult[0].Int()).toBe(7n)
 
     const badTupleFunc = functionValue(() => [1], {
       kind: TypeKind.Function,
@@ -459,7 +459,7 @@ describe('Function Type Detection', () => {
     )()
     expect(tuple).toEqual([3, true])
     const reflectedTuple = asArray(await tupleValue.Call(arrayToSlice([])))
-    expect(reflectedTuple[0].Int()).toBe(3)
+    expect(reflectedTuple[0].Int()).toBe(3n)
     expect(reflectedTuple[1].Bool()).toBe(true)
 
     const zeroType = FuncOf(arrayToSlice([]), arrayToSlice([]), false)
@@ -481,7 +481,7 @@ describe('Function Type Detection', () => {
     const variadicValue = MakeFunc(variadicType, (args) => {
       const values = asArray(args)
       expect(values).toHaveLength(2)
-      return arrayToSlice([ValueOf(values[0].Int() + values[1].Len())])
+      return arrayToSlice([ValueOf(Number(values[0].Int()) + values[1].Len())])
     })
     const variadic = variadicValue.Interface() as (
       prefix: number,
@@ -493,13 +493,13 @@ describe('Function Type Detection', () => {
         arrayToSlice([ValueOf(10), ValueOf('a'), ValueOf('b')]),
       ),
     )
-    expect(reflectedVariadic[0].Int()).toBe(12)
+    expect(reflectedVariadic[0].Int()).toBe(12n)
     const reflectedSliceCall = asArray(
       await variadicValue.CallSlice(
         arrayToSlice([ValueOf(10), ValueOf(arrayToSlice(['a', 'b', 'c']))]),
       ),
     )
-    expect(reflectedSliceCall[0].Int()).toBe(13)
+    expect(reflectedSliceCall[0].Int()).toBe(13n)
 
     const badResult = MakeFunc(unaryType, () => arrayToSlice([]))
     await expect(

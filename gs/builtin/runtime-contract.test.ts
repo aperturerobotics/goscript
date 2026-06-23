@@ -139,8 +139,8 @@ describe('builtin runtime contract helpers', () => {
     expect(uint(uint64Shl(1n, 63), 32)).toBe(0)
     expect(uint(uint64Shr(uint64Shl(1n, 63), 60), 32)).toBe(8)
     expect(uint(uint64Mul(0xffffffffffffffffn, 3), 32)).toBe(0xfffffffd)
-    expect(uint64Div(0xffffffffffffffffn, 4114)).toBe(4483895010624587)
-    expect(uint64Mod(0xffffffffffffffffn, 4114)).toBe(697)
+    expect(uint64Div(0xffffffffffffffffn, 4114)).toBe(4483895010624587n)
+    expect(uint64Mod(0xffffffffffffffffn, 4114)).toBe(697n)
     expect(uint(uint64Add(0xffffffffffffffffn, 2), 32)).toBe(1)
     expect(uint(uint64Sub(1n, 2), 32)).toBe(0xffffffff)
     expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
@@ -371,8 +371,8 @@ describe('builtin runtime contract helpers', () => {
 
   it('asserts fixed-width numeric values by runtime type name', () => {
     expect(
-      typeAssertTuple<number>(13, { kind: TypeKind.Basic, name: 'uint64' }),
-    ).toEqual([13, true])
+      typeAssertTuple<bigint>(13n, { kind: TypeKind.Basic, name: 'uint64' }),
+    ).toEqual([13n, true])
     expect(
       typeAssertTuple<number>(13, { kind: TypeKind.Basic, name: 'int32' }),
     ).toEqual([13, true])

@@ -96,7 +96,7 @@ export async function testMixedReturns(ctx: context.Context | null): globalThis.
 	$.println("Performing additional work...")
 
 	// Simulate some work
-	await time.Sleep($.int64Mul(10, time.Millisecond))
+	await time.Sleep(10000000n)
 
 	return "completed_normally"
 }
@@ -179,7 +179,7 @@ export async function testReturnCase(ctx: context.Context | null): globalThis.Pr
 	$.println("Performing additional work...")
 
 	// Simulate some work
-	await time.Sleep($.int64Mul(10, time.Millisecond))
+	await time.Sleep(10000000n)
 
 	return "completed_normally"
 }

@@ -17,8 +17,8 @@ function fileInfo(name: string, isDir = false): FileInfo {
     Name(): string {
       return name
     },
-    Size(): number {
-      return 0
+    Size(): bigint {
+      return 0n
     },
     Sys(): null {
       return null

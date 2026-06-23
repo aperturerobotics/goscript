@@ -78,7 +78,7 @@ export class byName {
 	)
 }
 
-export const cacheMaxAge: time.Duration = 5000000000
+export const cacheMaxAge: time.Duration = 5000000000n
 
 export function parseLiteralIP(addr: string): string {
 	let [ip, err] = netip.ParseAddr(addr)
@@ -88,9 +88,9 @@ export function parseLiteralIP(addr: string): string {
 	return $.markAsStructValue($.cloneStructValue(ip)).String()
 }
 
-export let hosts: $.VarRef<{"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}> = $.varRef({"Mutex": $.markAsStructValue(new sync.Mutex()), "byName": null, "byAddr": null, "expire": $.markAsStructValue(new time.Time()), "path": "", "mtime": $.markAsStructValue(new time.Time()), "size": 0})
+export let hosts: $.VarRef<{"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": bigint}> = $.varRef({"Mutex": $.markAsStructValue(new sync.Mutex()), "byName": null, "byAddr": null, "expire": $.markAsStructValue(new time.Time()), "path": "", "mtime": $.markAsStructValue(new time.Time()), "size": 0n})
 
-export function __goscript_set_hosts(__goscriptValue: {"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": number}): void {
+export function __goscript_set_hosts(__goscriptValue: {"Mutex": sync.Mutex, "byName": globalThis.Map<string, byName> | null, "byAddr": globalThis.Map<string, $.Slice<string>> | null, "expire": time.Time, "path": string, "mtime": time.Time, "size": bigint}): void {
 	hosts.value = __goscriptValue
 }
 
@@ -102,21 +102,18 @@ export async function readHosts(): globalThis.Promise<void> {
 	if (($.markAsStructValue($.cloneStructValue(now)).Before($.markAsStructValue($.cloneStructValue(hosts.value.expire))) && ($.stringEqual(hosts.value.path, hp))) && ($.len(hosts.value.byName) > 0)) {
 		return
 	}
-	let __goscriptTuple0: any = await __goscript_parse.stat(hp)
-	let mtime = __goscriptTuple0[0]
-	let size = $.int(__goscriptTuple0[1])
-	let err = __goscriptTuple0[2]
-	if ((((err == null) && ($.stringEqual(hosts.value.path, hp))) && $.markAsStructValue($.cloneStructValue(hosts.value.mtime)).Equal($.markAsStructValue($.cloneStructValue(mtime)))) && ($.int(hosts.value.size) == $.int(size))) {
-		hosts.value.expire = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(5000000000)))
+	let [mtime, size, err] = await __goscript_parse.stat(hp)
+	if ((((err == null) && ($.stringEqual(hosts.value.path, hp))) && $.markAsStructValue($.cloneStructValue(hosts.value.mtime)).Equal($.markAsStructValue($.cloneStructValue(mtime)))) && (hosts.value.size == size)) {
+		hosts.value.expire = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(5000000000n)))
 		return
 	}
 
 	let hs: globalThis.Map<string, byName> | null = $.makeMap<string, byName>()
 	let _is: globalThis.Map<string, $.Slice<string>> | null = $.makeMap<string, $.Slice<string>>()
 
-	let __goscriptTuple1: any = __goscript_parse.open(hp)
-	let __goscriptShadow0: __goscript_parse.file | $.VarRef<__goscript_parse.file> | null = __goscriptTuple1[0]
-	err = __goscriptTuple1[1]
+	let __goscriptTuple0: any = __goscript_parse.open(hp)
+	let __goscriptShadow0: __goscript_parse.file | $.VarRef<__goscript_parse.file> | null = __goscriptTuple0[0]
+	err = __goscriptTuple0[1]
 	if (err != null) {
 		if (!errors.Is($.pointerValueOrNil(err)!, $.pointerValueOrNil(fs.ErrNotExist)!) && !errors.Is($.pointerValueOrNil(err)!, $.pointerValueOrNil(fs.ErrPermission)!)) {
 			return
@@ -168,12 +165,12 @@ export async function readHosts(): globalThis.Promise<void> {
 		}
 	}
 	// Update the data cache.
-	hosts.value.expire = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(5000000000)))
+	hosts.value.expire = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(5000000000n)))
 	hosts.value.path = hp
 	hosts.value.byName = hs
 	hosts.value.byAddr = _is
 	hosts.value.mtime = $.markAsStructValue($.cloneStructValue(mtime))
-	hosts.value.size = $.int(size)
+	hosts.value.size = size
 }
 
 export async function lookupStaticHost(host: string): globalThis.Promise<[$.Slice<string>, string]> {
@@ -188,9 +185,9 @@ export async function lookupStaticHost(host: string): globalThis.Promise<[$.Slic
 			host = $.bytesToString(lowerHost)
 		}
 		{
-			let __goscriptTuple2: any = $.mapGet<string, byName, byName>(hosts.value.byName, __goscript_dnsclient.absDomainName(host), $.markAsStructValue(new byName()))
-			let __goscriptShadow2 = __goscriptTuple2[0]
-			let ok = __goscriptTuple2[1]
+			let __goscriptTuple1: any = $.mapGet<string, byName, byName>(hosts.value.byName, __goscript_dnsclient.absDomainName(host), $.markAsStructValue(new byName()))
+			let __goscriptShadow2 = __goscriptTuple1[0]
+			let ok = __goscriptTuple1[1]
 			if (ok) {
 				let ipsCp: $.Slice<string> = $.makeSlice<string>($.len(__goscriptShadow2.addrs), undefined, "string")
 				$.copy(ipsCp, __goscriptShadow2.addrs)
@@ -213,9 +210,9 @@ export async function lookupStaticAddr(addr: string): globalThis.Promise<$.Slice
 	if ($.len(hosts.value.byAddr) != 0) {
 		let __goscriptShadow3 = hosts.value
 		{
-			let __goscriptTuple3: any = $.mapGet<string, $.Slice<string>, $.Slice<string>>(__goscriptShadow3.byAddr, addr, null)
-			let __goscriptShadow4: $.Slice<string> = __goscriptTuple3[0]
-			let ok = __goscriptTuple3[1]
+			let __goscriptTuple2: any = $.mapGet<string, $.Slice<string>, $.Slice<string>>(__goscriptShadow3.byAddr, addr, null)
+			let __goscriptShadow4: $.Slice<string> = __goscriptTuple2[0]
+			let ok = __goscriptTuple2[1]
 			if (ok) {
 				let hostsCp: $.Slice<string> = $.makeSlice<string>($.len(__goscriptShadow4), undefined, "string")
 				$.copy(hostsCp, __goscriptShadow4)

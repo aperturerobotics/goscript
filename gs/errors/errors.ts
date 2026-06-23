@@ -123,42 +123,32 @@ export function Is(err: $.GoError, target: $.GoError): boolean {
     return false
   }
 
-  // Check direct equality
+  // Match by identity only. Go's errors.Is never matches by message text:
+  // two distinct errors.New values with the same string are not equal.
   if (err === target) {
     return true
   }
 
-  // Check if error messages are the same
-  if (err.Error() === target.Error()) {
-    return true
-  }
-
-  // Check if err has an Is method
+  // An error may declare equivalence to target via an Is method.
   if (typeof (err as any).Is === 'function') {
     if ((err as any).Is(target)) {
       return true
     }
   }
 
-  // Recursively check wrapped errors
-  const unwrapped = Unwrap(err)
-  if (unwrapped !== null) {
-    return Is(unwrapped, target)
-  }
-
-  // Handle multiple wrapped errors
+  // Depth-first traversal of the wrap tree. A single-error Unwrap recurses into
+  // its child; an Unwrap returning []error (errors.Join) visits every child, so
+  // a target in any position matches, not just the first.
   if (typeof (err as any).Unwrap === 'function') {
     const result = (err as any).Unwrap()
     if (Array.isArray(result)) {
       for (const wrappedErr of result) {
-        if (
-          wrappedErr &&
-          typeof wrappedErr.Error === 'function' &&
-          Is(wrappedErr, target)
-        ) {
+        if (wrappedErr !== null && Is(wrappedErr, target)) {
           return true
         }
       }
+    } else if (result !== null && typeof result?.Error === 'function') {
+      return Is(result, target)
     }
   }
 
@@ -202,25 +192,19 @@ export function As(err: $.GoError, target: any): boolean {
     }
   }
 
-  // Recursively check wrapped errors
-  const unwrapped = Unwrap(err)
-  if (unwrapped !== null) {
-    return As(unwrapped, target)
-  }
-
-  // Handle multiple wrapped errors
+  // Depth-first traversal of the wrap tree, matching errors.Is: a single-error
+  // Unwrap recurses into its child; an Unwrap returning []error visits every
+  // child so a match in any position is found.
   if (typeof (err as any).Unwrap === 'function') {
     const result = (err as any).Unwrap()
     if (Array.isArray(result)) {
       for (const wrappedErr of result) {
-        if (
-          wrappedErr &&
-          typeof wrappedErr.Error === 'function' &&
-          As(wrappedErr, target)
-        ) {
+        if (wrappedErr !== null && As(wrappedErr, target)) {
           return true
         }
       }
+    } else if (result !== null && typeof result?.Error === 'function') {
+      return As(result, target)
     }
   }
 

@@ -102,7 +102,7 @@ describe('syscall network stubs', () => {
     expect(ReadDirent(-1, null)).toEqual([0, ENOSYS])
     expect(Pread(-1, null, 0)).toEqual([0, ENOSYS])
     expect(Pwrite(-1, null, 0)).toEqual([0, ENOSYS])
-    expect(Seek(-1, 0, 0)).toEqual([0, ENOSYS])
+    expect(Seek(-1, 0n, 0)).toEqual([0n, ENOSYS])
     expect(Write(-1, null)).toEqual([0, ENOSYS])
     expect(Dup(-1)).toEqual([0, ENOSYS])
     expect(readv(-1, [new Iovec()])).toEqual([0, ENOSYS])

@@ -8,11 +8,11 @@ export type Ints = globalThis.Map<any, {}> | null
 export async function main(): globalThis.Promise<void> {
 	// This should trigger the unhandled make call error
 	// Similar to: seen := make(set.Ints[int64])
-	let seen: Ints = $.makeMap<number, {}>()
+	let seen: Ints = $.makeMap<bigint, {}>()
 
 	// Test basic operations
-	$.mapSet(seen, $.int(42), {})
-	let [, exists] = $.mapGet<number, {}, {}>(seen, $.int(42), {})
+	$.mapSet(seen, 42n, {})
+	let [, exists] = $.mapGet<bigint, {}, {}>(seen, 42n, {})
 	$.println("Value exists:", exists)
 
 	// Test with string type parameter

@@ -27,7 +27,7 @@ import "./deflate.gs.ts"
 import "./dict_decoder.gs.ts"
 import "./huffman_bit_writer.gs.ts"
 
-export type CorruptInputError = number
+export type CorruptInputError = bigint
 
 export type InternalError = string
 
@@ -53,10 +53,10 @@ $.registerInterfaceType(
 );
 
 export class ReadError {
-	public get Offset(): number {
+	public get Offset(): bigint {
 		return this._fields.Offset.value
 	}
-	public set Offset(value: number) {
+	public set Offset(value: bigint) {
 		this._fields.Offset.value = value
 	}
 
@@ -68,13 +68,13 @@ export class ReadError {
 	}
 
 	public _fields: {
-		Offset: $.VarRef<number>
+		Offset: $.VarRef<bigint>
 		Err: $.VarRef<$.GoError>
 	}
 
-	constructor(init?: Partial<{Offset?: number, Err?: $.GoError}>) {
+	constructor(init?: Partial<{Offset?: bigint, Err?: $.GoError}>) {
 		this._fields = {
-			Offset: $.varRef(init?.Offset ?? (0 as unknown as number)),
+			Offset: $.varRef(init?.Offset ?? (0n as unknown as bigint)),
 			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
 		}
 	}
@@ -90,7 +90,7 @@ export class ReadError {
 
 	public Error(): string {
 		const e: ReadError | $.VarRef<ReadError> | null = this
-		return (("flate: read error at offset " + strconv.FormatInt($.int($.pointerValue<ReadError>(e).Offset), 10)) + ": ") + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<ReadError>(e).Err).Error()
+		return (("flate: read error at offset " + strconv.FormatInt($.pointerValue<ReadError>(e).Offset, 10)) + ": ") + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<ReadError>(e).Err).Error()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -103,10 +103,10 @@ export class ReadError {
 }
 
 export class WriteError {
-	public get Offset(): number {
+	public get Offset(): bigint {
 		return this._fields.Offset.value
 	}
-	public set Offset(value: number) {
+	public set Offset(value: bigint) {
 		this._fields.Offset.value = value
 	}
 
@@ -118,13 +118,13 @@ export class WriteError {
 	}
 
 	public _fields: {
-		Offset: $.VarRef<number>
+		Offset: $.VarRef<bigint>
 		Err: $.VarRef<$.GoError>
 	}
 
-	constructor(init?: Partial<{Offset?: number, Err?: $.GoError}>) {
+	constructor(init?: Partial<{Offset?: bigint, Err?: $.GoError}>) {
 		this._fields = {
-			Offset: $.varRef(init?.Offset ?? (0 as unknown as number)),
+			Offset: $.varRef(init?.Offset ?? (0n as unknown as bigint)),
 			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
 		}
 	}
@@ -140,7 +140,7 @@ export class WriteError {
 
 	public Error(): string {
 		const e: WriteError | $.VarRef<WriteError> | null = this
-		return (("flate: write error at offset " + strconv.FormatInt($.int($.pointerValue<WriteError>(e).Offset), 10)) + ": ") + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<WriteError>(e).Err).Error()
+		return (("flate: write error at offset " + strconv.FormatInt($.pointerValue<WriteError>(e).Offset, 10)) + ": ") + $.pointerValue<Exclude<$.GoError, null>>($.pointerValue<WriteError>(e).Err).Error()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -268,7 +268,7 @@ export class huffmanDecoder {
 
 		$.pointerValue<huffmanDecoder>(h).min = min
 		if (max > 9) {
-			let numLinks = 1 << ($.uint64Sub($.uint(max, 64), 9))
+			let numLinks = 1 << ($.uint($.uint64Sub($.uint(max, 64), 9), 64))
 			$.pointerValue<huffmanDecoder>(h).linkMask = $.uint($.uint(numLinks - 1, 32), 32)
 
 			// create link tables
@@ -276,12 +276,12 @@ export class huffmanDecoder {
 			$.pointerValue<huffmanDecoder>(h).links = $.makeSlice<$.Slice<number>>(512 - link)
 			for (let j = $.uint(link, 64); j < 512; j++) {
 				let reverse = $.int(bits2.Reverse16($.uint($.uint(j, 16), 16)))
-				reverse = reverse >> ($.uint($.uint64Sub(16, 9), 64))
-				let off = $.uint64Sub(j, $.uint(link, 64))
+				reverse = reverse >> ($.uint($.uint($.uint64Sub(16, 9), 64), 64))
+				let off = $.uint($.uint64Sub(j, $.uint(link, 64)), 64)
 				if (false && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[reverse], 32) != $.uint(0, 32))) {
 					$.panic("impossible: overwriting existing chunk")
 				}
-				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint64Or(($.uint64Shl(off, 4)), ($.uint64Add(9, 1))), 32), 32)
+				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint($.uint64Or(($.uint($.uint64Shl(off, 4), 64)), ($.uint($.uint64Add(9, 1), 64))), 64), 32), 32)
 				$.pointerValue<huffmanDecoder>(h).links![off] = $.makeSlice<number>(numLinks, undefined, "number")
 			}
 		}
@@ -382,10 +382,10 @@ export class decompressor {
 		this._fields.rBuf.value = value
 	}
 
-	public get roffset(): number {
+	public get roffset(): bigint {
 		return this._fields.roffset.value
 	}
-	public set roffset(value: number) {
+	public set roffset(value: bigint) {
 		this._fields.roffset.value = value
 	}
 
@@ -519,7 +519,7 @@ export class decompressor {
 	public _fields: {
 		r: $.VarRef<Reader | null>
 		rBuf: $.VarRef<bufio.Reader | $.VarRef<bufio.Reader> | null>
-		roffset: $.VarRef<number>
+		roffset: $.VarRef<bigint>
 		b: $.VarRef<number>
 		nb: $.VarRef<number>
 		h1: $.VarRef<huffmanDecoder>
@@ -539,11 +539,11 @@ export class decompressor {
 		copyDist: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{r?: Reader | null, rBuf?: bufio.Reader | $.VarRef<bufio.Reader> | null, roffset?: number, b?: number, nb?: number, h1?: huffmanDecoder, h2?: huffmanDecoder, bits?: $.VarRef<number[]> | null, codebits?: $.VarRef<number[]> | null, dict?: __goscript_dict_decoder.dictDecoder, buf?: Uint8Array, step?: ((_p0: decompressor | $.VarRef<decompressor> | null) => void) | null, stepState?: number, final?: boolean, err?: $.GoError, toRead?: $.Slice<number>, hl?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, hd?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, copyLen?: number, copyDist?: number}>) {
+	constructor(init?: Partial<{r?: Reader | null, rBuf?: bufio.Reader | $.VarRef<bufio.Reader> | null, roffset?: bigint, b?: number, nb?: number, h1?: huffmanDecoder, h2?: huffmanDecoder, bits?: $.VarRef<number[]> | null, codebits?: $.VarRef<number[]> | null, dict?: __goscript_dict_decoder.dictDecoder, buf?: Uint8Array, step?: ((_p0: decompressor | $.VarRef<decompressor> | null) => void) | null, stepState?: number, final?: boolean, err?: $.GoError, toRead?: $.Slice<number>, hl?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, hd?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, copyLen?: number, copyDist?: number}>) {
 		this._fields = {
 			r: $.varRef(init?.r ?? (null as unknown as Reader | null)),
 			rBuf: $.varRef(init?.rBuf ?? (null as unknown as bufio.Reader | $.VarRef<bufio.Reader> | null)),
-			roffset: $.varRef(init?.roffset ?? (0 as unknown as number)),
+			roffset: $.varRef(init?.roffset ?? (0n as unknown as bigint)),
 			b: $.varRef(init?.b ?? (0 as unknown as number)),
 			nb: $.varRef(init?.nb ?? (0 as unknown as number)),
 			h1: $.varRef(init?.h1 ? $.markAsStructValue($.cloneStructValue(init.h1)) : $.markAsStructValue(new huffmanDecoder())),
@@ -637,7 +637,7 @@ export class decompressor {
 		}
 
 		let [cnt, err] = await io.ReadFull($.pointerValueOrNil(($.pointerValue<decompressor>(f).r as io.Reader | null))!, buf)
-		$.pointerValue<decompressor>(f).roffset = $.int64Add($.pointerValue<decompressor>(f).roffset, $.int($.int(cnt)))
+		$.pointerValue<decompressor>(f).roffset = $.int64Add($.pointerValue<decompressor>(f).roffset, $.int64(cnt))
 		$.pointerValue<decompressor>(f).copyLen = $.pointerValue<decompressor>(f).copyLen - (cnt)
 		$.pointerValue<decompressor>(f).dict.writeMark(cnt)
 		if (err != null) {
@@ -662,14 +662,14 @@ export class decompressor {
 
 		// Length then ones-complement of length.
 		let [nr, err] = await io.ReadFull($.pointerValueOrNil(($.pointerValue<decompressor>(f).r as io.Reader | null))!, $.goSlice($.pointerValue<decompressor>(f).buf, 0, 4))
-		$.pointerValue<decompressor>(f).roffset = $.int64Add($.pointerValue<decompressor>(f).roffset, $.int($.int(nr)))
+		$.pointerValue<decompressor>(f).roffset = $.int64Add($.pointerValue<decompressor>(f).roffset, $.int64(nr))
 		if (err != null) {
 			$.pointerValue<decompressor>(f).err = noEOF(err)
 			return
 		}
 		let n = $.int($.pointerValue<decompressor>(f).buf[0]) | ($.int($.pointerValue<decompressor>(f).buf[1]) << 8)
 		let nn = $.int($.pointerValue<decompressor>(f).buf[2]) | ($.int($.pointerValue<decompressor>(f).buf[3]) << 8)
-		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint($.int64Xor(n, -1n), 16), 16)) {
+		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint(Number($.int64Xor(n, -1n)), 16), 16)) {
 			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			return
 		}
@@ -718,8 +718,8 @@ export class decompressor {
 					return [0, noEOF(err)]
 				}
 				$.pointerValue<decompressor>(f).roffset++
-				b = b | ($.uint($.uint(c, 32) << ($.uint64And(nb, 31)), 32))
-				nb = $.uint64Add(nb, 8)
+				b = b | ($.uint($.uint(c, 32) << ($.uint($.uint64And(nb, 31), 64)), 32))
+				nb = $.uint($.uint64Add(nb, 8), 64)
 			}
 			let chunk = $.uint($.pointerValue<huffmanDecoder>(h).chunks[b & (512 - 1)], 32)
 			n = $.uint(chunk & 15, 64)
@@ -734,8 +734,8 @@ export class decompressor {
 					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					return [0, $.pointerValue<decompressor>(f).err]
 				}
-				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, ($.uint64And(n, 31)), 32), 32)
-				$.pointerValue<decompressor>(f).nb = $.uint64Sub(nb, n)
+				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, ($.uint($.uint64And(n, 31), 64)), 32), 32)
+				$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub(nb, n), 64)
 				return [$.int($.uintShr(chunk, 4, 32)), null]
 			}
 		}
@@ -862,7 +862,7 @@ export class decompressor {
 							}
 							length = length + ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << n) - 1, 32)))
 							$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(n, 32))) >>> 0
-							$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, n)
+							$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, n), 64)
 						}
 
 						let dist: number = 0
@@ -878,7 +878,7 @@ export class decompressor {
 							}
 							dist = $.int(bits2.Reverse8($.uint($.uint(($.pointerValue<decompressor>(f).b & 0x1F) << 3, 8), 8)))
 							$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
-							$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, 5)
+							$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, 5), 64)
 						} else {
 							{
 								let __goscriptTuple1: any = await decompressor.prototype.huffSym.call(f, $.pointerValue<decompressor>(f).hd)
@@ -899,7 +899,7 @@ export class decompressor {
 							}
 							case dist < 30:
 							{
-								let nb = $.uint64Shr($.uint(dist - 2, 64), 1)
+								let nb = $.uint($.uint64Shr($.uint(dist - 2, 64), 1), 64)
 								// have 1 bit in bottom of dist, need nb more.
 								let extra = (dist & 1) << nb
 								while ($.pointerValue<decompressor>(f).nb < nb) {
@@ -913,8 +913,8 @@ export class decompressor {
 								}
 								extra = extra | ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << nb) - 1, 32)))
 								$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
-								$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, nb)
-								dist = ((1 << ($.uint64Add(nb, 1))) + 1) + extra
+								$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, nb), 64)
+								dist = ((1 << ($.uint($.uint64Add(nb, 1), 64))) + 1) + extra
 								break
 							}
 							default:
@@ -999,13 +999,13 @@ export class decompressor {
 		}
 		$.pointerValue<decompressor>(f).roffset++
 		$.pointerValue<decompressor>(f).b = $.pointerValue<decompressor>(f).b | ($.uint($.uint(c, 32) << $.pointerValue<decompressor>(f).nb, 32))
-		$.pointerValue<decompressor>(f).nb = $.uint64Add($.pointerValue<decompressor>(f).nb, 8)
+		$.pointerValue<decompressor>(f).nb = $.uint($.uint64Add($.pointerValue<decompressor>(f).nb, 8), 64)
 		return null
 	}
 
 	public async nextBlock(): globalThis.Promise<void> {
 		let f: decompressor | $.VarRef<decompressor> | null = this
-		while ($.pointerValue<decompressor>(f).nb < ($.uint64Add(1, 2))) {
+		while ($.pointerValue<decompressor>(f).nb < ($.uint($.uint64Add(1, 2), 64))) {
 			{
 				$.pointerValue<decompressor>(f).err = await decompressor.prototype.moreBits.call(f)
 				if ($.pointerValue<decompressor>(f).err != null) {
@@ -1017,7 +1017,7 @@ export class decompressor {
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(1, 32))) >>> 0
 		let typ = $.uint($.pointerValue<decompressor>(f).b & 3, 32)
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(2, 32))) >>> 0
-		$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint64Add(1, 2))
+		$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint($.uint64Add(1, 2), 64)), 64)
 		switch (typ) {
 			case 0:
 			{
@@ -1055,7 +1055,7 @@ export class decompressor {
 	public async readHuffman(): globalThis.Promise<$.GoError> {
 		let f: decompressor | $.VarRef<decompressor> | null = this
 		// HLIT[5], HDIST[5], HCLEN[4].
-		while ($.pointerValue<decompressor>(f).nb < ($.uint64Add((5 + 5), 4))) {
+		while ($.pointerValue<decompressor>(f).nb < ($.uint($.uint64Add((5 + 5), 4), 64))) {
 			{
 				let err = await decompressor.prototype.moreBits.call(f)
 				if (err != null) {
@@ -1076,7 +1076,7 @@ export class decompressor {
 		let nclen = $.int($.pointerValue<decompressor>(f).b & 0xF) + 4
 		// numCodes is 19, so nclen is always valid.
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(4, 32))) >>> 0
-		$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint64Add((5 + 5), 4))
+		$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, $.uint($.uint64Add((5 + 5), 4), 64)), 64)
 
 		// (HCLEN+4)*3 bits: code lengths in the magic codeOrder order.
 		for (let i = 0; i < nclen; i++) {
@@ -1090,7 +1090,7 @@ export class decompressor {
 			}
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = $.int($.pointerValue<decompressor>(f).b & 0x7)
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(3, 32))) >>> 0
-			$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, 3)
+			$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, 3), 64)
 		}
 		for (let i = nclen; i < $.len(codeOrder); i++) {
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = 0
@@ -1157,7 +1157,7 @@ export class decompressor {
 			}
 			rep = rep + ($.int($.pointerValue<decompressor>(f).b & $.uint((1 << nb) - 1, 32)))
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
-			$.pointerValue<decompressor>(f).nb = $.uint64Sub($.pointerValue<decompressor>(f).nb, nb)
+			$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, nb), 64)
 			if ((i + rep) > n) {
 				return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			}
@@ -1220,7 +1220,7 @@ export function __goscript_set_fixedHuffmanDecoder(__goscriptValue: huffmanDecod
 }
 
 export function CorruptInputError_Error(e: CorruptInputError): string {
-	return "flate: corrupt input before offset " + strconv.FormatInt($.int($.int(e)), 10)
+	return "flate: corrupt input before offset " + strconv.FormatInt($.int64(e), 10)
 }
 
 export function InternalError_Error(e: InternalError): string {

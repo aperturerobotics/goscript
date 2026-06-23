@@ -6,60 +6,60 @@ import * as $ from "@goscript/builtin/index.js"
 import * as math from "@goscript/math/index.js"
 import "@goscript/math/index.js"
 
-export function hash6(u: number, h: number): number {
+export function hash6(u: bigint, h: number): number {
 	const prime6bytes: number = 227718039650203
-	return $.uint($.uint($.uint64Shr(($.uint64Mul(($.uint64Shl(u, (64 - 48))), 227718039650203)), ($.uint64And(($.uint64Sub(64, h)), 63))), 32), 32)
+	return $.uint($.uint($.uint64Shr(($.uint64Mul(($.uint64Shl(u, (64 - 48))), 227718039650203)), ($.uint($.uint64And(($.uint($.uint64Sub(64, h), 64)), 63), 64))), 32), 32)
 }
 
-export function mix(a: number, b: number): number {
-	return $.uint($.uint64Shr(($.uint64Xor(($.uint64And(a, b)), ($.uint64Or(a, 1)))), 60), 64)
+export function mix(a: bigint, b: bigint): bigint {
+	return $.uint64Shr(($.uint64Xor(($.uint64And(a, b)), ($.uint64Or(a, 1)))), 60)
 }
 
-export function highAfterMask(v: number): number {
-	return $.uint($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48)), 64)
+export function highAfterMask(v: bigint): bigint {
+	return $.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))
 }
 
-export function combineHighLow(v: number, low: number): number {
-	return $.uint($.uint64Add(($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))), $.uint($.uint(low, 16), 64)), 64)
+export function combineHighLow(v: bigint, low: bigint): bigint {
+	return $.uint64Add(($.uint64Mul(($.uint64And(v, 0xffff)), (2 ** 48))), $.uint64($.uint(low, 16)))
 }
 
-export function maxUint64Divisor(d: number): number {
-	return $.uint($.uint64Div(math.MaxUint64, d), 64)
+export function maxUint64Divisor(d: bigint): bigint {
+	return $.uint64Div(math.MaxUint64, d)
 }
 
-export function maxUint64Remainder(d: number): number {
-	return $.uint($.uint64Mod(math.MaxUint64, d), 64)
+export function maxUint64Remainder(d: bigint): bigint {
+	return $.uint64Mod(math.MaxUint64, d)
 }
 
-export function setHighBit(idx: number): boolean {
-	let words: $.Slice<number> = $.arrayToSlice<number>([$.uint(0, 64), $.uint(0, 64)])
-	words![$.uint64Div(idx, 64)] = $.uint64Or(words![$.uint64Div(idx, 64)], $.uint($.uint64Shl($.uint(1, 64), ($.uint64Mod(idx, 64))), 64))
-	return $.uint(words![1], 64) != $.uint(0, 64)
+export function setHighBit(idx: bigint): boolean {
+	let words: $.Slice<bigint> = $.arrayToSlice<bigint>([0n, 0n])
+	words![Number($.uint64Div(idx, 64))] = $.uint64Or(words![Number($.uint64Div(idx, 64))], $.uint64Shl(1n, ($.uint64Mod(idx, 64))))
+	return words![1] != 0n
 }
 
 export function uintBitLen(n: number): number {
 	let len = 0
 	while (n != 0) {
 		len++
-		n = $.uint64Shr(n, 1)
+		n = $.uint($.uint64Shr(n, 1), 64)
 	}
 	return len
 }
 
 export function uintShiftAssign(n: number): number {
-	n = $.uint64Shr(n, 40)
+	n = $.uint($.uint64Shr(n, 40), 64)
 	return n
 }
 
 export async function main(): globalThis.Promise<void> {
-	$.println($.uint(hash6($.uint(0x0102030405, 64), 14), 32))
-	$.println($.uint(mix($.uint("17361641481138401520", 64), $.uint("1085102592571150095", 64)), 64))
-	$.println($.uint($.uint($.uint64Shr(highAfterMask($.uint(0x1234, 64)), 48), 32), 32))
-	$.println($.uint($.uint($.uint64Shr(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 48), 32), 32))
-	$.println($.uint($.uint($.uint64And(combineHighLow($.uint(0x1234, 64), $.uint(0xbeef, 64)), 0xffff), 32), 32))
-	$.println($.uint(maxUint64Divisor($.uint(4114, 64)), 64))
-	$.println($.uint(maxUint64Remainder($.uint(4114, 64)), 64))
-	$.println(setHighBit($.uint(maxUint64Remainder($.uint(128, 64)), 64)))
+	$.println($.uint(hash6(4328719365n, 14), 32))
+	$.println(mix(17361641481138401520n, 1085102592571150095n))
+	$.println($.uint($.uint($.uint64Shr(highAfterMask(4660n), 48), 32), 32))
+	$.println($.uint($.uint($.uint64Shr(combineHighLow(4660n, 48879n), 48), 32), 32))
+	$.println($.uint($.uint($.uint64And(combineHighLow(4660n, 48879n), 0xffff), 32), 32))
+	$.println(maxUint64Divisor(4114n))
+	$.println(maxUint64Remainder(4114n))
+	$.println(setHighBit(maxUint64Remainder(128n)))
 	$.println(uintBitLen($.uint("18446744073709551615", 64)))
 	$.println(uintShiftAssign($.uint("18446744073709551615", 64)))
 }

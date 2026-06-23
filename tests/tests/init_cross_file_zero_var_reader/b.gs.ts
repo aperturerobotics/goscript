@@ -27,22 +27,22 @@ export function __goscript_set_registry(__goscriptValue: globalThis.Map<number, 
 	registry = __goscriptValue
 }
 
-export var counter: number
+export var counter: bigint
 
 export function __goscript_init_counter(): void {
 	if (((counter) as any) === undefined) {
-		counter = 0
+		counter = 0n
 	}
 }
 
-export function __goscript_get_counter(): number {
+export function __goscript_get_counter(): bigint {
 	if (((counter) as any) === undefined) {
 		__goscript_init_counter()
 	}
 	return counter
 }
 
-export function __goscript_set_counter(__goscriptValue: number): void {
+export function __goscript_set_counter(__goscriptValue: bigint): void {
 	counter = __goscriptValue
 }
 
@@ -66,11 +66,11 @@ export function __goscript_set_shared(__goscriptValue: number): void {
 }
 
 export function readTable(): void {
-	__goscript_set_counter(__goscript_get_counter() + 1)
+	__goscript_set_counter(__goscript_get_counter() + 1n)
 	__goscript_a.__goscript_set_remoteCounter(__goscript_a.__goscript_get_remoteCounter() + 1)
 	__goscript_set_shared(7)
 	let ptr = shared
-	$.println($.len(__goscript_a.__goscript_get_table()), $.len(__goscript_get_registry()), $.uint(__goscript_get_counter(), 64), __goscript_a.__goscript_get_remoteCounter(), $.pointerValue<number>(ptr), __goscript_a.__goscript_get_stringType() != null)
+	$.println($.len(__goscript_a.__goscript_get_table()), $.len(__goscript_get_registry()), __goscript_get_counter(), __goscript_a.__goscript_get_remoteCounter(), $.pointerValue<number>(ptr), __goscript_a.__goscript_get_stringType() != null)
 }
 
 export async function main(): globalThis.Promise<void> {

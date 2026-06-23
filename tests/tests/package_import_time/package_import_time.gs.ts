@@ -17,10 +17,10 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	$.println("preset time", $.markAsStructValue($.cloneStructValue(setTime)).String())
-	$.println("unix", $.int($.markAsStructValue($.cloneStructValue(setTime)).Unix()))
-	$.println("unix micro", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixMicro()))
-	$.println("unix nano", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixNano()))
-	$.println("unix milli", $.int($.markAsStructValue($.cloneStructValue(setTime)).UnixMilli()))
+	$.println("unix", $.markAsStructValue($.cloneStructValue(setTime)).Unix())
+	$.println("unix micro", $.markAsStructValue($.cloneStructValue(setTime)).UnixMicro())
+	$.println("unix nano", $.markAsStructValue($.cloneStructValue(setTime)).UnixNano())
+	$.println("unix milli", $.markAsStructValue($.cloneStructValue(setTime)).UnixMilli())
 
 	// day, month, etc.
 	$.println("day", $.markAsStructValue($.cloneStructValue(setTime)).Day())
@@ -45,17 +45,17 @@ export async function main(): globalThis.Promise<void> {
 	$.println("utc", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(setTime)).UTC())).Format("2006-01-02T15:04:05Z07:00"))
 	$.println("seconds", time.Duration_Seconds(($.int64Mul(1500, time.Millisecond))))
 	$.println("duration string", time.Duration_String(($.int64Mul(1500, time.Millisecond))))
-	$.println("negative duration before", $.markAsStructValue($.cloneStructValue(time.Now())).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add($.int64Mul(-60, time.Second))))))
+	$.println("negative duration before", $.markAsStructValue($.cloneStructValue(time.Now())).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(-60000000000n)))))
 
 	let [duration, durationErr] = time.ParseDuration("1.5s")
 	$.println("parsed duration", duration, durationErr == null)
 	let [, badDurationErr] = time.ParseDuration("not-a-duration")
 	$.println("bad duration err", badDurationErr != null)
 
-	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc($.int("9223372036854775807", 64), $.functionValue((): void => {
+	let timer: time.Timer | $.VarRef<time.Timer> | null = time.AfterFunc(9223372036854775807n, $.functionValue((): void => {
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println("max duration timer stopped", time.Timer.prototype.Stop.call($.pointerValue<time.Timer>(timer)))
-	let maxDuration = $.int("9223372036854775807", 64)
+	let maxDuration = 9223372036854775807n
 	$.println("max duration converted", maxDuration > 0)
 
 	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")

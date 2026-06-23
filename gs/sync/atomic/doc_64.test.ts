@@ -11,8 +11,8 @@ describe('sync/atomic 64-bit operations', () => {
   test('adds uint64 values without mixing number and bigint arithmetic', () => {
     const value = $.varRef($.uint('18446744073709551614', 64))
 
-    expect(AddUint64(value, $.uint(2, 64))).toBe(0)
-    expect(value.value).toBe(0)
+    expect(AddUint64(value, $.uint(2, 64))).toBe(0n)
+    expect(value.value).toBe(0n)
   })
 
   test('preserves high uint64 bits for bitwise operations', () => {
@@ -28,9 +28,9 @@ describe('sync/atomic 64-bit operations', () => {
   })
 
   test('adds int64 values without number coercion', () => {
-    const value = $.varRef($.int('9223372036854775807', 64))
+    const value = $.varRef($.int64('9223372036854775807'))
 
-    expect(AddInt64(value, 1)).toBe(-9223372036854775808)
-    expect(value.value).toBe(-9223372036854775808)
+    expect(AddInt64(value, 1n)).toBe(-9223372036854775808n)
+    expect(value.value).toBe(-9223372036854775808n)
   })
 })

@@ -1,5 +1,7 @@
 // Placeholder bytealg module for reflect package compatibility
 
+import * as $ from '@goscript/builtin/index.js'
+
 // Helper function to normalize bytes input
 function normalizeBytes(b: any): any[] {
   if (b === null || b === undefined) {
@@ -126,21 +128,35 @@ export function IndexRabinKarp(s: any, sep: any): number {
   return Index(s, sep)
 }
 
+// Go bytealg operates on the UTF-8 byte representation of a string and returns
+// byte indices, not UTF-16 code-unit indices. String.fromCharCode/indexOf would
+// search code units, mislocating any byte >127 or any multi-byte rune. Search
+// the Go bytes via the builtin string owner so indices match Go.
 export function IndexByteString(s: string, b: number): number {
-  const char = String.fromCharCode(b)
-  return s.indexOf(char)
+  const bytes = $.stringToBytes(s)
+  for (let i = 0; i < bytes.length; i++) {
+    if (bytes[i] === b) {
+      return i
+    }
+  }
+  return -1
 }
 
 export function LastIndexByteString(s: string, b: number): number {
-  const char = String.fromCharCode(b)
-  return s.lastIndexOf(char)
+  const bytes = $.stringToBytes(s)
+  for (let i = bytes.length - 1; i >= 0; i--) {
+    if (bytes[i] === b) {
+      return i
+    }
+  }
+  return -1
 }
 
 export function CountString(s: string, b: number): number {
-  const char = String.fromCharCode(b)
+  const bytes = $.stringToBytes(s)
   let count = 0
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === char) {
+  for (let i = 0; i < bytes.length; i++) {
+    if (bytes[i] === b) {
       count++
     }
   }
@@ -148,7 +164,27 @@ export function CountString(s: string, b: number): number {
 }
 
 export function IndexString(s: string, substr: string): number {
-  return s.indexOf(substr)
+  const bytes = $.stringToBytes(s)
+  const sub = $.stringToBytes(substr)
+  if (sub.length === 0) {
+    return 0
+  }
+  if (sub.length > bytes.length) {
+    return -1
+  }
+  for (let i = 0; i <= bytes.length - sub.length; i++) {
+    let found = true
+    for (let j = 0; j < sub.length; j++) {
+      if (bytes[i + j] !== sub[j]) {
+        found = false
+        break
+      }
+    }
+    if (found) {
+      return i
+    }
+  }
+  return -1
 }
 
 export function MakeNoZero(n: number): Uint8Array {

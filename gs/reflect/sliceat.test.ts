@@ -19,18 +19,18 @@ describe('reflect owned pointer handles', () => {
     const values = [1, 2, 3]
     const element = ValueOf(values).Index(1)
 
-    element.SetInt(8)
+    element.SetInt(8n)
     expect(values).toEqual([1, 8, 3])
 
     const address = element.UnsafeAddr()
     expect($.isOwnedPointerHandle(address)).toBe(true)
 
     const pointer = NewAt(element.Type(), address as any)
-    pointer.Elem().SetInt(11)
+    pointer.Elem().SetInt(11n)
     expect(values).toEqual([1, 11, 3])
 
     const refPointer = NewAt(element.Type(), $.indexRef(values, 1) as any)
-    refPointer.Elem().SetInt(14)
+    refPointer.Elem().SetInt(14n)
     expect(values).toEqual([1, 14, 3])
   })
 
@@ -38,14 +38,14 @@ describe('reflect owned pointer handles', () => {
     const bytes = new Uint8Array([4, 5, 6])
     const element = ValueOf(bytes).Index(1)
 
-    element.SetUint(9)
+    element.SetUint(9n)
     expect(Array.from(bytes)).toEqual([4, 9, 6])
 
     const address = element.UnsafeAddr()
     expect($.isOwnedPointerHandle(address)).toBe(true)
 
     const pointer = NewAt(element.Type(), address as any)
-    pointer.Elem().SetUint(12)
+    pointer.Elem().SetUint(12n)
     expect(Array.from(bytes)).toEqual([4, 12, 6])
   })
 
@@ -54,14 +54,14 @@ describe('reflect owned pointer handles', () => {
     const arrayValue = new Value(values, ArrayOf(2, TypeOf(0)))
     const element = arrayValue.Index(0)
 
-    element.SetInt(7)
+    element.SetInt(7n)
     expect(values).toEqual([7, 2])
 
     const address = element.UnsafeAddr()
     expect($.isOwnedPointerHandle(address)).toBe(true)
 
     const pointer = NewAt(element.Type(), address as any)
-    pointer.Elem().SetInt(13)
+    pointer.Elem().SetInt(13n)
     expect(values).toEqual([13, 2])
   })
 
@@ -71,13 +71,13 @@ describe('reflect owned pointer handles', () => {
 
     NewAt(intType, local as any)
       .Elem()
-      .SetInt(4)
+      .SetInt(4n)
     expect(local.value).toBe(4)
 
     const target = { count: 2 }
     NewAt(intType, $.fieldRef(target, 'count') as any)
       .Elem()
-      .SetInt(5)
+      .SetInt(5n)
     expect(target.count).toBe(5)
 
     expect(() => SliceAt(intType, local as any, 1)).toThrow(
@@ -107,8 +107,8 @@ describe('reflect owned pointer handles', () => {
     expect(slice.Cap()).toBe(2)
     expect(slice.Pointer()).toBe($.indexAddress(values, 1))
 
-    slice.Index(0).SetInt(21)
-    slice.Index(1).SetInt(31)
+    slice.Index(0).SetInt(21n)
+    slice.Index(1).SetInt(31n)
     expect(values).toEqual([10, 21, 31, 40])
   })
 
@@ -123,8 +123,8 @@ describe('reflect owned pointer handles', () => {
     expect(slice.Cap()).toBe(2)
     expect(slice.Pointer()).toBe($.indexAddress(bytes, 1))
 
-    slice.Index(0).SetUint(7)
-    slice.Index(1).SetUint(8)
+    slice.Index(0).SetUint(7n)
+    slice.Index(1).SetUint(8n)
     expect(Array.from(bytes)).toEqual([1, 7, 8, 4])
   })
 

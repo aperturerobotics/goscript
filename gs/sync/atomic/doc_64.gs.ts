@@ -5,8 +5,8 @@ import * as $ from "@goscript/builtin/index.js";
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function SwapInt64(addr: $.VarRef<number> | null, _new: number): number {
-	if (!addr) return 0;
+export function SwapInt64(addr: $.VarRef<bigint> | null, _new: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = _new;
 	return old;
@@ -17,8 +17,8 @@ export function SwapInt64(addr: $.VarRef<number> | null, _new: number): number {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function SwapUint64(addr: $.VarRef<number> | null, _new: number): number {
-	if (!addr) return 0;
+export function SwapUint64(addr: $.VarRef<bigint> | null, _new: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = _new;
 	return old;
@@ -29,7 +29,7 @@ export function SwapUint64(addr: $.VarRef<number> | null, _new: number): number 
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function CompareAndSwapInt64(addr: $.VarRef<number> | null, old: number, _new: number): boolean {
+export function CompareAndSwapInt64(addr: $.VarRef<bigint> | null, old: bigint, _new: bigint): boolean {
 	if (!addr) return false;
 	if (addr.value === old) {
 		addr.value = _new;
@@ -43,7 +43,7 @@ export function CompareAndSwapInt64(addr: $.VarRef<number> | null, old: number, 
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function CompareAndSwapUint64(addr: $.VarRef<number> | null, old: number, _new: number): boolean {
+export function CompareAndSwapUint64(addr: $.VarRef<bigint> | null, old: bigint, _new: bigint): boolean {
 	if (!addr) return false;
 	if (addr.value === old) {
 		addr.value = _new;
@@ -57,8 +57,8 @@ export function CompareAndSwapUint64(addr: $.VarRef<number> | null, old: number,
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function AddInt64(addr: $.VarRef<number> | null, delta: number): number {
-	if (!addr) return 0;
+export function AddInt64(addr: $.VarRef<bigint> | null, delta: bigint): bigint {
+	if (!addr) return 0n;
 	addr.value = $.int64Add(addr.value, delta);
 	return addr.value;
 }
@@ -70,8 +70,8 @@ export function AddInt64(addr: $.VarRef<number> | null, delta: number): number {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function AddUint64(addr: $.VarRef<number> | null, delta: number): number {
-	if (!addr) return 0;
+export function AddUint64(addr: $.VarRef<bigint> | null, delta: bigint): bigint {
+	if (!addr) return 0n;
 	addr.value = $.uint64Add(addr.value, delta);
 	return addr.value;
 }
@@ -81,8 +81,8 @@ export function AddUint64(addr: $.VarRef<number> | null, delta: number): number 
 // Consider using the more ergonomic and less error-prone [Int64.And] instead.
 //
 //go:noescape
-export function AndInt64(addr: $.VarRef<number> | null, mask: number): number {
-	if (!addr) return 0;
+export function AndInt64(addr: $.VarRef<bigint> | null, mask: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = $.int64And(addr.value, mask);
 	return old;
@@ -93,8 +93,8 @@ export function AndInt64(addr: $.VarRef<number> | null, mask: number): number {
 // Consider using the more ergonomic and less error-prone [Uint64.And] instead.
 //
 //go:noescape
-export function AndUint64(addr: $.VarRef<number> | null, mask: number): number {
-	if (!addr) return 0;
+export function AndUint64(addr: $.VarRef<bigint> | null, mask: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = $.uint64And(addr.value, mask);
 	return old;
@@ -105,8 +105,8 @@ export function AndUint64(addr: $.VarRef<number> | null, mask: number): number {
 // Consider using the more ergonomic and less error-prone [Int64.Or] instead.
 //
 //go:noescape
-export function OrInt64(addr: $.VarRef<number> | null, mask: number): number {
-	if (!addr) return 0;
+export function OrInt64(addr: $.VarRef<bigint> | null, mask: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = $.int64Or(addr.value, mask);
 	return old;
@@ -117,8 +117,8 @@ export function OrInt64(addr: $.VarRef<number> | null, mask: number): number {
 // Consider using the more ergonomic and less error-prone [Uint64.Or] instead.
 //
 //go:noescape
-export function OrUint64(addr: $.VarRef<number> | null, mask: number): number {
-	if (!addr) return 0;
+export function OrUint64(addr: $.VarRef<bigint> | null, mask: bigint): bigint {
+	if (!addr) return 0n;
 	let old = addr.value;
 	addr.value = $.uint64Or(addr.value, mask);
 	return old;
@@ -129,8 +129,8 @@ export function OrUint64(addr: $.VarRef<number> | null, mask: number): number {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function LoadInt64(addr: $.VarRef<number> | null): number {
-	if (!addr) return 0;
+export function LoadInt64(addr: $.VarRef<bigint> | null): bigint {
+	if (!addr) return 0n;
 	return addr.value;
 }
 
@@ -139,8 +139,8 @@ export function LoadInt64(addr: $.VarRef<number> | null): number {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function LoadUint64(addr: $.VarRef<number> | null): number {
-	if (!addr) return 0;
+export function LoadUint64(addr: $.VarRef<bigint> | null): bigint {
+	if (!addr) return 0n;
 	return addr.value;
 }
 
@@ -149,7 +149,7 @@ export function LoadUint64(addr: $.VarRef<number> | null): number {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function StoreInt64(addr: $.VarRef<number> | null, val: number): void {
+export function StoreInt64(addr: $.VarRef<bigint> | null, val: bigint): void {
 	if (addr) {
 		addr.value = val;
 	}
@@ -160,7 +160,7 @@ export function StoreInt64(addr: $.VarRef<number> | null, val: number): void {
 // (particularly if you target 32-bit platforms; see the bugs section).
 //
 //go:noescape
-export function StoreUint64(addr: $.VarRef<number> | null, val: number): void {
+export function StoreUint64(addr: $.VarRef<bigint> | null, val: bigint): void {
 	if (addr) {
 		addr.value = val;
 	}

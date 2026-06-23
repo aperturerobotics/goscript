@@ -184,8 +184,8 @@ describe('TypeFor', () => {
 
     const elem = ValueOf(boxed).Elem()
     expect(elem.Kind()).toBe(Uint64)
-    elem.SetUint(15)
-    expect(target.value).toBe(15)
+    elem.SetUint(15n)
+    expect(target.value).toBe(15n)
   })
 
   it('preserves channel type metadata on interface boxes', () => {
@@ -680,9 +680,9 @@ describe('TypeFor', () => {
     const pointer = New(TypeOf(0))
     const value = Indirect(pointer)
 
-    expect(value.Int()).toBe(0)
-    value.SetInt(7)
-    expect(pointer.Elem().Int()).toBe(7)
+    expect(value.Int()).toBe(0n)
+    value.SetInt(7n)
+    expect(pointer.Elem().Int()).toBe(7n)
   })
 
   it('interns runtime type descriptors for reflect.Type map keys', () => {

@@ -39,7 +39,7 @@ export async function main(): globalThis.Promise<void> {
 	let [_number, ok] = await tuple!()
 	$.println("tuple direct:", _number, ok)
 	let reflectedTuple: $.Slice<reflect.Value> = await $.markAsStructValue($.cloneStructValue(tupleValue)).Call(null)
-	$.println("tuple reflected:", $.int($.markAsStructValue($.cloneStructValue(reflectedTuple![0])).Int()), $.markAsStructValue($.cloneStructValue(reflectedTuple![1])).Bool())
+	$.println("tuple reflected:", $.markAsStructValue($.cloneStructValue(reflectedTuple![0])).Int(), $.markAsStructValue($.cloneStructValue(reflectedTuple![1])).Bool())
 
 	let variadicType = reflect.FuncOf($.arrayToSlice<reflect.Type | null>([intType, reflect.SliceOf($.pointerValueOrNil(stringType)!)]), $.arrayToSlice<reflect.Type | null>([intType]), true)
 	let variadicValue = $.markAsStructValue($.cloneStructValue(reflect.MakeFunc($.pointerValueOrNil(variadicType)!, $.functionValue((args: $.Slice<reflect.Value>): $.Slice<reflect.Value> => {
@@ -48,9 +48,9 @@ export async function main(): globalThis.Promise<void> {
 	let variadic: ((_p0: number, _p1: $.Slice<string>) => number | globalThis.Promise<number>) | null = $.mustTypeAssert<((_p0: number, _p1: $.Slice<string>) => number | globalThis.Promise<number>) | null>($.markAsStructValue($.cloneStructValue(variadicValue)).Interface(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "string" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }], isVariadic: true } as $.FunctionTypeInfo))
 	$.println("variadic direct:", await variadic!(10, $.arrayToSlice<string>(["a", "b"])))
 	let reflectedVariadic: $.Slice<reflect.Value> = await $.markAsStructValue($.cloneStructValue(variadicValue)).Call($.arrayToSlice<reflect.Value>([$.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(20, "int", {}, { kind: $.TypeKind.Basic, name: "int" })))), $.markAsStructValue($.cloneStructValue(reflect.ValueOf("a"))), $.markAsStructValue($.cloneStructValue(reflect.ValueOf("b"))), $.markAsStructValue($.cloneStructValue(reflect.ValueOf("c")))]))
-	$.println("variadic reflected:", $.int($.markAsStructValue($.cloneStructValue(reflectedVariadic![0])).Int()))
+	$.println("variadic reflected:", $.markAsStructValue($.cloneStructValue(reflectedVariadic![0])).Int())
 	let reflectedSlice: $.Slice<reflect.Value> = await $.markAsStructValue($.cloneStructValue(variadicValue)).CallSlice($.arrayToSlice<reflect.Value>([$.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(30, "int", {}, { kind: $.TypeKind.Basic, name: "int" })))), $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.arrayToSlice<string>(["a", "b"]), "[]string"))))]))
-	$.println("variadic callslice:", $.int($.markAsStructValue($.cloneStructValue(reflectedSlice![0])).Int()))
+	$.println("variadic callslice:", $.markAsStructValue($.cloneStructValue(reflectedSlice![0])).Int())
 
 	$.println("reflect_make_func test finished")
 }

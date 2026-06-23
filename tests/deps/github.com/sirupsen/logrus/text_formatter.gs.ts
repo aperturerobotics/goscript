@@ -430,67 +430,67 @@ export class TextFormatter {
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int" }).value
-						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int($.int(v)), 10)
+						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int8" }).value
-						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int($.int(v)), 10)
+						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int16" }).value
-						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int($.int(v)), 10)
+						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int32" }).value
-						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int($.int(v)), 10)
+						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int64(v), 10)
 					}
 					break
-				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).ok:
+				case $.typeAssert<bigint>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).ok:
 					{
-						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).value
-						num = strconv.AppendInt($.goSlice(raw, undefined, 0), $.int(v), 10)
+						let v: bigint = $.typeAssert<bigint>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "int64" }).value
+						num = strconv.AppendInt($.goSlice(raw, undefined, 0), v, 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint($.uint(v, 64), 64), 10)
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint8" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint($.uint(v, 64), 64), 10)
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint16" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint($.uint(v, 64), 64), 10)
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint32" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint($.uint(v, 64), 64), 10)
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint64(v), 10)
 					}
 					break
-				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).ok:
+				case $.typeAssert<bigint>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).ok:
 					{
-						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint(v, 64), 10)
+						let v: bigint = $.typeAssert<bigint>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uint64" }).value
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), v, 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uintptr" }).ok:
 					{
 						let v: number = $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "uintptr" }).value
-						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint($.uint(v, 64), 64), 10)
+						num = strconv.AppendUint($.goSlice(raw, undefined, 0), $.uint64(v), 10)
 					}
 					break
 				case $.typeAssert<number>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Basic, name: "float32" }).ok:
@@ -580,7 +580,7 @@ export class TextFormatter {
 					if (!$.stringEqual($.pointerValue<runtime.Frame>(caller).Function, "")) {
 						funcVal = $.pointerValue<runtime.Frame>(caller).Function + "()"
 					}
-					fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int($.int($.pointerValue<runtime.Frame>(caller).Line)), 10)
+					fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int64($.pointerValue<runtime.Frame>(caller).Line), 10)
 				}
 
 				if ($.stringEqual(fileVal, "")) {
@@ -664,7 +664,7 @@ export class TextFormatter {
 				fileVal = __goscriptTuple1[1]
 			} else {
 				funcVal = $.pointerValue<runtime.Frame>(caller).Function
-				fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int($.int($.pointerValue<runtime.Frame>(caller).Line)), 10)
+				fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int64($.pointerValue<runtime.Frame>(caller).Line), 10)
 			}
 
 			if (!$.stringEqual(funcVal, "")) {

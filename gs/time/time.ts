@@ -37,25 +37,25 @@ export class Time {
   }
 
   // Unix returns t as a Unix time, the number of seconds elapsed since January 1, 1970 UTC
-  public Unix(): number {
-    return Math.floor(this._date.getTime() / 1000)
+  public Unix(): bigint {
+    return BigInt(Math.floor(this._date.getTime() / 1000))
   }
 
   // UnixMilli returns t as a Unix time, the number of milliseconds elapsed since January 1, 1970 UTC
-  public UnixMilli(): number {
-    return this._date.getTime()
+  public UnixMilli(): bigint {
+    return BigInt(this._date.getTime())
   }
 
   // UnixMicro returns t as a Unix time, the number of microseconds elapsed since January 1, 1970 UTC
-  public UnixMicro(): number {
+  public UnixMicro(): bigint {
     return (
-      Math.floor(this._date.getTime() * 1000) + Math.floor(this._nsec / 1000)
+      BigInt(this._date.getTime()) * 1000n + BigInt(Math.floor(this._nsec / 1000))
     )
   }
 
   // UnixNano returns t as a Unix time, the number of nanoseconds elapsed since January 1, 1970 UTC
-  public UnixNano(): number {
-    return this._date.getTime() * 1000000 + this._nsec
+  public UnixNano(): bigint {
+    return BigInt(this._date.getTime()) * 1000000n + BigInt(this._nsec)
   }
 
   // Weekday returns the day of the week specified by t
@@ -553,7 +553,7 @@ export class Time {
       }
     }
 
-    const seconds = BigInt(this.Unix()) + unixToInternalSeconds
+    const seconds = this.Unix() + unixToInternalSeconds
     const nanos = this.Nanosecond()
     const bytes = new Uint8Array(version === timeBinaryVersionV2 ? 16 : 15)
     bytes[0] = version
@@ -580,13 +580,13 @@ export class Time {
     // If both times have monotonic readings, use them for more accurate duration calculation
     if (this._monotonic !== undefined && u._monotonic !== undefined) {
       const diffNs = this._monotonic - u._monotonic
-      return diffNs
+      return BigInt(diffNs)
     }
 
     // Fallback to Date-based calculation
     const diffMs = this._date.getTime() - u._date.getTime()
     const diffNs = this._nsec - u._nsec
-    return diffMs * 1000000 + diffNs
+    return BigInt(diffMs) * 1000000n + BigInt(diffNs)
   }
 
   // Add adds the duration d to t, returning the sum
@@ -720,10 +720,12 @@ export class Time {
 }
 
 // Duration represents a span of time (nanoseconds)
-export type Duration = number
+export type Duration = bigint
 
 const maxDuration = Number(9223372036854775807n)
 const minDuration = Number(-9223372036854775808n)
+const maxDurationBig = 9223372036854775807n
+const minDurationBig = -9223372036854775808n
 const maxTimerDelayMilliseconds = 0x7fffffff
 const millisecondsPerDay = 24 * 60 * 60 * 1000
 const unixToInternalSeconds = 62135596800n
@@ -777,38 +779,37 @@ export function Duration_multiply(
   receiver: Duration,
   multiplier: number,
 ): Duration {
-  return durationNumber(receiver) * multiplier
+  return BigInt(Math.trunc(durationNumber(receiver) * multiplier))
 }
 
 export function Duration_Abs(receiver: Duration): Duration {
-  const value = durationNumber(receiver)
-  if (value >= 0) {
-    return value
+  if (receiver >= 0n) {
+    return receiver
   }
-  if (value === minDuration) {
-    return maxDuration
+  if (receiver === minDurationBig) {
+    return maxDurationBig
   }
-  return -value
+  return -receiver
 }
 
 export function Duration_Hours(receiver: Duration): number {
-  return durationNumber(receiver) / Hour
+  return durationNumber(receiver) / 3.6e12
 }
 
-export function Duration_Microseconds(receiver: Duration): number {
-  return Math.trunc(durationNumber(receiver) / Microsecond)
+export function Duration_Microseconds(receiver: Duration): bigint {
+  return receiver / 1000n
 }
 
-export function Duration_Milliseconds(receiver: Duration): number {
-  return Math.trunc(durationNumber(receiver) / Millisecond)
+export function Duration_Milliseconds(receiver: Duration): bigint {
+  return receiver / 1000000n
 }
 
 export function Duration_Minutes(receiver: Duration): number {
-  return durationNumber(receiver) / Minute
+  return durationNumber(receiver) / 6e10
 }
 
-export function Duration_Nanoseconds(receiver: Duration): number {
-  return durationNumber(receiver)
+export function Duration_Nanoseconds(receiver: Duration): bigint {
+  return receiver
 }
 
 export function Duration_Round(
@@ -818,30 +819,28 @@ export function Duration_Round(
   const value = durationNumber(receiver)
   const unit = durationNumber(multiple)
   if (unit <= 0) {
-    return value
+    return receiver
   }
   const rounded =
     value >= 0 ?
       Math.floor(value / unit + 0.5) * unit
     : Math.ceil(value / unit - 0.5) * unit
-  return Math.max(minDuration, Math.min(maxDuration, rounded))
+  return BigInt(Math.max(minDuration, Math.min(maxDuration, rounded)))
 }
 
 // Duration_Seconds returns the duration as a floating point number of seconds.
 export function Duration_Seconds(receiver: Duration): number {
-  return durationNumber(receiver) / Second
+  return durationNumber(receiver) / 1e9
 }
 
 export function Duration_Truncate(
   receiver: Duration,
   multiple: Duration,
 ): Duration {
-  const value = durationNumber(receiver)
-  const unit = durationNumber(multiple)
-  if (unit <= 0) {
-    return value
+  if (multiple <= 0n) {
+    return receiver
   }
-  return value - (value % unit)
+  return receiver - (receiver % multiple)
 }
 
 export function Duration_String(receiver: Duration): string {
@@ -851,15 +850,15 @@ export function Duration_String(receiver: Duration): string {
   }
   const sign = value < 0 ? '-' : ''
   let remaining = Math.abs(value)
-  if (remaining < Second) {
+  if (remaining < 1e9) {
     return sign + formatSubsecond(remaining)
   }
-  const hours = Math.floor(remaining / Hour)
-  remaining -= hours * Hour
-  const minutes = Math.floor(remaining / Minute)
-  remaining -= minutes * Minute
-  const seconds = Math.floor(remaining / Second)
-  remaining -= seconds * Second
+  const hours = Math.floor(remaining / 3.6e12)
+  remaining -= hours * 3.6e12
+  const minutes = Math.floor(remaining / 6e10)
+  remaining -= minutes * 6e10
+  const seconds = Math.floor(remaining / 1e9)
+  remaining -= seconds * 1e9
 
   let out = sign
   if (hours !== 0) {
@@ -900,11 +899,11 @@ function formatSeconds(seconds: number, nanos: number): string {
 }
 
 function formatSubsecond(nanos: number): string {
-  if (nanos >= Millisecond) {
-    return formatUnit(nanos, Millisecond, 'ms')
+  if (nanos >= 1e6) {
+    return formatUnit(nanos, 1e6, 'ms')
   }
-  if (nanos >= Microsecond) {
-    return formatUnit(nanos, Microsecond, '\u00b5s')
+  if (nanos >= 1e3) {
+    return formatUnit(nanos, 1e3, '\u00b5s')
   }
   return `${nanos}ns`
 }
@@ -1184,12 +1183,12 @@ export function FixedZone(name: string, offset: number): Location {
 }
 
 // Common durations (matching Go's time package constants)
-export const Nanosecond = 1
-export const Microsecond = 1000
-export const Millisecond = 1000000
-export const Second = 1000000000
-export const Minute = 60000000000
-export const Hour = 3600000000000
+export const Nanosecond: Duration = 1n
+export const Microsecond: Duration = 1000n
+export const Millisecond: Duration = 1000000n
+export const Second: Duration = 1000000000n
+export const Minute: Duration = 60000000000n
+export const Hour: Duration = 3600000000000n
 
 // Since returns the time elapsed since t
 // Uses monotonic clock if available for accurate measurement
@@ -1255,31 +1254,35 @@ export const TimeOnly = '15:04:05'
 
 // Unix returns the local Time corresponding to the given Unix time,
 // sec seconds and nsec nanoseconds since January 1, 1970 UTC
-export function Unix(sec: number, nsec: number = 0): Time {
-  const ms = sec * 1000 + Math.floor(nsec / 1000000)
-  const remainingNsec = nsec % 1000000
+export function Unix(sec: bigint, nsec: bigint = 0n): Time {
+  const secNum = Number(sec)
+  const nsecNum = Number(nsec)
+  const ms = secNum * 1000 + Math.floor(nsecNum / 1000000)
+  const remainingNsec = nsecNum % 1000000
   return Time.create(new globalThis.Date(ms), remainingNsec, undefined, UTC)
 }
 
 // UnixMilli returns the local Time corresponding to the given Unix time,
 // msec milliseconds since January 1, 1970 UTC
-export function UnixMilli(msec: number): Time {
-  return Time.create(new globalThis.Date(msec), 0, undefined, UTC)
+export function UnixMilli(msec: bigint): Time {
+  return Time.create(new globalThis.Date(Number(msec)), 0, undefined, UTC)
 }
 
 // UnixMicro returns the local Time corresponding to the given Unix time,
 // usec microseconds since January 1, 1970 UTC
-export function UnixMicro(usec: number): Time {
-  const ms = Math.floor(usec / 1000)
-  const nsec = (usec % 1000) * 1000
+export function UnixMicro(usec: bigint): Time {
+  const usecNum = Number(usec)
+  const ms = Math.floor(usecNum / 1000)
+  const nsec = (usecNum % 1000) * 1000
   return Time.create(new globalThis.Date(ms), nsec, undefined, UTC)
 }
 
 // UnixNano returns the local Time corresponding to the given Unix time,
 // nsec nanoseconds since January 1, 1970 UTC
-export function UnixNano(nsec: number): Time {
-  const ms = Math.floor(nsec / 1000000)
-  const remainingNsec = nsec % 1000000
+export function UnixNano(nsec: bigint): Time {
+  const nsecNum = Number(nsec)
+  const ms = Math.floor(nsecNum / 1000000)
+  const remainingNsec = nsecNum % 1000000
   return Time.create(new globalThis.Date(ms), remainingNsec, undefined, UTC)
 }
 
@@ -1291,7 +1294,7 @@ export function ParseDuration(s: string): [Duration, $.GoError] {
   const match = s.match(regex)
 
   if (!match) {
-    return [0, $.newError(`time: invalid duration "${s}"`)]
+    return [0n, $.newError(`time: invalid duration "${s}"`)]
   }
 
   const [, sign, valueStr, unit] = match
@@ -1320,10 +1323,10 @@ export function ParseDuration(s: string): [Duration, $.GoError] {
       nanoseconds = value * 3600000000000
       break
     default:
-      return [0, $.newError(`time: unknown unit "${unit}" in duration "${s}"`)]
+      return [0n, $.newError(`time: unknown unit "${unit}" in duration "${s}"`)]
   }
 
-  return [nanoseconds, null]
+  return [BigInt(Math.trunc(nanoseconds)), null]
 }
 
 // Parse parses a formatted string and returns the time value it represents

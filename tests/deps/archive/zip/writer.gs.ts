@@ -90,10 +90,10 @@ export class Writer {
 
 	// testHookCloseSizeOffset if non-nil is called with the size
 	// of offset of the central directory at Close.
-	public get testHookCloseSizeOffset(): ((size: number, offset: number) => void) | null {
+	public get testHookCloseSizeOffset(): ((size: bigint, offset: bigint) => void) | null {
 		return this._fields.testHookCloseSizeOffset.value
 	}
-	public set testHookCloseSizeOffset(value: ((size: number, offset: number) => void) | null) {
+	public set testHookCloseSizeOffset(value: ((size: bigint, offset: bigint) => void) | null) {
 		this._fields.testHookCloseSizeOffset.value = value
 	}
 
@@ -104,10 +104,10 @@ export class Writer {
 		closed: $.VarRef<boolean>
 		compressors: $.VarRef<globalThis.Map<number, __goscript_register.Compressor | null> | null>
 		comment: $.VarRef<string>
-		testHookCloseSizeOffset: $.VarRef<((size: number, offset: number) => void) | null>
+		testHookCloseSizeOffset: $.VarRef<((size: bigint, offset: bigint) => void) | null>
 	}
 
-	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: globalThis.Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: number, offset: number) => void) | null}>) {
+	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: globalThis.Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: bigint, offset: bigint) => void) | null}>) {
 		this._fields = {
 			cw: $.varRef(init?.cw ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
 			dir: $.varRef(init?.dir ?? (null as unknown as $.Slice<header | $.VarRef<header> | null>)),
@@ -115,7 +115,7 @@ export class Writer {
 			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
 			compressors: $.varRef(init?.compressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Compressor | null> | null)),
 			comment: $.varRef(init?.comment ?? ("" as unknown as string)),
-			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as unknown as ((size: number, offset: number) => void) | null))
+			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as unknown as ((size: bigint, offset: bigint) => void) | null))
 		}
 	}
 
@@ -202,7 +202,7 @@ export class Writer {
 		$.pointerValue<Writer>(w).closed = true
 
 		// write central directory
-		let start = $.int($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count)
+		let start = $.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count
 		for (let __goscriptRangeTarget0 = $.pointerValue<Writer>(w).dir, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 			let h = __goscriptRangeTarget0![__rangeIndex]
 			let buf: Uint8Array = new Uint8Array(46)
@@ -227,9 +227,9 @@ export class Writer {
 				let eb: $.VarRef<writeBuf> = $.varRef((($.goSlice(__goscriptShadow0, undefined, undefined) as writeBuf) as writeBuf))
 				writeBuf_uint16(eb, $.uint(1, 16))
 				writeBuf_uint16(eb, $.uint(24, 16))
-				writeBuf_uint64(eb, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize64, 64))
-				writeBuf_uint64(eb, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize64, 64))
-				writeBuf_uint64(eb, $.uint($.pointerValue<header>(h).offset, 64))
+				writeBuf_uint64(eb, $.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize64)
+				writeBuf_uint64(eb, $.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize64)
+				writeBuf_uint64(eb, $.pointerValue<header>(h).offset)
 				$.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra = $.appendSlice($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Extra, $.goSlice(__goscriptShadow0, undefined, undefined))
 			} else {
 				writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize, 32))
@@ -271,16 +271,16 @@ export class Writer {
 				}
 			}
 		}
-		let end = $.int($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count)
+		let end = $.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count
 
-		let records = $.uint($.uint($.len($.pointerValue<Writer>(w).dir), 64), 64)
-		let size = $.uint($.uint($.int64Sub(end, start), 64), 64)
-		let offset = $.uint($.uint(start, 64), 64)
+		let records = $.uint64($.len($.pointerValue<Writer>(w).dir))
+		let size = $.uint64($.int64Sub(end, start))
+		let offset = $.uint64(start)
 
 		{
-			let f: ((size: number, offset: number) => void) | null = $.pointerValue<Writer>(w).testHookCloseSizeOffset
+			let f: ((size: bigint, offset: bigint) => void) | null = $.pointerValue<Writer>(w).testHookCloseSizeOffset
 			if (f != null) {
-				await f!($.uint(size, 64), $.uint(offset, 64))
+				await f!(size, offset)
 			}
 		}
 
@@ -290,20 +290,20 @@ export class Writer {
 
 			// zip64 end of central directory record
 			writeBuf_uint32(b, $.uint(101075792, 32))
-			writeBuf_uint64(b, $.uint($.uint64Sub(56, 12), 64))
+			writeBuf_uint64(b, 44n)
 			writeBuf_uint16(b, $.uint(45, 16))
 			writeBuf_uint16(b, $.uint(45, 16))
 			writeBuf_uint32(b, $.uint(0, 32))
 			writeBuf_uint32(b, $.uint(0, 32))
-			writeBuf_uint64(b, $.uint(records, 64))
-			writeBuf_uint64(b, $.uint(records, 64))
-			writeBuf_uint64(b, $.uint(size, 64))
-			writeBuf_uint64(b, $.uint(offset, 64))
+			writeBuf_uint64(b, records)
+			writeBuf_uint64(b, records)
+			writeBuf_uint64(b, size)
+			writeBuf_uint64(b, offset)
 
 			// zip64 end of central directory locator
 			writeBuf_uint32(b, $.uint(117853008, 32))
 			writeBuf_uint32(b, $.uint(0, 32))
-			writeBuf_uint64(b, $.uint($.uint(end, 64), 64))
+			writeBuf_uint64(b, $.uint64(end))
 			writeBuf_uint32(b, $.uint(1, 32))
 
 			{
@@ -315,9 +315,9 @@ export class Writer {
 
 			// store max values in the regular end record to signal
 			// that the zip64 values should be used instead
-			records = $.uint(65535, 64)
-			size = $.uint(4294967295, 64)
-			offset = $.uint(4294967295, 64)
+			records = 65535n
+			size = 4294967295n
+			offset = 4294967295n
 		}
 
 		// write end record
@@ -447,7 +447,7 @@ export class Writer {
 
 		let ow: io.Writer | null = null as io.Writer | null
 		let fw: fileWriter | $.VarRef<fileWriter> | null = null as fileWriter | $.VarRef<fileWriter> | null
-		let h: header | $.VarRef<header> | null = new header({FileHeader: fh, offset: $.uint($.uint($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count, 64), 64)})
+		let h: header | $.VarRef<header> | null = new header({FileHeader: fh, offset: $.uint64($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count)})
 
 		if (strings.HasSuffix($.pointerValue<__goscript_struct.FileHeader>(fh).Name, "/")) {
 			// Set the compression method to Store to ensure data length is truly zero,
@@ -459,9 +459,9 @@ export class Writer {
 
 			// Explicitly clear sizes as they have no meaning for directories.
 			$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize = $.uint(0, 32)
-			$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64 = $.uint(0, 64)
+			$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64 = 0n
 			$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize = $.uint(0, 32)
-			$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64 = $.uint(0, 64)
+			$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64 = 0n
 
 			ow = $.interfaceValue<io.Writer | null>($.markAsStructValue(new dirWriter()), "zip.dirWriter")
 		} else {
@@ -504,10 +504,10 @@ export class Writer {
 			}
 		}
 
-		$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize = $.uint($.uint($.min($.uint($.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64, 64), $.uint(4294967295, 64)), 32), 32)
-		$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize = $.uint($.uint($.min($.uint($.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64, 64), $.uint(4294967295, 64)), 32), 32)
+		$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize = $.uint($.uint($.min($.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64, 4294967295n), 32), 32)
+		$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize = $.uint($.uint($.min($.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64, 4294967295n), 32), 32)
 
-		let h: header | $.VarRef<header> | null = new header({FileHeader: fh, offset: $.uint($.uint($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count, 64), 64), raw: true})
+		let h: header | $.VarRef<header> | null = new header({FileHeader: fh, offset: $.uint64($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count), raw: true})
 		$.pointerValue<Writer>(w).dir = $.append($.pointerValue<Writer>(w).dir, h)
 		{
 			let err = await writeHeader($.interfaceValue<io.Writer | null>($.pointerValue<Writer>(w).cw, "*zip.countWriter"), h)
@@ -548,12 +548,12 @@ export class Writer {
 		return null
 	}
 
-	public SetOffset(n: number): void {
+	public SetOffset(n: bigint): void {
 		let w: Writer | $.VarRef<Writer> | null = this
-		if ($.int($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count) != $.int(0)) {
+		if ($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count != 0n) {
 			$.panic("zip: SetOffset called after data was written")
 		}
-		$.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count = $.int(n)
+		$.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).count = n
 	}
 
 	public async compressor(method: number): globalThis.Promise<__goscript_register.Compressor | null> {
@@ -599,10 +599,10 @@ export class header {
 		this._fields.FileHeader.value = value
 	}
 
-	public get offset(): number {
+	public get offset(): bigint {
 		return this._fields.offset.value
 	}
-	public set offset(value: number) {
+	public set offset(value: bigint) {
 		this._fields.offset.value = value
 	}
 
@@ -615,14 +615,14 @@ export class header {
 
 	public _fields: {
 		FileHeader: $.VarRef<__goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null>
-		offset: $.VarRef<number>
+		offset: $.VarRef<bigint>
 		raw: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null, offset?: number, raw?: boolean}>) {
+	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null, offset?: bigint, raw?: boolean}>) {
 		this._fields = {
 			FileHeader: $.varRef(init?.FileHeader ?? (null as unknown as __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number)),
+			offset: $.varRef(init?.offset ?? (0n as unknown as bigint)),
 			raw: $.varRef(init?.raw ?? (false as unknown as boolean))
 		}
 	}
@@ -823,8 +823,8 @@ export class fileWriter {
 		// update FileHeader
 		let fh: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null = $.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader
 		$.pointerValue<__goscript_struct.FileHeader>(fh).CRC32 = $.uint(await $.pointerValue<Exclude<hash.Hash32, null>>($.pointerValue<fileWriter>(w).crc32).Sum32(), 32)
-		$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64 = $.uint($.uint($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).compCount).count, 64), 64)
-		$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64 = $.uint($.uint($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).rawCount).count, 64), 64)
+		$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize64 = $.uint64($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).compCount).count)
+		$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64 = $.uint64($.pointerValue<countWriter>($.pointerValue<fileWriter>(w).rawCount).count)
 
 		if (__goscript_struct.FileHeader.prototype.isZip64.call(fh)) {
 			$.pointerValue<__goscript_struct.FileHeader>(fh).CompressedSize = $.uint(4294967295, 32)
@@ -858,8 +858,8 @@ export class fileWriter {
 		writeBuf_uint32(b, $.uint(134695760, 32))
 		writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).CRC32, 32))
 		if ($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).isZip64()) {
-			writeBuf_uint64(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).CompressedSize64, 64))
-			writeBuf_uint64(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).UncompressedSize64, 64))
+			writeBuf_uint64(b, $.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).CompressedSize64)
+			writeBuf_uint64(b, $.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).UncompressedSize64)
 		} else {
 			writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).CompressedSize, 32))
 			writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>($.pointerValue<fileWriter>(w).header).FileHeader).UncompressedSize, 32))
@@ -913,22 +913,22 @@ export class countWriter {
 		this._fields.w.value = value
 	}
 
-	public get count(): number {
+	public get count(): bigint {
 		return this._fields.count.value
 	}
-	public set count(value: number) {
+	public set count(value: bigint) {
 		this._fields.count.value = value
 	}
 
 	public _fields: {
 		w: $.VarRef<io.Writer | null>
-		count: $.VarRef<number>
+		count: $.VarRef<bigint>
 	}
 
-	constructor(init?: Partial<{w?: io.Writer | null, count?: number}>) {
+	constructor(init?: Partial<{w?: io.Writer | null, count?: bigint}>) {
 		this._fields = {
 			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
-			count: $.varRef(init?.count ?? (0 as unknown as number))
+			count: $.varRef(init?.count ?? (0n as unknown as bigint))
 		}
 	}
 
@@ -944,7 +944,7 @@ export class countWriter {
 	public async Write(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let w: countWriter | $.VarRef<countWriter> | null = this
 		let [n, err] = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<countWriter>(w).w).Write(p)
-		$.pointerValue<countWriter>(w).count = $.int64Add($.pointerValue<countWriter>(w).count, $.int($.int(n)))
+		$.pointerValue<countWriter>(w).count = $.int64Add($.pointerValue<countWriter>(w).count, $.int64(n))
 		return [n, err]
 	}
 
@@ -1063,8 +1063,8 @@ export async function writeHeader(w: io.Writer | null, h: header | $.VarRef<head
 	// flags.
 	if ($.pointerValue<header>(h).raw && !$.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).hasDataDescriptor()) {
 		writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CRC32, 32))
-		writeBuf_uint32(b, $.uint($.uint($.min($.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize64, 64), $.uint(4294967295, 64)), 32), 32))
-		writeBuf_uint32(b, $.uint($.uint($.min($.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize64, 64), $.uint(4294967295, 64)), 32), 32))
+		writeBuf_uint32(b, $.uint($.uint($.min($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CompressedSize64, 4294967295n), 32), 32))
+		writeBuf_uint32(b, $.uint($.uint($.min($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).UncompressedSize64, 4294967295n), 32), 32))
 	} else {
 		// When this package handle the compression, these values are
 		// always written to the trailing data descriptor.
@@ -1107,7 +1107,7 @@ export function writeBuf_uint32(b: $.VarRef<writeBuf> | null, v: number): void {
 	b!.value = ($.goSlice(($.pointerValue<writeBuf>(b)), 4, undefined) as writeBuf)
 }
 
-export function writeBuf_uint64(b: $.VarRef<writeBuf> | null, v: number): void {
-	$.markAsStructValue($.cloneStructValue($.pointerValue<any>(binary.LittleEndian))).PutUint64($.pointerValue<writeBuf>(b), $.uint(v, 64))
+export function writeBuf_uint64(b: $.VarRef<writeBuf> | null, v: bigint): void {
+	$.markAsStructValue($.cloneStructValue($.pointerValue<any>(binary.LittleEndian))).PutUint64($.pointerValue<writeBuf>(b), v)
 	b!.value = ($.goSlice(($.pointerValue<writeBuf>(b)), 8, undefined) as writeBuf)
 }

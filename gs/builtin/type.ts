@@ -632,20 +632,20 @@ function validateMapKey(key: any, keyTypeInfo: TypeInfo): boolean {
  */
 function matchesBasicType(value: any, info: TypeInfo): boolean {
   if (info.name === 'string') return typeof value === 'string'
+  if (info.name === 'int64' || info.name === 'uint64')
+    return typeof value === 'bigint'
   if (
     info.name === 'number' ||
     info.name === 'int' ||
     info.name === 'int8' ||
     info.name === 'int16' ||
     info.name === 'int32' ||
-    info.name === 'int64' ||
     info.name === 'uint' ||
+    info.name === 'uintptr' ||
     info.name === 'uint8' ||
     info.name === 'byte' ||
     info.name === 'uint16' ||
     info.name === 'uint32' ||
-    info.name === 'uint64' ||
-    info.name === 'uintptr' ||
     info.name === 'float32' ||
     info.name === 'float64'
   )

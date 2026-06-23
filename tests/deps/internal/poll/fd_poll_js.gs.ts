@@ -139,9 +139,9 @@ export class pollDesc {
 }
 
 export async function setDeadlineImpl(fd: __goscript_fd_unix.FD | $.VarRef<__goscript_fd_unix.FD> | null, t: time.Time, mode: number): globalThis.Promise<$.GoError> {
-	let d = $.int($.markAsStructValue($.cloneStructValue(t)).UnixNano())
+	let d = $.markAsStructValue($.cloneStructValue(t)).UnixNano()
 	if ($.markAsStructValue($.cloneStructValue(t)).IsZero()) {
-		d = $.int(0)
+		d = 0n
 	}
 	{
 		let err = __goscript_fd_unix.FD.prototype.incref.call(fd)
@@ -152,18 +152,18 @@ export async function setDeadlineImpl(fd: __goscript_fd_unix.FD | $.VarRef<__gos
 	switch (mode) {
 		case 114:
 		{
-			syscall.SetReadDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, $.int(d))
+			syscall.SetReadDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, d)
 			break
 		}
 		case 119:
 		{
-			syscall.SetWriteDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, $.int(d))
+			syscall.SetWriteDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, d)
 			break
 		}
 		case 114 + 119:
 		{
-			syscall.SetReadDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, $.int(d))
-			syscall.SetWriteDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, $.int(d))
+			syscall.SetReadDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, d)
+			syscall.SetWriteDeadline($.pointerValue<__goscript_fd_unix.FD>(fd).Sysfd, d)
 			break
 		}
 	}

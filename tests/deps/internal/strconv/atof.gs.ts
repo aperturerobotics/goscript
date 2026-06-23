@@ -85,8 +85,8 @@ export function special(s: string): [number, number, boolean] {
 	return [0, 0, false]
 }
 
-export function readFloat(s: string): [number, number, boolean, boolean, boolean, number, boolean] {
-	let mantissa: number = 0
+export function readFloat(s: string): [bigint, number, boolean, boolean, boolean, number, boolean] {
+	let mantissa: bigint = 0n
 	let exp: number = 0
 	let neg: boolean = false
 	let trunc: boolean = false
@@ -114,11 +114,11 @@ export function readFloat(s: string): [number, number, boolean, boolean, boolean
 	}
 
 	// digits
-	let base = $.uint($.uint(10, 64), 64)
+	let base = 10n
 	let maxMantDigits = 19
 	let expChar = $.uint($.uint(101, 8), 8)
 	if ((((i + 2) < $.len(s)) && ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(48, 8))) && ($.uint(__goscript_atoi.lower($.uint($.indexStringOrBytes(s, i + 1), 8)), 8) == $.uint(120, 8))) {
-		base = $.uint(16, 64)
+		base = 16n
 		maxMantDigits = 16
 		i = i + (2)
 		expChar = $.uint(112, 8)
@@ -158,8 +158,8 @@ export function readFloat(s: string): [number, number, boolean, boolean, boolean
 					}
 					nd++
 					if (ndMant < maxMantDigits) {
-						mantissa = $.uint64Mul(mantissa, $.uint(base, 64))
-						mantissa = $.uint64Add(mantissa, $.uint($.uint(c - 48, 64), 64))
+						mantissa = $.uint64Mul(mantissa, base)
+						mantissa = $.uint64Add(mantissa, $.uint64(c - 48))
 						ndMant++
 					} else {
 						if ($.uint(c, 8) != $.uint(48, 8)) {
@@ -169,13 +169,13 @@ export function readFloat(s: string): [number, number, boolean, boolean, boolean
 					continue
 					break
 				}
-				case (($.uint(base, 64) == $.uint(16, 64)) && (97 <= __goscript_atoi.lower($.uint(c, 8)))) && (__goscript_atoi.lower($.uint(c, 8)) <= 102):
+				case ((base == 16n) && (97 <= __goscript_atoi.lower($.uint(c, 8)))) && (__goscript_atoi.lower($.uint(c, 8)) <= 102):
 				{
 					sawdigits = true
 					nd++
 					if (ndMant < maxMantDigits) {
-						mantissa = $.uint64Mul(mantissa, $.uint(16, 64))
-						mantissa = $.uint64Add(mantissa, $.uint($.uint((__goscript_atoi.lower($.uint(c, 8)) - 97) + 10, 64), 64))
+						mantissa = $.uint64Mul(mantissa, 16n)
+						mantissa = $.uint64Add(mantissa, $.uint64((__goscript_atoi.lower($.uint(c, 8)) - 97) + 10))
 						ndMant++
 					} else {
 						trunc = true
@@ -194,7 +194,7 @@ export function readFloat(s: string): [number, number, boolean, boolean, boolean
 		dp = nd
 	}
 
-	if ($.uint(base, 64) == $.uint(16, 64)) {
+	if (base == 16n) {
 		dp = dp * (4)
 		ndMant = ndMant * (4)
 	}
@@ -238,13 +238,13 @@ export function readFloat(s: string): [number, number, boolean, boolean, boolean
 		}
 		dp = dp + (e * esign)
 	} else {
-		if ($.uint(base, 64) == $.uint(16, 64)) {
+		if (base == 16n) {
 			// Must have exponent.
 			return [mantissa, exp, neg, trunc, hex, i, ok]
 		}
 	}
 
-	if ($.uint(mantissa, 64) != $.uint(0, 64)) {
+	if (mantissa != 0n) {
 		exp = dp - ndMant
 	}
 
@@ -274,13 +274,13 @@ export function __goscript_set_float32pow10(__goscriptValue: $.Slice<number>): v
 	float32pow10 = __goscriptValue
 }
 
-export function atof64exact(mantissa: number, exp: number, neg: boolean): [number, boolean] {
+export function atof64exact(mantissa: bigint, exp: number, neg: boolean): [number, boolean] {
 	let f: number = 0
 	let ok: boolean = false
-	if ($.uint(($.uint64Shr(mantissa, $.pointerValue<__goscript_ftoa.floatInfo>(__goscript_ftoa.float64info).mantbits)), 64) != $.uint(0, 64)) {
+	if (($.uint64Shr(mantissa, $.pointerValue<__goscript_ftoa.floatInfo>(__goscript_ftoa.float64info).mantbits)) != 0n) {
 		return [f, ok]
 	}
-	f = mantissa
+	f = Number(mantissa)
 	if (neg) {
 		f = -f
 	}
@@ -312,13 +312,13 @@ export function atof64exact(mantissa: number, exp: number, neg: boolean): [numbe
 	return [f, ok]
 }
 
-export function atof32exact(mantissa: number, exp: number, neg: boolean): [number, boolean] {
+export function atof32exact(mantissa: bigint, exp: number, neg: boolean): [number, boolean] {
 	let f: number = 0
 	let ok: boolean = false
-	if ($.uint(($.uint64Shr(mantissa, 23)), 64) != $.uint(0, 64)) {
+	if (($.uint64Shr(mantissa, 23)) != 0n) {
 		return [f, ok]
 	}
-	f = mantissa
+	f = Number(mantissa)
 	if (neg) {
 		f = -f
 	}
@@ -350,7 +350,7 @@ export function atof32exact(mantissa: number, exp: number, neg: boolean): [numbe
 	return [f, ok]
 }
 
-export function atofHex(s: string, flt: __goscript_ftoa.floatInfo | $.VarRef<__goscript_ftoa.floatInfo> | null, mantissa: number, exp: number, neg: boolean, trunc: boolean): [number, $.GoError] {
+export function atofHex(s: string, flt: __goscript_ftoa.floatInfo | $.VarRef<__goscript_ftoa.floatInfo> | null, mantissa: bigint, exp: number, neg: boolean, trunc: boolean): [number, $.GoError] {
 	let maxExp = ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) + $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) - 2
 	let minExp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias + 1
 	exp = exp + ($.int($.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits))
@@ -361,15 +361,15 @@ export function atofHex(s: string, flt: __goscript_ftoa.floatInfo | $.VarRef<__g
 	// whether that bit or any later bit was non-zero.
 	// (If the mantissa has already lost non-zero bits, trunc is true,
 	// and we OR in a 1 below after shifting left appropriately.)
-	while (($.uint(mantissa, 64) != $.uint(0, 64)) && ($.uint(($.uint64Shr(mantissa, ($.uint64Add($.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits, 2)))), 64) == $.uint(0, 64))) {
-		mantissa = $.uint64Shl(mantissa, $.uint(1, 64))
+	while ((mantissa != 0n) && (($.uint64Shr(mantissa, ($.uint($.uint64Add($.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits, 2), 64)))) == 0n)) {
+		mantissa = $.uint64Shl(mantissa, 1n)
 		exp--
 	}
 	if (trunc) {
-		mantissa = $.uint64Or(mantissa, $.uint(1, 64))
+		mantissa = $.uint64Or(mantissa, 1n)
 	}
-	while ($.uint(($.uint64Shr(mantissa, ($.uint64Add(($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 2)))), 64) != $.uint(0, 64)) {
-		mantissa = $.uint($.uint64Or(($.uint64Shr(mantissa, 1)), ($.uint64And(mantissa, 1))), 64)
+	while (($.uint64Shr(mantissa, ($.uint($.uint64Add(($.uint($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64)), 2), 64)))) != 0n) {
+		mantissa = $.uint64Or(($.uint64Shr(mantissa, 1)), ($.uint64And(mantissa, 1)))
 		exp++
 	}
 
@@ -377,42 +377,42 @@ export function atofHex(s: string, flt: __goscript_ftoa.floatInfo | $.VarRef<__g
 	// denormalize in hopes of making it representable.
 	// (The -2 is for the rounding bits.)
 	while ((mantissa > 1) && (exp < (minExp - 2))) {
-		mantissa = $.uint($.uint64Or(($.uint64Shr(mantissa, 1)), ($.uint64And(mantissa, 1))), 64)
+		mantissa = $.uint64Or(($.uint64Shr(mantissa, 1)), ($.uint64And(mantissa, 1)))
 		exp++
 	}
 
 	// Round using two bottom bits.
-	let round = $.uint($.uint64And(mantissa, 3), 64)
-	mantissa = $.uint64Shr(mantissa, $.uint(2, 64))
-	round = $.uint64Or(round, $.uint($.uint64And(mantissa, 1), 64))
+	let round = $.uint64And(mantissa, 3)
+	mantissa = $.uint64Shr(mantissa, 2n)
+	round = $.uint64Or(round, $.uint64And(mantissa, 1))
 	exp = exp + (2)
-	if ($.uint(round, 64) == $.uint(3, 64)) {
+	if (round == 3n) {
 		mantissa++
-		if ($.uint(mantissa, 64) == $.uint(($.uint64Shl(1, ($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)))), 64)) {
-			mantissa = $.uint64Shr(mantissa, $.uint(1, 64))
+		if (mantissa == ($.uint64Shl(1, ($.uint($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64))))) {
+			mantissa = $.uint64Shr(mantissa, 1n)
 			exp++
 		}
 	}
 
-	if ($.uint(($.uint64Shr(mantissa, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 64) == $.uint(0, 64)) {
+	if (($.uint64Shr(mantissa, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)) == 0n) {
 		exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 	}
 	let err: $.GoError = null as $.GoError
 	if (exp > maxExp) {
-		mantissa = $.uint($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64)
+		mantissa = $.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)
 		exp = maxExp + 1
 		err = $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })
 	}
 
-	let bits = $.uint($.uint64And(mantissa, ($.uint64Sub(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 1))), 64)
-	bits = $.uint64Or(bits, $.uint($.uint64Shl($.uint((exp - $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) & ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1), 64), $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64))
+	let bits = $.uint64And(mantissa, ($.uint64Sub(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 1)))
+	bits = $.uint64Or(bits, $.uint64Shl($.uint64((exp - $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) & ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits))
 	if (neg) {
-		bits = $.uint64Or(bits, $.uint($.uint64Shl(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits), 64))
+		bits = $.uint64Or(bits, $.uint64Shl(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits))
 	}
 	if (flt == __goscript_ftoa.float32info) {
 		return [__goscript_deps.float32frombits($.uint($.uint(bits, 32), 32)), err]
 	}
-	return [__goscript_deps.float64frombits($.uint(bits, 64)), err]
+	return [__goscript_deps.float64frombits(bits), err]
 }
 
 export function atof32(s: string): [number, number, $.GoError] {
@@ -427,7 +427,7 @@ export function atof32(s: string): [number, number, $.GoError] {
 	}
 
 	let __goscriptTuple0: any = readFloat(s)
-	let mantissa = $.uint(__goscriptTuple0[0], 64)
+	let mantissa = __goscriptTuple0[0]
 	let exp = __goscriptTuple0[1]
 	let neg = __goscriptTuple0[2]
 	let trunc = __goscriptTuple0[3]
@@ -439,7 +439,7 @@ export function atof32(s: string): [number, number, $.GoError] {
 	}
 
 	if (hex) {
-		let [__goscriptShadow2, __goscriptShadow3] = atofHex($.sliceStringOrBytes(s, undefined, n), __goscript_ftoa.float32info, $.uint(mantissa, 64), exp, neg, trunc)
+		let [__goscriptShadow2, __goscriptShadow3] = atofHex($.sliceStringOrBytes(s, undefined, n), __goscript_ftoa.float32info, mantissa, exp, neg, trunc)
 		return [__goscriptShadow2, n, __goscriptShadow3]
 	}
 
@@ -448,13 +448,13 @@ export function atof32(s: string): [number, number, $.GoError] {
 		// the Eisel-Lemire algorithm.
 		if (!trunc) {
 			{
-				let [__goscriptShadow4, __goscriptShadow5] = atof32exact($.uint(mantissa, 64), exp, neg)
+				let [__goscriptShadow4, __goscriptShadow5] = atof32exact(mantissa, exp, neg)
 				if (__goscriptShadow5) {
 					return [__goscriptShadow4, n, null]
 				}
 			}
 		}
-		let [__goscriptShadow6, __goscriptShadow7] = __goscript_atofeisel.eiselLemire32($.uint(mantissa, 64), exp, neg)
+		let [__goscriptShadow6, __goscriptShadow7] = __goscript_atofeisel.eiselLemire32(mantissa, exp, neg)
 		if (__goscriptShadow7) {
 			if (!trunc) {
 				return [__goscriptShadow6, n, null]
@@ -462,7 +462,7 @@ export function atof32(s: string): [number, number, $.GoError] {
 			// Even if the mantissa was truncated, we may
 			// have found the correct result. Confirm by
 			// converting the upper mantissa bound.
-			let [fUp, __goscriptShadow8] = __goscript_atofeisel.eiselLemire32($.uint($.uint64Add(mantissa, 1), 64), exp, neg)
+			let [fUp, __goscriptShadow8] = __goscript_atofeisel.eiselLemire32($.uint64Add(mantissa, 1), exp, neg)
 			if (__goscriptShadow8 && (__goscriptShadow6 == fUp)) {
 				return [__goscriptShadow6, n, null]
 			}
@@ -474,9 +474,7 @@ export function atof32(s: string): [number, number, $.GoError] {
 	if (!d.value.set($.sliceStringOrBytes(s, undefined, n))) {
 		return [0, n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
-	let __goscriptTuple1: any = d.value.floatBits(__goscript_ftoa.float32info)
-	let b = $.uint(__goscriptTuple1[0], 64)
-	let ovf = __goscriptTuple1[1]
+	let [b, ovf] = d.value.floatBits(__goscript_ftoa.float32info)
 	f = __goscript_deps.float32frombits($.uint($.uint(b, 32), 32))
 	if (ovf) {
 		err = $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })
@@ -495,20 +493,20 @@ export function atof64(s: string): [number, number, $.GoError] {
 		}
 	}
 
-	let __goscriptTuple2: any = readFloat(s)
-	let mantissa = $.uint(__goscriptTuple2[0], 64)
-	let exp = __goscriptTuple2[1]
-	let neg = __goscriptTuple2[2]
-	let trunc = __goscriptTuple2[3]
-	let hex = __goscriptTuple2[4]
-	n = __goscriptTuple2[5]
-	let ok = __goscriptTuple2[6]
+	let __goscriptTuple1: any = readFloat(s)
+	let mantissa = __goscriptTuple1[0]
+	let exp = __goscriptTuple1[1]
+	let neg = __goscriptTuple1[2]
+	let trunc = __goscriptTuple1[3]
+	let hex = __goscriptTuple1[4]
+	n = __goscriptTuple1[5]
+	let ok = __goscriptTuple1[6]
 	if (!ok) {
 		return [0, n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
 
 	if (hex) {
-		let [__goscriptShadow10, __goscriptShadow11] = atofHex($.sliceStringOrBytes(s, undefined, n), __goscript_ftoa.float64info, $.uint(mantissa, 64), exp, neg, trunc)
+		let [__goscriptShadow10, __goscriptShadow11] = atofHex($.sliceStringOrBytes(s, undefined, n), __goscript_ftoa.float64info, mantissa, exp, neg, trunc)
 		return [__goscriptShadow10, n, __goscriptShadow11]
 	}
 
@@ -517,13 +515,13 @@ export function atof64(s: string): [number, number, $.GoError] {
 		// the Eisel-Lemire algorithm.
 		if (!trunc) {
 			{
-				let [__goscriptShadow12, __goscriptShadow13] = atof64exact($.uint(mantissa, 64), exp, neg)
+				let [__goscriptShadow12, __goscriptShadow13] = atof64exact(mantissa, exp, neg)
 				if (__goscriptShadow13) {
 					return [__goscriptShadow12, n, null]
 				}
 			}
 		}
-		let [__goscriptShadow14, __goscriptShadow15] = __goscript_atofeisel.eiselLemire64($.uint(mantissa, 64), exp, neg)
+		let [__goscriptShadow14, __goscriptShadow15] = __goscript_atofeisel.eiselLemire64(mantissa, exp, neg)
 		if (__goscriptShadow15) {
 			if (!trunc) {
 				return [__goscriptShadow14, n, null]
@@ -531,7 +529,7 @@ export function atof64(s: string): [number, number, $.GoError] {
 			// Even if the mantissa was truncated, we may
 			// have found the correct result. Confirm by
 			// converting the upper mantissa bound.
-			let [fUp, __goscriptShadow16] = __goscript_atofeisel.eiselLemire64($.uint($.uint64Add(mantissa, 1), 64), exp, neg)
+			let [fUp, __goscriptShadow16] = __goscript_atofeisel.eiselLemire64($.uint64Add(mantissa, 1), exp, neg)
 			if (__goscriptShadow16 && (__goscriptShadow14 == fUp)) {
 				return [__goscriptShadow14, n, null]
 			}
@@ -543,10 +541,8 @@ export function atof64(s: string): [number, number, $.GoError] {
 	if (!d.value.set($.sliceStringOrBytes(s, undefined, n))) {
 		return [0, n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
-	let __goscriptTuple3: any = d.value.floatBits(__goscript_ftoa.float64info)
-	let b = $.uint(__goscriptTuple3[0], 64)
-	let ovf = __goscriptTuple3[1]
-	f = __goscript_deps.float64frombits($.uint(b, 64))
+	let [b, ovf] = d.value.floatBits(__goscript_ftoa.float64info)
+	f = __goscript_deps.float64frombits(b)
 	if (ovf) {
 		err = $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": __goscript_atoi.Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })
 	}

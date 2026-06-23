@@ -19,14 +19,14 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ParseInt
 	let __goscriptTuple0: any = strconv.ParseInt("456", 10, 64)
-	let i64 = $.int(__goscriptTuple0[0])
+	let i64 = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	if (err == null) {
-		$.println("ParseInt result:", $.int(i64))
+		$.println("ParseInt result:", i64)
 	}
 
 	// Test FormatInt
-	let formatted = strconv.FormatInt($.int(789), 10)
+	let formatted = strconv.FormatInt(789n, 10)
 	$.println("FormatInt result:", formatted)
 
 	// Test ParseFloat

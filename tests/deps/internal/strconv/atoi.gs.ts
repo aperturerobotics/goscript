@@ -50,11 +50,11 @@ export function Error_Error(e: Error): string {
 	return "unknown error"
 }
 
-export function ParseUint(s: string, base: number, bitSize: number): [number, $.GoError] {
+export function ParseUint(s: string, base: number, bitSize: number): [bigint, $.GoError] {
 	const fnParseUint: string = "ParseUint"
 
 	if ($.stringEqual(s, "")) {
-		return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+		return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
 
 	let base0 = base == 0
@@ -100,7 +100,7 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 		}
 		default:
 		{
-			return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(3, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+			return [0n, $.namedValueInterfaceValue<$.GoError>(3, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 			break
 		}
 	}
@@ -109,35 +109,35 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 		bitSize = 64
 	} else {
 		if ((bitSize < 0) || (bitSize > 64)) {
-			return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(4, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+			return [0n, $.namedValueInterfaceValue<$.GoError>(4, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 		}
 	}
 
 	// Cutoff is the smallest number such that cutoff*base > maxUint64.
 	// Use compile-time constants for common cases.
-	let cutoff: number = 0
+	let cutoff: bigint = 0n
 	switch (base) {
 		case 10:
 		{
-			cutoff = $.uint("1844674407370955162", 64)
+			cutoff = 1844674407370955162n
 			break
 		}
 		case 16:
 		{
-			cutoff = $.uint("1152921504606846976", 64)
+			cutoff = 1152921504606846976n
 			break
 		}
 		default:
 		{
-			cutoff = $.uint($.uint64Add(($.uint64Div(18446744073709551615, $.uint(base, 64))), 1), 64)
+			cutoff = $.uint64Add(($.uint64Div(18446744073709551615, $.uint64(base))), 1)
 			break
 		}
 	}
 
-	let maxVal = $.uint($.uint64Sub(($.uint64Shl($.uint(1, 64), $.uint(bitSize, 64))), 1), 64)
+	let maxVal = $.uint64Sub(($.uint64Shl(1n, $.uint(bitSize, 64))), 1)
 
 	let underscores = false
-	let n: number = 0
+	let n: bigint = 0n
 	for (let __goscriptRangeTarget0 = $.stringToBytes(s), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let c = __goscriptRangeTarget0![__rangeIndex]
 		let d: number = 0
@@ -160,43 +160,43 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 			}
 			default:
 			{
-				return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+				return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 				break
 			}
 		}
 
 		if (d >= $.uint(base, 8)) {
-			return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+			return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 		}
 
 		if (n >= cutoff) {
 			// n*base overflows
-			return [$.uint(maxVal, 64), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+			return [maxVal, $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 		}
-		n = $.uint64Mul(n, $.uint($.uint(base, 64), 64))
+		n = $.uint64Mul(n, $.uint64(base))
 
-		let n1 = $.uint($.uint64Add(n, $.uint(d, 64)), 64)
+		let n1 = $.uint64Add(n, $.uint64(d))
 		if ((n1 < n) || (n1 > maxVal)) {
 			// n+d overflows
-			return [$.uint(maxVal, 64), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+			return [maxVal, $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 		}
-		n = $.uint(n1, 64)
+		n = n1
 	}
 
 	if (underscores && !underscoreOK(s0)) {
-		return [$.uint(0, 64), $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+		return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
 
-	return [$.uint(n, 64), null]
+	return [n, null]
 }
 
-export function ParseInt(s: string, base: number, bitSize: number): [number, $.GoError] {
-	let i: number = 0
+export function ParseInt(s: string, base: number, bitSize: number): [bigint, $.GoError] {
+	let i: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	const fnParseInt: string = "ParseInt"
 
 	if ($.stringEqual(s, "")) {
-		return [$.int(0), $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+		return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
 
 	// Pick off leading sign.
@@ -216,30 +216,30 @@ export function ParseInt(s: string, base: number, bitSize: number): [number, $.G
 	}
 
 	// Convert unsigned and check range.
-	let un: number = 0
+	let un: bigint = 0n
 	let __goscriptTuple0: any = ParseUint(s, base, bitSize)
-	un = $.uint(__goscriptTuple0[0], 64)
+	un = __goscriptTuple0[0]
 	err = __goscriptTuple0[1]
 	if ((err != null) && (!$.comparableEqual(err, 1))) {
-		return [$.int(0), err]
+		return [0n, err]
 	}
 
 	if (bitSize == 0) {
 		bitSize = 64
 	}
 
-	let cutoff = $.uint($.uint($.uint64Shl(1, $.uint(bitSize - 1, 64)), 64), 64)
+	let cutoff = $.uint64($.uint64Shl(1, $.uint(bitSize - 1, 64)))
 	if (!neg && (un >= cutoff)) {
-		return [$.int($.int($.uint64Sub(cutoff, 1))), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+		return [$.int64($.uint64Sub(cutoff, 1)), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
 	if (neg && (un > cutoff)) {
-		return [$.int(-$.int(cutoff)), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
+		return [-$.int64(cutoff), $.namedValueInterfaceValue<$.GoError>(1, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 	}
-	let n = $.int($.int(un))
+	let n = $.int64(un)
 	if (neg) {
-		n = $.int(-n)
+		n = -n
 	}
-	return [$.int(n), null]
+	return [n, null]
 }
 
 export function Atoi(s: string): [number, $.GoError] {
@@ -272,9 +272,7 @@ export function Atoi(s: string): [number, $.GoError] {
 	}
 
 	// Slow path for invalid, big, or underscored integers.
-	let __goscriptTuple1: any = ParseInt(s, 10, 0)
-	let i64 = $.int(__goscriptTuple1[0])
-	let err = __goscriptTuple1[1]
+	let [i64, err] = ParseInt(s, 10, 0)
 	return [$.int(i64), err]
 }
 

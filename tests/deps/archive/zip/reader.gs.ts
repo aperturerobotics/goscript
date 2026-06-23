@@ -91,10 +91,10 @@ export class Reader {
 
 	// Some JAR files are zip files with a prefix that is a bash script.
 	// The baseOffset field is the start of the zip file proper.
-	public get baseOffset(): number {
+	public get baseOffset(): bigint {
 		return this._fields.baseOffset.value
 	}
-	public set baseOffset(value: number) {
+	public set baseOffset(value: bigint) {
 		this._fields.baseOffset.value = value
 	}
 
@@ -119,18 +119,18 @@ export class Reader {
 		File: $.VarRef<$.Slice<File | $.VarRef<File> | null>>
 		Comment: $.VarRef<string>
 		decompressors: $.VarRef<globalThis.Map<number, __goscript_register.Decompressor | null> | null>
-		baseOffset: $.VarRef<number>
+		baseOffset: $.VarRef<bigint>
 		fileListOnce: $.VarRef<sync.Once>
 		fileList: $.VarRef<$.Slice<fileListEntry>>
 	}
 
-	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: globalThis.Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: number, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
+	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: globalThis.Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: bigint, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
 		this._fields = {
 			r: $.varRef(init?.r ?? (null as unknown as io.ReaderAt | null)),
 			File: $.varRef(init?.File ?? (null as unknown as $.Slice<File | $.VarRef<File> | null>)),
 			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
 			decompressors: $.varRef(init?.decompressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Decompressor | null> | null)),
-			baseOffset: $.varRef(init?.baseOffset ?? (0 as unknown as number)),
+			baseOffset: $.varRef(init?.baseOffset ?? (0n as unknown as bigint)),
 			fileListOnce: $.varRef(init?.fileListOnce ? $.markAsStructValue($.cloneStructValue(init.fileListOnce)) : $.markAsStructValue(new sync.Once())),
 			fileList: $.varRef(init?.fileList ?? (null as unknown as $.Slice<fileListEntry>))
 		}
@@ -188,30 +188,30 @@ export class Reader {
 		return dcomp
 	}
 
-	public async init(rdr: io.ReaderAt | null, size: number): globalThis.Promise<$.GoError> {
+	public async init(rdr: io.ReaderAt | null, size: bigint): globalThis.Promise<$.GoError> {
 		let r: Reader | $.VarRef<Reader> | null = this
-		let __goscriptTuple0: any = await readDirectoryEnd(rdr, $.int(size))
+		let __goscriptTuple0: any = await readDirectoryEnd(rdr, size)
 		let end: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null = __goscriptTuple0[0]
-		let baseOffset = $.int(__goscriptTuple0[1])
+		let baseOffset = __goscriptTuple0[1]
 		let err = __goscriptTuple0[2]
 		if (err != null) {
 			return err
 		}
 		$.pointerValue<Reader>(r).r = rdr
-		$.pointerValue<Reader>(r).baseOffset = $.int(baseOffset)
+		$.pointerValue<Reader>(r).baseOffset = baseOffset
 		// Since the number of directory records is not validated, it is not
 		// safe to preallocate r.File without first checking that the specified
 		// number of files is reasonable, since a malformed archive may
 		// indicate it contains up to 1 << 128 - 1 files. Since each file has a
 		// header which will be _at least_ 30 bytes we can safely preallocate
 		// if (data size / 30) >= end.directoryRecords.
-		if (($.pointerValue<__goscript_struct.directoryEnd>(end).directorySize < $.uint(size, 64)) && (($.uint64Div(($.uint64Sub($.uint(size, 64), $.pointerValue<__goscript_struct.directoryEnd>(end).directorySize)), 30)) >= $.pointerValue<__goscript_struct.directoryEnd>(end).directoryRecords)) {
-			$.pointerValue<Reader>(r).File = $.makeSlice<File | $.VarRef<File> | null>(0, $.pointerValue<__goscript_struct.directoryEnd>(end).directoryRecords)
+		if (($.pointerValue<__goscript_struct.directoryEnd>(end).directorySize < $.uint64(size)) && (($.uint64Div(($.uint64Sub($.uint64(size), $.pointerValue<__goscript_struct.directoryEnd>(end).directorySize)), 30)) >= $.pointerValue<__goscript_struct.directoryEnd>(end).directoryRecords)) {
+			$.pointerValue<Reader>(r).File = $.makeSlice<File | $.VarRef<File> | null>(0, Number($.pointerValue<__goscript_struct.directoryEnd>(end).directoryRecords))
 		}
 		$.pointerValue<Reader>(r).Comment = $.pointerValue<__goscript_struct.directoryEnd>(end).comment
-		let rs: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil(rdr)!, $.int(0), $.int(size))
+		let rs: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil(rdr)!, 0n, size)
 		{
-			let __goscriptTuple1: any = io.SectionReader.prototype.Seek.call($.pointerValue<io.SectionReader>(rs), $.int($.int64Add($.pointerValue<Reader>(r).baseOffset, $.int($.pointerValue<__goscript_struct.directoryEnd>(end).directoryOffset))), io.SeekStart)
+			let __goscriptTuple1: any = io.SectionReader.prototype.Seek.call($.pointerValue<io.SectionReader>(rs), $.int64Add($.pointerValue<Reader>(r).baseOffset, $.int64($.pointerValue<__goscript_struct.directoryEnd>(end).directoryOffset)), io.SeekStart)
 			err = __goscriptTuple1[1]
 			if (err != null) {
 				return err
@@ -232,7 +232,7 @@ export class Reader {
 			if (err != null) {
 				return err
 			}
-			$.pointerValue<File>(f).headerOffset = $.int64Add($.pointerValue<File>(f).headerOffset, $.int($.pointerValue<Reader>(r).baseOffset))
+			$.pointerValue<File>(f).headerOffset = $.int64Add($.pointerValue<File>(f).headerOffset, $.pointerValue<Reader>(r).baseOffset)
 			$.pointerValue<Reader>(r).File = $.append($.pointerValue<Reader>(r).File, f)
 		}
 		if ($.uint($.uint($.len($.pointerValue<Reader>(r).File), 16), 16) != $.uint($.uint($.pointerValue<__goscript_struct.directoryEnd>(end).directoryRecords, 16), 16)) {
@@ -501,10 +501,10 @@ export class File {
 		this._fields.zipr.value = value
 	}
 
-	public get headerOffset(): number {
+	public get headerOffset(): bigint {
 		return this._fields.headerOffset.value
 	}
-	public set headerOffset(value: number) {
+	public set headerOffset(value: bigint) {
 		this._fields.headerOffset.value = value
 	}
 
@@ -519,16 +519,16 @@ export class File {
 		FileHeader: $.VarRef<__goscript_struct.FileHeader>
 		zip: $.VarRef<Reader | $.VarRef<Reader> | null>
 		zipr: $.VarRef<io.ReaderAt | null>
-		headerOffset: $.VarRef<number>
+		headerOffset: $.VarRef<bigint>
 		zip64: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader, zip?: Reader | $.VarRef<Reader> | null, zipr?: io.ReaderAt | null, headerOffset?: number, zip64?: boolean}>) {
+	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader, zip?: Reader | $.VarRef<Reader> | null, zipr?: io.ReaderAt | null, headerOffset?: bigint, zip64?: boolean}>) {
 		this._fields = {
 			FileHeader: $.varRef(init?.FileHeader ? $.markAsStructValue($.cloneStructValue(init.FileHeader)) : $.markAsStructValue(new __goscript_struct.FileHeader())),
 			zip: $.varRef(init?.zip ?? (null as unknown as Reader | $.VarRef<Reader> | null)),
 			zipr: $.varRef(init?.zipr ?? (null as unknown as io.ReaderAt | null)),
-			headerOffset: $.varRef(init?.headerOffset ?? (0 as unknown as number)),
+			headerOffset: $.varRef(init?.headerOffset ?? (0n as unknown as bigint)),
 			zip64: $.varRef(init?.zip64 ?? (false as unknown as boolean))
 		}
 	}
@@ -545,24 +545,22 @@ export class File {
 		return $.markAsStructValue(cloned)
 	}
 
-	public async DataOffset(): globalThis.Promise<[number, $.GoError]> {
+	public async DataOffset(): globalThis.Promise<[bigint, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
-		let offset: number = 0
+		let offset: bigint = 0n
 		let err: $.GoError = null as $.GoError
 		let __goscriptTuple2: any = await File.prototype.findBodyOffset.call(f)
-		let bodyOffset = $.int(__goscriptTuple2[0])
+		let bodyOffset = __goscriptTuple2[0]
 		err = __goscriptTuple2[1]
 		if (err != null) {
 			return [offset, err]
 		}
-		return [$.int($.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset)), null]
+		return [$.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset), null]
 	}
 
 	public async Open(): globalThis.Promise<[io.ReadCloser | null, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
-		let __goscriptTuple3: any = await File.prototype.findBodyOffset.call(f)
-		let bodyOffset = $.int(__goscriptTuple3[0])
-		let err = __goscriptTuple3[1]
+		let [bodyOffset, err] = await File.prototype.findBodyOffset.call(f)
 		if (err != null) {
 			return [null, err]
 		}
@@ -576,14 +574,14 @@ export class File {
 			// 0. We still want to fail when a directory has associated uncompressed
 			// data, but we are tolerant of cases where the uncompressed size is
 			// zero but compressed size is not.
-			if ($.uint($.pointerValue<File>(f).FileHeader.UncompressedSize64, 64) != $.uint(0, 64)) {
+			if ($.pointerValue<File>(f).FileHeader.UncompressedSize64 != 0n) {
 				return [$.interfaceValue<io.ReadCloser | null>(new dirReader({err: ErrFormat}), "*zip.dirReader"), null]
 			} else {
 				return [$.interfaceValue<io.ReadCloser | null>(new dirReader({err: io.EOF}), "*zip.dirReader"), null]
 			}
 		}
-		let size = $.int($.int($.pointerValue<File>(f).FileHeader.CompressedSize64))
-		let r: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int($.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset)), $.int(size))
+		let size = $.int64($.pointerValue<File>(f).FileHeader.CompressedSize64)
+		let r: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset), size)
 		let dcomp = await Reader.prototype.decompressor.call($.pointerValue<File>(f).zip, $.uint($.pointerValue<File>(f).FileHeader.Method, 16))
 		if (dcomp == null) {
 			return [null, ErrAlgorithm]
@@ -591,7 +589,7 @@ export class File {
 		let rc: io.ReadCloser | null = await dcomp!($.interfaceValue<io.Reader | null>(r, "*io.SectionReader"))
 		let desr: io.Reader | null = null as io.Reader | null
 		if ($.pointerValue<File>(f).FileHeader.hasDataDescriptor()) {
-			desr = $.interfaceValue<io.Reader | null>(io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int($.int64Add(($.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset)), size)), $.int(16)), "*io.SectionReader")
+			desr = $.interfaceValue<io.Reader | null>(io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int64Add(($.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset)), size), 16n), "*io.SectionReader")
 		}
 		rc = $.interfaceValue<io.ReadCloser | null>((await (async () => { const __goscriptLiteralField1 = await crc32.NewIEEE(); return new checksumReader({rc: rc, hash: __goscriptLiteralField1, f: f, desr: desr}) })()), "*zip.checksumReader")
 		return [rc, null]
@@ -599,36 +597,34 @@ export class File {
 
 	public async OpenRaw(): globalThis.Promise<[io.Reader | null, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
-		let __goscriptTuple4: any = await File.prototype.findBodyOffset.call(f)
-		let bodyOffset = $.int(__goscriptTuple4[0])
-		let err = __goscriptTuple4[1]
+		let [bodyOffset, err] = await File.prototype.findBodyOffset.call(f)
 		if (err != null) {
 			return [null, err]
 		}
-		let r: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int($.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset)), $.int($.int($.pointerValue<File>(f).FileHeader.CompressedSize64)))
+		let r: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil($.pointerValue<File>(f).zipr)!, $.int64Add($.pointerValue<File>(f).headerOffset, bodyOffset), $.int64($.pointerValue<File>(f).FileHeader.CompressedSize64))
 		return [$.interfaceValue<io.Reader | null>(r, "*io.SectionReader"), null]
 	}
 
-	public async findBodyOffset(): globalThis.Promise<[number, $.GoError]> {
+	public async findBodyOffset(): globalThis.Promise<[bigint, $.GoError]> {
 		const f: File | $.VarRef<File> | null = this
 		let buf: Uint8Array = new Uint8Array(30)
 		{
-			let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>($.pointerValue<File>(f).zipr).ReadAt($.goSlice(buf, undefined, undefined), $.int($.pointerValue<File>(f).headerOffset))
+			let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>($.pointerValue<File>(f).zipr).ReadAt($.goSlice(buf, undefined, undefined), $.pointerValue<File>(f).headerOffset)
 			if (err != null) {
-				return [$.int(0), err]
+				return [0n, err]
 			}
 		}
 		let b: $.VarRef<readBuf> = $.varRef((($.goSlice(buf, undefined, undefined) as readBuf) as readBuf))
 		{
 			let sig = $.uint(readBuf_uint32(b), 32)
 			if ($.uint(sig, 32) != $.uint(67324752, 32)) {
-				return [$.int(0), ErrFormat]
+				return [0n, ErrFormat]
 			}
 		}
 		b.value = ($.goSlice(b.value, 22, undefined) as readBuf)
 		let filenameLen = $.int(readBuf_uint16(b))
 		let extraLen = $.int(readBuf_uint16(b))
-		return [$.int($.int((30 + filenameLen) + extraLen)), null]
+		return [$.int64((30 + filenameLen) + extraLen), null]
 	}
 
 	public FileInfo(): any {
@@ -728,10 +724,10 @@ export class checksumReader {
 		this._fields.hash.value = value
 	}
 
-	public get nread(): number {
+	public get nread(): bigint {
 		return this._fields.nread.value
 	}
-	public set nread(value: number) {
+	public set nread(value: bigint) {
 		this._fields.nread.value = value
 	}
 
@@ -759,17 +755,17 @@ export class checksumReader {
 	public _fields: {
 		rc: $.VarRef<io.ReadCloser | null>
 		hash: $.VarRef<hash2.Hash32 | null>
-		nread: $.VarRef<number>
+		nread: $.VarRef<bigint>
 		f: $.VarRef<File | $.VarRef<File> | null>
 		desr: $.VarRef<io.Reader | null>
 		err: $.VarRef<$.GoError>
 	}
 
-	constructor(init?: Partial<{rc?: io.ReadCloser | null, hash?: hash2.Hash32 | null, nread?: number, f?: File | $.VarRef<File> | null, desr?: io.Reader | null, err?: $.GoError}>) {
+	constructor(init?: Partial<{rc?: io.ReadCloser | null, hash?: hash2.Hash32 | null, nread?: bigint, f?: File | $.VarRef<File> | null, desr?: io.Reader | null, err?: $.GoError}>) {
 		this._fields = {
 			rc: $.varRef(init?.rc ?? (null as unknown as io.ReadCloser | null)),
 			hash: $.varRef(init?.hash ?? (null as unknown as hash2.Hash32 | null)),
-			nread: $.varRef(init?.nread ?? (0 as unknown as number)),
+			nread: $.varRef(init?.nread ?? (0n as unknown as bigint)),
 			f: $.varRef(init?.f ?? (null as unknown as File | $.VarRef<File> | null)),
 			desr: $.varRef(init?.desr ?? (null as unknown as io.Reader | null)),
 			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
@@ -801,11 +797,11 @@ export class checksumReader {
 		if ($.pointerValue<checksumReader>(r).err != null) {
 			return [0, $.pointerValue<checksumReader>(r).err]
 		}
-		let __goscriptTuple7: any = await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<checksumReader>(r).rc).Read(b)
-		n = __goscriptTuple7[0]
-		err = __goscriptTuple7[1]
+		let __goscriptTuple5: any = await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<checksumReader>(r).rc).Read(b)
+		n = __goscriptTuple5[0]
+		err = __goscriptTuple5[1]
 		await $.pointerValue<Exclude<hash2.Hash32, null>>($.pointerValue<checksumReader>(r).hash).Write($.goSlice(b, undefined, n))
-		$.pointerValue<checksumReader>(r).nread = $.uint64Add($.pointerValue<checksumReader>(r).nread, $.uint($.uint(n, 64), 64))
+		$.pointerValue<checksumReader>(r).nread = $.uint64Add($.pointerValue<checksumReader>(r).nread, $.uint64(n))
 		if ($.pointerValue<checksumReader>(r).nread > $.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.UncompressedSize64) {
 			return [0, ErrFormat]
 		}
@@ -813,7 +809,7 @@ export class checksumReader {
 			return [n, err]
 		}
 		if ($.comparableEqual(err, io.EOF)) {
-			if ($.uint($.pointerValue<checksumReader>(r).nread, 64) != $.uint($.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.UncompressedSize64, 64)) {
+			if ($.pointerValue<checksumReader>(r).nread != $.pointerValue<File>($.pointerValue<checksumReader>(r).f).FileHeader.UncompressedSize64) {
 				return [0, io.ErrUnexpectedEOF]
 			}
 			if ($.pointerValue<checksumReader>(r).desr != null) {
@@ -943,9 +939,9 @@ export class fileListEntry {
 		return elem
 	}
 
-	public Size(): number {
+	public Size(): bigint {
 		const f: fileListEntry | $.VarRef<fileListEntry> | null = this
-		return $.int(0)
+		return 0n
 	}
 
 	public String(): string {
@@ -1114,22 +1110,22 @@ export function __goscript_set_ErrInsecurePath(__goscriptValue: $.GoError): void
 }
 
 export async function OpenReader(name: string): globalThis.Promise<[ReadCloser | $.VarRef<ReadCloser> | null, $.GoError]> {
-	let __goscriptTuple5: any = os.Open(name)
-	let f: os.File | $.VarRef<os.File> | null = __goscriptTuple5[0]
-	let err = __goscriptTuple5[1]
+	let __goscriptTuple3: any = os.Open(name)
+	let f: os.File | $.VarRef<os.File> | null = __goscriptTuple3[0]
+	let err = __goscriptTuple3[1]
 	if (err != null) {
 		return [null, err]
 	}
-	let __goscriptTuple6: any = os.File.prototype.Stat.call($.pointerValue<os.File>(f))
-	let fi = __goscriptTuple6[0]
-	err = __goscriptTuple6[1]
+	let __goscriptTuple4: any = os.File.prototype.Stat.call($.pointerValue<os.File>(f))
+	let fi = __goscriptTuple4[0]
+	err = __goscriptTuple4[1]
 	if (err != null) {
 		os.File.prototype.Close.call($.pointerValue<os.File>(f))
 		return [null, err]
 	}
 	let r: ReadCloser | $.VarRef<ReadCloser> | null = new ReadCloser()
 	{
-		err = await $.pointerValue<ReadCloser>(r).Reader.init($.interfaceValue<io.ReaderAt | null>(f, "*os.File"), $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size()))
+		err = await $.pointerValue<ReadCloser>(r).Reader.init($.interfaceValue<io.ReaderAt | null>(f, "*os.File"), await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size())
 		if ((err != null) && (!$.comparableEqual(err, ErrInsecurePath))) {
 			os.File.prototype.Close.call($.pointerValue<os.File>(f))
 			return [null, err]
@@ -1139,14 +1135,14 @@ export async function OpenReader(name: string): globalThis.Promise<[ReadCloser |
 	return [r, err]
 }
 
-export async function NewReader(r: io.ReaderAt | null, size: number): globalThis.Promise<[Reader | $.VarRef<Reader> | null, $.GoError]> {
+export async function NewReader(r: io.ReaderAt | null, size: bigint): globalThis.Promise<[Reader | $.VarRef<Reader> | null, $.GoError]> {
 	if (size < 0) {
 		return [null, errors.New("zip: size cannot be negative")]
 	}
 	let zr: Reader | $.VarRef<Reader> | null = new Reader()
 	let err: $.GoError = null as $.GoError
 	{
-		err = await Reader.prototype.init.call(zr, r, $.int(size))
+		err = await Reader.prototype.init.call(zr, r, size)
 		if ((err != null) && (!$.comparableEqual(err, ErrInsecurePath))) {
 			return [null, err]
 		}
@@ -1178,14 +1174,14 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 	$.pointerValue<File>(f).FileHeader.CRC32 = $.uint(readBuf_uint32(b), 32)
 	$.pointerValue<File>(f).FileHeader.CompressedSize = $.uint(readBuf_uint32(b), 32)
 	$.pointerValue<File>(f).FileHeader.UncompressedSize = $.uint(readBuf_uint32(b), 32)
-	$.pointerValue<File>(f).FileHeader.CompressedSize64 = $.uint($.uint($.pointerValue<File>(f).FileHeader.CompressedSize, 64), 64)
-	$.pointerValue<File>(f).FileHeader.UncompressedSize64 = $.uint($.uint($.pointerValue<File>(f).FileHeader.UncompressedSize, 64), 64)
+	$.pointerValue<File>(f).FileHeader.CompressedSize64 = $.uint64($.pointerValue<File>(f).FileHeader.CompressedSize)
+	$.pointerValue<File>(f).FileHeader.UncompressedSize64 = $.uint64($.pointerValue<File>(f).FileHeader.UncompressedSize)
 	let filenameLen = $.int(readBuf_uint16(b))
 	let extraLen = $.int(readBuf_uint16(b))
 	let commentLen = $.int(readBuf_uint16(b))
 	b.value = ($.goSlice(b.value, 4, undefined) as readBuf)
 	$.pointerValue<File>(f).FileHeader.ExternalAttrs = $.uint(readBuf_uint32(b), 32)
-	$.pointerValue<File>(f).headerOffset = $.int($.int(readBuf_uint32(b)))
+	$.pointerValue<File>(f).headerOffset = $.int64(readBuf_uint32(b))
 	let d: $.Slice<number> = $.makeSlice<number>((filenameLen + extraLen) + commentLen, undefined, "byte")
 	{
 		let [, err] = await io.ReadFull($.pointerValueOrNil(r)!, d)
@@ -1220,7 +1216,7 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 
 	let needUSize = $.uint($.pointerValue<File>(f).FileHeader.UncompressedSize, 32) == $.uint($.uint(~$.uint(0, 32), 32), 32)
 	let needCSize = $.uint($.pointerValue<File>(f).FileHeader.CompressedSize, 32) == $.uint($.uint(~$.uint(0, 32), 32), 32)
-	let needHeaderOffset = $.int($.pointerValue<File>(f).headerOffset) == $.int($.int($.uint(~$.uint(0, 32), 32)))
+	let needHeaderOffset = $.pointerValue<File>(f).headerOffset == 4294967295n
 
 	// Best effort to find what we need.
 	// Other zip authors might not even follow the basic format,
@@ -1248,21 +1244,21 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 					if ($.len((fieldBuf.value as readBuf)) < 8) {
 						return ErrFormat
 					}
-					$.pointerValue<File>(f).FileHeader.UncompressedSize64 = $.uint(readBuf_uint64(fieldBuf), 64)
+					$.pointerValue<File>(f).FileHeader.UncompressedSize64 = readBuf_uint64(fieldBuf)
 				}
 				if (needCSize) {
 					needCSize = false
 					if ($.len((fieldBuf.value as readBuf)) < 8) {
 						return ErrFormat
 					}
-					$.pointerValue<File>(f).FileHeader.CompressedSize64 = $.uint(readBuf_uint64(fieldBuf), 64)
+					$.pointerValue<File>(f).FileHeader.CompressedSize64 = readBuf_uint64(fieldBuf)
 				}
 				if (needHeaderOffset) {
 					needHeaderOffset = false
 					if ($.len((fieldBuf.value as readBuf)) < 8) {
 						return ErrFormat
 					}
-					$.pointerValue<File>(f).headerOffset = $.int($.int(readBuf_uint64(fieldBuf)))
+					$.pointerValue<File>(f).headerOffset = $.int64(readBuf_uint64(fieldBuf))
 				}
 				break
 			}
@@ -1284,11 +1280,11 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 					}
 
 					const ticksPerSecond: number = 10000000
-					let ts = $.int($.int(readBuf_uint64(attrBuf)))
-					let secs = $.int($.int64Div(ts, 10000000))
-					let nsecs = $.int($.int64Mul(($.int64Div(1e9, 10000000)), ($.int64Mod(ts, 10000000))))
+					let ts = $.int64(readBuf_uint64(attrBuf))
+					let secs = $.int64Div(ts, 10000000)
+					let nsecs = $.int64Mul(($.int64Div(1e9, 10000000)), ($.int64Mod(ts, 10000000)))
 					let epoch = $.markAsStructValue($.cloneStructValue(time.Date(1601, time.January, 1, 0, 0, 0, 0, time.UTC)))
-					modified = $.markAsStructValue($.cloneStructValue(time.Unix($.int($.int64Add($.markAsStructValue($.cloneStructValue(epoch)).Unix(), secs)), $.int(nsecs))))
+					modified = $.markAsStructValue($.cloneStructValue(time.Unix($.int64Add($.markAsStructValue($.cloneStructValue(epoch)).Unix(), secs), nsecs)))
 				}
 				break
 			}
@@ -1299,8 +1295,8 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 					continue parseExtras
 				}
 				readBuf_uint32(fieldBuf)
-				let ts = $.int($.int(readBuf_uint32(fieldBuf)))
-				modified = $.markAsStructValue($.cloneStructValue(time.Unix($.int(ts), $.int(0))))
+				let ts = $.int64(readBuf_uint32(fieldBuf))
+				modified = $.markAsStructValue($.cloneStructValue(time.Unix(ts, 0n)))
 				break
 			}
 			case 21589:
@@ -1308,8 +1304,8 @@ export async function readDirectoryHeader(f: File | $.VarRef<File> | null, r: io
 				if (($.len((fieldBuf.value as readBuf)) < 5) || ($.uint((readBuf_uint8(fieldBuf) & 1), 8) == $.uint(0, 8))) {
 					continue parseExtras
 				}
-				let ts = $.int($.int(readBuf_uint32(fieldBuf)))
-				modified = $.markAsStructValue($.cloneStructValue(time.Unix($.int(ts), $.int(0))))
+				let ts = $.int64(readBuf_uint32(fieldBuf))
+				modified = $.markAsStructValue($.cloneStructValue(time.Unix(ts, 0n)))
 				break
 			}
 		}
@@ -1395,73 +1391,71 @@ export async function readDataDescriptor(r: io.Reader | null, f: File | $.VarRef
 	return null
 }
 
-export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): globalThis.Promise<[__goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null, number, $.GoError]> {
+export async function readDirectoryEnd(r: io.ReaderAt | null, size: bigint): globalThis.Promise<[__goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null, bigint, $.GoError]> {
 	let dir: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null = null as __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null
-	let baseOffset: number = 0
+	let baseOffset: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	// look for directoryEndSignature in the last 1k, then in the last 65k
 	let buf: $.Slice<number> = null as $.Slice<number>
-	let directoryEndOffset: number = 0
-	for (let __goscriptRangeTarget2 = $.arrayToSlice<number>([$.int(1024), $.int($.int64Mul(65, 1024))]), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
+	let directoryEndOffset: bigint = 0n
+	for (let __goscriptRangeTarget2 = $.arrayToSlice<bigint>([1024n, 66560n]), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let bLen = __goscriptRangeTarget2![i]
 		if (bLen > size) {
-			bLen = $.int(size)
+			bLen = size
 		}
 		buf = $.makeSlice<number>($.int(bLen), undefined, "byte")
 		{
-			let [, __goscriptShadow1] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int($.int64Sub(size, bLen)))
+			let [, __goscriptShadow1] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int64Sub(size, bLen))
 			if ((__goscriptShadow1 != null) && (!$.comparableEqual(__goscriptShadow1, io.EOF))) {
-				return [null, $.int(0), __goscriptShadow1]
+				return [null, 0n, __goscriptShadow1]
 			}
 		}
 		{
 			let p = findSignatureInBlock(buf)
 			if (p >= 0) {
 				buf = $.goSlice(buf, p, undefined)
-				directoryEndOffset = $.int($.int64Add(($.int64Sub(size, bLen)), $.int(p)))
+				directoryEndOffset = $.int64Add(($.int64Sub(size, bLen)), $.int64(p))
 				break
 			}
 		}
-		if ((i == 1) || ($.int(bLen) == $.int(size))) {
-			return [null, $.int(0), ErrFormat]
+		if ((i == 1) || (bLen == size)) {
+			return [null, 0n, ErrFormat]
 		}
 	}
 
 	// read header into struct
 	let b: $.VarRef<readBuf> = $.varRef((($.goSlice(buf, 4, undefined) as readBuf) as readBuf))
-	let d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null = (() => { const __goscriptLiteralField2 = $.uint($.uint(readBuf_uint16(b), 32), 32); const __goscriptLiteralField3 = $.uint($.uint(readBuf_uint16(b), 32), 32); const __goscriptLiteralField4 = $.uint($.uint(readBuf_uint16(b), 64), 64); const __goscriptLiteralField5 = $.uint($.uint(readBuf_uint16(b), 64), 64); const __goscriptLiteralField6 = $.uint($.uint(readBuf_uint32(b), 64), 64); const __goscriptLiteralField7 = $.uint($.uint(readBuf_uint32(b), 64), 64); const __goscriptLiteralField8 = $.uint(readBuf_uint16(b), 16); return new __goscript_struct.directoryEnd({diskNbr: __goscriptLiteralField2, dirDiskNbr: __goscriptLiteralField3, dirRecordsThisDisk: __goscriptLiteralField4, directoryRecords: __goscriptLiteralField5, directorySize: __goscriptLiteralField6, directoryOffset: __goscriptLiteralField7, commentLen: __goscriptLiteralField8}) })()
+	let d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null = (() => { const __goscriptLiteralField2 = $.uint($.uint(readBuf_uint16(b), 32), 32); const __goscriptLiteralField3 = $.uint($.uint(readBuf_uint16(b), 32), 32); const __goscriptLiteralField4 = $.uint64(readBuf_uint16(b)); const __goscriptLiteralField5 = $.uint64(readBuf_uint16(b)); const __goscriptLiteralField6 = $.uint64(readBuf_uint32(b)); const __goscriptLiteralField7 = $.uint64(readBuf_uint32(b)); const __goscriptLiteralField8 = $.uint(readBuf_uint16(b), 16); return new __goscript_struct.directoryEnd({diskNbr: __goscriptLiteralField2, dirDiskNbr: __goscriptLiteralField3, dirRecordsThisDisk: __goscriptLiteralField4, directoryRecords: __goscriptLiteralField5, directorySize: __goscriptLiteralField6, directoryOffset: __goscriptLiteralField7, commentLen: __goscriptLiteralField8}) })()
 	let l = $.int($.pointerValue<__goscript_struct.directoryEnd>(d).commentLen)
 	if (l > $.len((b.value as readBuf))) {
-		return [null, $.int(0), errors.New("zip: invalid comment length")]
+		return [null, 0n, errors.New("zip: invalid comment length")]
 	}
 	$.pointerValue<__goscript_struct.directoryEnd>(d).comment = $.bytesToString($.goSlice(b.value, undefined, l))
 
 	// These values mean that the file can be a zip64 file
-	if ((($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords, 64) == $.uint(0xffff, 64)) || ($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize, 64) == $.uint(0xffff, 64))) || ($.uint($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset, 64) == $.uint(0xffffffff, 64))) {
-		let __goscriptTuple8: any = await findDirectory64End(r, $.int(directoryEndOffset))
-		let p = $.int(__goscriptTuple8[0])
-		let __goscriptShadow2 = __goscriptTuple8[1]
+	if ((($.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords == 65535n) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize == 65535n)) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset == 4294967295n)) {
+		let [p, __goscriptShadow2] = await findDirectory64End(r, directoryEndOffset)
 		if ((__goscriptShadow2 == null) && (p >= 0)) {
-			directoryEndOffset = $.int(p)
-			__goscriptShadow2 = await readDirectory64End(r, $.int(p), d)
+			directoryEndOffset = p
+			__goscriptShadow2 = await readDirectory64End(r, p, d)
 		}
 		if (__goscriptShadow2 != null) {
-			return [null, $.int(0), __goscriptShadow2]
+			return [null, 0n, __goscriptShadow2]
 		}
 	}
 
-	let maxInt64 = $.uint("9223372036854775807", 64)
+	let maxInt64 = 9223372036854775807n
 	if (($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize > maxInt64) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset > maxInt64)) {
-		return [null, $.int(0), ErrFormat]
+		return [null, 0n, ErrFormat]
 	}
 
-	baseOffset = $.int($.int64Sub(($.int64Sub(directoryEndOffset, $.int($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize))), $.int($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset)))
+	baseOffset = $.int64Sub(($.int64Sub(directoryEndOffset, $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize))), $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset))
 
 	// Make sure directoryOffset points to somewhere in our file.
 	{
-		let o = $.int($.int64Add(baseOffset, $.int($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset)))
+		let o = $.int64Add(baseOffset, $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset))
 		if ((o < 0) || (o >= size)) {
-			return [null, $.int(0), ErrFormat]
+			return [null, 0n, ErrFormat]
 		}
 	}
 
@@ -1471,50 +1465,50 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: number): glo
 	// We've seen files in which the directory end data gives us
 	// an incorrect baseOffset.
 	if (baseOffset > 0) {
-		let off = $.int($.int($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset))
-		let rs: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil(r)!, $.int(off), $.int($.int64Sub(size, off)))
+		let off = $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset)
+		let rs: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil(r)!, off, $.int64Sub(size, off))
 		if (await readDirectoryHeader(new File(), $.interfaceValue<io.Reader | null>(rs, "*io.SectionReader")) == null) {
-			baseOffset = $.int(0)
+			baseOffset = 0n
 		}
 	}
 
-	return [d, $.int(baseOffset), null]
+	return [d, baseOffset, null]
 }
 
-export async function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: number): globalThis.Promise<[number, $.GoError]> {
-	let locOffset = $.int($.int64Sub(directoryEndOffset, 20))
+export async function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: bigint): globalThis.Promise<[bigint, $.GoError]> {
+	let locOffset = $.int64Sub(directoryEndOffset, 20)
 	if (locOffset < 0) {
-		return [$.int(-1), null]
+		return [-1n, null]
 	}
 	let buf: $.Slice<number> = $.makeSlice<number>(20, undefined, "byte")
 	{
-		let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(locOffset))
+		let [, err] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, locOffset)
 		if (err != null) {
-			return [$.int(-1), err]
+			return [-1n, err]
 		}
 	}
 	let b: $.VarRef<readBuf> = $.varRef(((buf as readBuf) as readBuf))
 	{
 		let sig = $.uint(readBuf_uint32(b), 32)
 		if ($.uint(sig, 32) != $.uint(117853008, 32)) {
-			return [$.int(-1), null]
+			return [-1n, null]
 		}
 	}
 	if ($.uint(readBuf_uint32(b), 32) != $.uint(0, 32)) {
-		return [$.int(-1), null]
+		return [-1n, null]
 	}
-	let p = $.uint(readBuf_uint64(b), 64)
+	let p = readBuf_uint64(b)
 	if ($.uint(readBuf_uint32(b), 32) != $.uint(1, 32)) {
-		return [$.int(-1), null]
+		return [-1n, null]
 	}
-	return [$.int($.int(p)), null]
+	return [$.int64(p), null]
 }
 
-export async function readDirectory64End(r: io.ReaderAt | null, offset: number, d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null): globalThis.Promise<$.GoError> {
+export async function readDirectory64End(r: io.ReaderAt | null, offset: bigint, d: __goscript_struct.directoryEnd | $.VarRef<__goscript_struct.directoryEnd> | null): globalThis.Promise<$.GoError> {
 	let err: $.GoError = null as $.GoError
 	let buf: $.Slice<number> = $.makeSlice<number>(56, undefined, "byte")
 	{
-		let [, __goscriptShadow3] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, $.int(offset))
+		let [, __goscriptShadow3] = await $.pointerValue<Exclude<io.ReaderAt, null>>(r).ReadAt(buf, offset)
 		if (__goscriptShadow3 != null) {
 			return __goscriptShadow3
 		}
@@ -1531,10 +1525,10 @@ export async function readDirectory64End(r: io.ReaderAt | null, offset: number, 
 	b.value = ($.goSlice(b.value, 12, undefined) as readBuf)
 	$.pointerValue<__goscript_struct.directoryEnd>(d).diskNbr = $.uint(readBuf_uint32(b), 32)
 	$.pointerValue<__goscript_struct.directoryEnd>(d).dirDiskNbr = $.uint(readBuf_uint32(b), 32)
-	$.pointerValue<__goscript_struct.directoryEnd>(d).dirRecordsThisDisk = $.uint(readBuf_uint64(b), 64)
-	$.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords = $.uint(readBuf_uint64(b), 64)
-	$.pointerValue<__goscript_struct.directoryEnd>(d).directorySize = $.uint(readBuf_uint64(b), 64)
-	$.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset = $.uint(readBuf_uint64(b), 64)
+	$.pointerValue<__goscript_struct.directoryEnd>(d).dirRecordsThisDisk = readBuf_uint64(b)
+	$.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords = readBuf_uint64(b)
+	$.pointerValue<__goscript_struct.directoryEnd>(d).directorySize = readBuf_uint64(b)
+	$.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset = readBuf_uint64(b)
 
 	return null
 }
@@ -1577,10 +1571,10 @@ export function readBuf_uint32(b: $.VarRef<readBuf> | null): number {
 	return $.uint(v, 32)
 }
 
-export function readBuf_uint64(b: $.VarRef<readBuf> | null): number {
-	let v = $.uint($.markAsStructValue($.cloneStructValue($.pointerValue<any>(binary.LittleEndian))).Uint64($.pointerValue<readBuf>(b)), 64)
+export function readBuf_uint64(b: $.VarRef<readBuf> | null): bigint {
+	let v = $.markAsStructValue($.cloneStructValue($.pointerValue<any>(binary.LittleEndian))).Uint64($.pointerValue<readBuf>(b))
 	b!.value = ($.goSlice(($.pointerValue<readBuf>(b)), 8, undefined) as readBuf)
-	return $.uint(v, 64)
+	return v
 }
 
 export function readBuf_sub(b: $.VarRef<readBuf> | null, n: number): readBuf {
@@ -1595,7 +1589,7 @@ export type fileInfoDirEntry = {
 	ModTime(): time.Time
 	Mode(): fs.FileMode
 	Name(): string
-	Size(): number
+	Size(): bigint
 	Sys(): any
 	Type(): fs.FileMode
 }
@@ -1632,9 +1626,9 @@ export function split(name: string): [string, string, boolean] {
 	let dir: string = ""
 	let elem: string = ""
 	let isDir: boolean = false
-	let __goscriptTuple9: any = strings.CutSuffix(name, "/")
-	name = __goscriptTuple9[0]
-	isDir = __goscriptTuple9[1]
+	let __goscriptTuple6: any = strings.CutSuffix(name, "/")
+	name = __goscriptTuple6[0]
+	isDir = __goscriptTuple6[1]
 	let i = strings.LastIndexByte(name, $.uint(47, 8))
 	if (i < 0) {
 		return [".", name, isDir]

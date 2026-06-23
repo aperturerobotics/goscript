@@ -215,7 +215,7 @@ export class JSONFormatter {
 				fileVal = __goscriptTuple0[1]
 			} else {
 				funcVal = $.pointerValue<runtime.Frame>(caller).Function
-				fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int($.int($.pointerValue<runtime.Frame>(caller).Line)), 10)
+				fileVal = ($.pointerValue<runtime.Frame>(caller).File + ":") + strconv.FormatInt($.int64($.pointerValue<runtime.Frame>(caller).Line), 10)
 			}
 			if (!$.stringEqual(funcVal, "")) {
 				$.mapSet(data, FieldMap_resolve($.pointerValue<JSONFormatter>(f).FieldMap, "func"), funcVal)

@@ -55,7 +55,10 @@ function formatValue(value: any, verb: string): string {
       if (typeof value === 'string') return 'string'
       return typeof value
     case 'c': // character (Unicode code point)
-      return String.fromCharCode(Number(value))
+      // Go's %c encodes the rune as a Unicode character; fromCharCode truncates
+      // any code point above U+FFFF and mangles surrogates. runeToString owns
+      // the Go string(rune) rule (astral intact, invalid -> U+FFFD, no throw).
+      return $.runeToString(Number(value))
     case 'x': // hexadecimal lowercase
       return Number(value).toString(16)
     case 'X': // hexadecimal uppercase
@@ -74,9 +77,9 @@ function formatValue(value: any, verb: string): string {
       return Number(value).toPrecision().toUpperCase()
     case 'q': // quoted string / rune
       if (typeof value === 'number' && Number.isInteger(value)) {
-        // emulate quoted rune for integers in basic range
-        const ch = String.fromCodePoint(value)
-        return JSON.stringify(ch)
+        // emulate quoted rune; runeToString avoids fromCodePoint throwing on
+        // invalid code points and maps them to U+FFFD as Go's %q does.
+        return JSON.stringify($.runeToString(value))
       }
       return JSON.stringify(String(value))
     case 'p': {
@@ -591,7 +594,52 @@ export function Appendln(b: $.Bytes, ...a: any[]): $.Bytes {
 // Error creation
 export function Errorf(format: string, ...a: any[]): any {
   const message = parseFormat(format, a)
-  return errors.New(message)
+  const err = errors.New(message)
+  // %w operands are wrapped: the result must Unwrap to them so errors.Is/As can
+  // walk the chain. One %w unwraps to a single error; multiple %w (Go 1.20+)
+  // unwrap to an []error, matching the depth-first traversal in errors.Is.
+  const wrapped = errorfWrappedArgs(format, a)
+  if (wrapped.length === 1) {
+    ;(err as any).Unwrap = (): $.GoError => wrapped[0]
+  } else if (wrapped.length > 1) {
+    ;(err as any).Unwrap = (): $.GoError[] => wrapped
+  }
+  return err
+}
+
+// errorfWrappedArgs returns the error operands consumed by %w verbs, in order.
+// It walks the format string with the same flag/width/precision/verb skip and
+// the same positional arg consumption as parseFormat, so the operand a %w binds
+// to here is exactly the one it formatted in the message.
+function errorfWrappedArgs(format: string, args: any[]): $.GoError[] {
+  const wrapped: $.GoError[] = []
+  let argIndex = 0
+  for (let i = 0; i < format.length; i++) {
+    if (format[i] !== '%' || i + 1 >= format.length) {
+      continue
+    }
+    if (format[i + 1] === '%') {
+      i++
+      continue
+    }
+    let j = i + 1
+    while (j < format.length && '+-# 0'.includes(format[j])) j++
+    while (j < format.length && format[j] >= '0' && format[j] <= '9') j++
+    if (j < format.length && format[j] === '.') {
+      j++
+      while (j < format.length && format[j] >= '0' && format[j] <= '9') j++
+    }
+    if (j < format.length) {
+      if (argIndex < args.length) {
+        if (format[j] === 'w') {
+          wrapped.push(args[argIndex] as $.GoError)
+        }
+        argIndex++
+      }
+      i = j
+    }
+  }
+  return wrapped
 }
 
 // FormatString - simplified implementation

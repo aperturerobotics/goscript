@@ -335,7 +335,7 @@ export type FileInfo = null | {
   // base name of the file
   Name(): string
   // length in bytes for regular files; system-dependent for others
-  Size(): number
+  Size(): bigint
   // underlying data source (can return nil)
   Sys(): null | any
 }
@@ -359,7 +359,7 @@ $.registerInterfaceType(
     {
       name: 'Size',
       args: [],
-      returns: [{ type: { kind: $.TypeKind.Basic, name: 'number' } }],
+      returns: [{ type: { kind: $.TypeKind.Basic, name: 'int64' } }],
     },
     {
       name: 'Sys',

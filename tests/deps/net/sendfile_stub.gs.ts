@@ -44,9 +44,9 @@ export function supportsSendfile(): boolean {
 	return false
 }
 
-export function sendFile(c: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, r: io.Reader | null): [number, $.GoError, boolean] {
-	let n: number = 0
+export function sendFile(c: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, r: io.Reader | null): [bigint, $.GoError, boolean] {
+	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	let handled: boolean = false
-	return [$.int(0), null, false]
+	return [0n, null, false]
 }

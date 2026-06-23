@@ -242,7 +242,7 @@ export class ipv6ZoneCache {
 		await $.pointerValue<ipv6ZoneCache>(zc).RWMutex.Lock()
 		__defer.defer(() => { $.pointerValue<ipv6ZoneCache>(zc).RWMutex.Unlock() })
 		let now = $.markAsStructValue($.cloneStructValue(time.Now()))
-		if (!force && $.markAsStructValue($.cloneStructValue($.pointerValue<ipv6ZoneCache>(zc).lastFetched)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Mul(-60, time.Second)))))) {
+		if (!force && $.markAsStructValue($.cloneStructValue($.pointerValue<ipv6ZoneCache>(zc).lastFetched)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(-60000000000n))))) {
 			const __goscriptReturn0: boolean = false
 			updated = __goscriptReturn0
 			__defer[Symbol.dispose]()
@@ -373,7 +373,7 @@ export function Flags_String(f: Flags): string {
 	let s = ""
 	for (let __goscriptRangeTarget0 = flagNames, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		let name = __goscriptRangeTarget0![i]
-		if (($.uint64And(f, ($.uint64Shl(1, $.uint(i, 64))))) != 0) {
+		if (($.uint($.uint64And(f, ($.uint($.uint64Shl(1, $.uint(i, 64)), 64))), 64)) != 0) {
 			if (!$.stringEqual(s, "")) {
 				s = s + ("|")
 			}

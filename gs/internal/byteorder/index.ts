@@ -12,8 +12,9 @@ export function BEUint32(b: $.Bytes): number {
   return (((b![0] << 24) >>> 0) | (b![1] << 16) | (b![2] << 8) | b![3]) >>> 0
 }
 
-export function BEUint64(b: $.Bytes): number {
-  return $.uint(
+export function BEUint64(b: $.Bytes): bigint {
+  return BigInt.asUintN(
+    64,
     (BigInt(b![0]) << 56n) |
       (BigInt(b![1]) << 48n) |
       (BigInt(b![2]) << 40n) |
@@ -33,8 +34,9 @@ export function LEUint32(b: $.Bytes): number {
   return b![0] | (b![1] << 8) | (b![2] << 16) | (b![3] << 24)
 }
 
-export function LEUint64(b: $.Bytes): number {
-  return $.uint(
+export function LEUint64(b: $.Bytes): bigint {
+  return BigInt.asUintN(
+    64,
     BigInt(b![0]) |
       (BigInt(b![1]) << 8n) |
       (BigInt(b![2]) << 16n) |

@@ -7,11 +7,34 @@ import {
   copy,
   indexString,
   len,
+  runeToString,
+  runesToString,
   sliceString,
   stringCompare,
   stringEqual,
   stringToBytes,
 } from './slice.js'
+
+describe('rune to string encoding (Go string(rune) semantics)', () => {
+  it('preserves astral-plane runes above U+FFFF', () => {
+    // U+1F600 grinning face; fromCharCode would have truncated to a broken unit.
+    expect(runeToString(0x1f600)).toBe('😀')
+    expect(runeToString(0x1f600).codePointAt(0)).toBe(0x1f600)
+    // CJU+597D '好'
+    expect(runeToString(0x597d)).toBe('好')
+  })
+
+  it('maps invalid and surrogate runes to U+FFFD, never throwing', () => {
+    expect(runeToString(-1)).toBe('�')
+    expect(runeToString(0x110000)).toBe('�')
+    expect(runeToString(0xd800)).toBe('�')
+  })
+
+  it('encodes a rune slice with astral planes intact', () => {
+    expect(runesToString([0x48, 0x69, 0x1f600] as never)).toBe('Hi😀')
+    expect(runesToString([] as never)).toBe('')
+  })
+})
 
 describe('builtin string byte representation', () => {
   it('appends large byte slices without JavaScript argument spreading', () => {

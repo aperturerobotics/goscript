@@ -10,7 +10,7 @@ import "@goscript/context/index.js"
 import "@goscript/time/index.js"
 
 export async function AsyncFunction(): globalThis.Promise<string> {
-	await time.Sleep($.int64Mul(10, time.Millisecond))
+	await time.Sleep(10000000n)
 	return "result"
 }
 
@@ -19,7 +19,7 @@ export async function SyncWrapper(): globalThis.Promise<string> {
 }
 
 export async function AnotherAsyncFunction(ctx: context.Context | null): globalThis.Promise<[string, $.GoError]> {
-	await time.Sleep($.int64Mul(5, time.Millisecond))
+	await time.Sleep(5000000n)
 	return ["async result", null]
 }
 

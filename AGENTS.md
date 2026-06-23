@@ -4,6 +4,7 @@
 
 - NEVER run the vite dev server or anything that listens on any port yourself! Ask the user to do it!
 - Read `docs/explainer.md` for an overview of the project if you need it
+- The `design/` documents (including `design/DESIGN.md` and `design/SPEC_DIFFERENCES.md`) are OUTDATED and are NOT authoritative. They describe an earlier state of the compiler and runtime and have drifted from the actual behavior. Treat the compiler source, the `gs/` runtime overrides, and the passing compliance tests under `tests/tests/` as the source of truth. When you touch an area a design doc describes, update that doc to match reality (or note the divergence) rather than implementing to the stale text. They need a full review and update.
 
 ### Project-Specific Rules
 

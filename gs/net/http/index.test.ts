@@ -1247,7 +1247,7 @@ describe('net/http override', () => {
     const [parsed, err] = ParseTime('Sun, 06 Nov 1994 08:49:37 GMT')
 
     expect(err).toBeNull()
-    expect(parsed.Unix()).toBe(784111777)
+    expect(parsed.Unix()).toBe(784111777n)
     expect(DetectContentType($.stringToBytes('<HTML>ok'))).toBe(
       'text/html; charset=utf-8',
     )
@@ -1446,19 +1446,19 @@ describe('net/http override', () => {
               offset += n
               return [n, null] as [number, $.GoError]
             },
-            Seek: (seekOffset: number, whence: number) => {
+            Seek: (seekOffset: bigint, whence: number) => {
               switch (whence) {
                 case io.SeekStart:
-                  offset = seekOffset
+                  offset = Number(seekOffset)
                   break
                 case io.SeekCurrent:
-                  offset += seekOffset
+                  offset += Number(seekOffset)
                   break
                 case io.SeekEnd:
-                  offset = data.length + seekOffset
+                  offset = data.length + Number(seekOffset)
                   break
               }
-              return [offset, null] as [number, $.GoError]
+              return [BigInt(offset), null] as [bigint, $.GoError]
             },
             Readdir: () => [null, null] as [null, $.GoError],
             Stat: () =>
@@ -1468,7 +1468,7 @@ describe('net/http override', () => {
                   ModTime: () => null as never,
                   Mode: () => 0,
                   Name: () => 'media.mp4',
-                  Size: () => data.length,
+                  Size: () => BigInt(data.length),
                   Sys: () => null,
                 },
                 null,

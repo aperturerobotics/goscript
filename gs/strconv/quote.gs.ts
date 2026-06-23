@@ -1,60 +1,127 @@
 import * as $ from "@goscript/builtin/index.js";
+import * as unicode from "@goscript/unicode/index.js";
 import { ErrSyntax } from "./atoi.gs.js";
+
+const lowerhex = "0123456789abcdef";
+
+// hexEscape emits Go's \xNN, \uNNNN, or \UNNNNNNNN escape with width hex digits.
+function hexEscape(prefix: string, value: number, width: number): string {
+	let out = prefix;
+	for (let shift = (width - 1) * 4; shift >= 0; shift -= 4) {
+		out += lowerhex[(value >> shift) & 0xf];
+	}
+	return out;
+}
+
+// appendEscapedRune returns the Go-escaped form of one rune, matching
+// strconv.appendEscapedRune: printable runes pass through, the standard control
+// escapes (\a \b \f \n \r \t \v) are emitted by name, control and DEL bytes
+// become \xNN, invalid runes fold to U+FFFD, and the rest become \u/\U. This
+// replaces the prior JSON.stringify / fromCharCode shortcuts, which used the
+// wrong escape set and truncated runes above U+FFFF.
+function appendEscapedRune(
+	r: number,
+	quote: number,
+	asciiOnly: boolean,
+	graphicOnly: boolean,
+): string {
+	if (r === quote || r === 0x5c /* backslash */) {
+		return "\\" + String.fromCharCode(r);
+	}
+	if (asciiOnly) {
+		if (r < 0x80 && unicode.IsPrint(r)) {
+			return String.fromCharCode(r);
+		}
+	} else if (unicode.IsPrint(r) || (graphicOnly && unicode.IsGraphic(r))) {
+		return $.runeToString(r);
+	}
+	switch (r) {
+		case 0x07:
+			return "\\a";
+		case 0x08:
+			return "\\b";
+		case 0x0c:
+			return "\\f";
+		case 0x0a:
+			return "\\n";
+		case 0x0d:
+			return "\\r";
+		case 0x09:
+			return "\\t";
+		case 0x0b:
+			return "\\v";
+	}
+	if (r < 0x20 || r === 0x7f) {
+		return hexEscape("\\x", r & 0xff, 2);
+	}
+	if (r < 0 || r > 0x10ffff || (r >= 0xd800 && r <= 0xdfff)) {
+		r = 0xfffd; // !utf8.ValidRune: fold to RuneError before emitting \u.
+	}
+	if (r < 0x10000) {
+		return hexEscape("\\u", r, 4);
+	}
+	return hexEscape("\\U", r, 8);
+}
+
+// quoteWith renders s as a Go quoted literal using quote as the delimiter.
+function quoteWith(
+	s: string,
+	quote: number,
+	asciiOnly: boolean,
+	graphicOnly: boolean,
+): string {
+	let out = String.fromCharCode(quote);
+	for (const ch of s) {
+		out += appendEscapedRune(ch.codePointAt(0)!, quote, asciiOnly, graphicOnly);
+	}
+	return out + String.fromCharCode(quote);
+}
+
+// quoteRuneWith renders a single rune as a Go quoted character literal.
+function quoteRuneWith(
+	r: number,
+	quote: number,
+	asciiOnly: boolean,
+	graphicOnly: boolean,
+): string {
+	return (
+		String.fromCharCode(quote) +
+		appendEscapedRune(r, quote, asciiOnly, graphicOnly) +
+		String.fromCharCode(quote)
+	);
+}
 
 // Quote returns a double-quoted Go string literal representing s.
 // The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for control characters and non-printable characters.
 export function Quote(s: string): string {
-	return JSON.stringify(s);
+	return quoteWith(s, 0x22 /* " */, false, false);
 }
 
 // QuoteToASCII returns a double-quoted Go string literal representing s.
 // The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for control characters and non-ASCII characters.
 export function QuoteToASCII(s: string): string {
-	// For simplicity, use JSON.stringify and then escape non-ASCII
-	const quoted = JSON.stringify(s);
-	return quoted.replace(/[\u0080-\uFFFF]/g, (match) => {
-		const code = match.charCodeAt(0);
-		if (code <= 0xFF) {
-			return '\\x' + code.toString(16).padStart(2, '0');
-		} else {
-			return '\\u' + code.toString(16).padStart(4, '0');
-		}
-	});
+	return quoteWith(s, 0x22, true, false);
 }
 
 // QuoteToGraphic returns a double-quoted Go string literal representing s.
 // The returned string leaves Unicode graphic characters unchanged.
 export function QuoteToGraphic(s: string): string {
-	return Quote(s); // Simplified
+	return quoteWith(s, 0x22, false, true);
 }
 
 // QuoteRune returns a single-quoted Go character literal representing the rune.
 export function QuoteRune(r: number): string {
-	const char = String.fromCharCode(r);
-	if (r === 39) { // single quote
-		return "'\\'";
-	}
-	if (r === 92) { // backslash  
-		return "'\\\\'";
-	}
-	if (r >= 32 && r <= 126) { // printable ASCII
-		return "'" + char + "'";
-	}
-	// Use escape sequences for non-printable
-	if (r <= 0xFF) {
-		return "'\\x" + r.toString(16).padStart(2, '0') + "'";
-	}
-	return "'\\u" + r.toString(16).padStart(4, '0') + "'";
+	return quoteRuneWith(r, 0x27 /* ' */, false, false);
 }
 
 // QuoteRuneToASCII returns a single-quoted Go character literal representing the rune.
 export function QuoteRuneToASCII(r: number): string {
-	return QuoteRune(r); // Same as QuoteRune for simplicity
+	return quoteRuneWith(r, 0x27, true, false);
 }
 
 // QuoteRuneToGraphic returns a single-quoted Go character literal representing the rune.
 export function QuoteRuneToGraphic(r: number): string {
-	return QuoteRune(r); // Same as QuoteRune for simplicity
+	return quoteRuneWith(r, 0x27, false, true);
 }
 
 // CanBackquote reports whether the string s can be represented unchanged as a single-line backquoted string.
@@ -235,11 +302,10 @@ export function AppendQuoteRuneToGraphic(dst: $.Bytes, r: number): $.Bytes {
 
 // IsPrint reports whether the rune is defined as printable by Go.
 export function IsPrint(r: number): boolean {
-	// Simplified: consider ASCII printable characters
-	return r >= 32 && r <= 126;
+	return unicode.IsPrint(r);
 }
 
 // IsGraphic reports whether the rune is defined as a Graphic by Unicode.
 export function IsGraphic(r: number): boolean {
-	return IsPrint(r); // Simplified
-} 
+	return unicode.IsGraphic(r);
+}

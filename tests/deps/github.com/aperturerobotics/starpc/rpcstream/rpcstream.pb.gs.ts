@@ -412,9 +412,9 @@ export class RpcStreamPacket {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple5: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple5[0], 64)
+			wire = __goscriptTuple5[0]
 			iNdEx = __goscriptTuple5[1]
 			err = __goscriptTuple5[2]
 			if (err != null) {
@@ -435,9 +435,9 @@ export class RpcStreamPacket {
 						return fmt.Errorf("proto: wrong wireType = %d for field Init", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let msglen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple6: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple6[0], 64)
+					_v = __goscriptTuple6[0]
 					iNdEx = __goscriptTuple6[1]
 					err = __goscriptTuple6[2]
 					msglen = $.int(_v)
@@ -485,9 +485,9 @@ export class RpcStreamPacket {
 						return fmt.Errorf("proto: wrong wireType = %d for field Ack", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let msglen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple8: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple8[0], 64)
+					_v = __goscriptTuple8[0]
 					iNdEx = __goscriptTuple8[1]
 					err = __goscriptTuple8[2]
 					msglen = $.int(_v)
@@ -535,9 +535,9 @@ export class RpcStreamPacket {
 						return fmt.Errorf("proto: wrong wireType = %d for field Data", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let byteLen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple10: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple10[0], 64)
+					_v = __goscriptTuple10[0]
 					iNdEx = __goscriptTuple10[1]
 					err = __goscriptTuple10[2]
 					byteLen = $.int(_v)
@@ -679,11 +679,11 @@ export class RpcStreamPacket_Init {
 				return [0, err]
 			}
 			i = i - (size)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint(size, 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64(size))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		} else {
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint(0, 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, 0n)
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -706,7 +706,7 @@ export class RpcStreamPacket_Init {
 		l
 		if ($.pointerValue<RpcStreamPacket_Init>(m).Init != null) {
 			l = RpcStreamInit.prototype.SizeVT.call($.pointerValue<RpcStreamPacket_Init>(m).Init)
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		} else {
 			n = n + (2)
 		}
@@ -809,11 +809,11 @@ export class RpcStreamPacket_Ack {
 				return [0, err]
 			}
 			i = i - (size)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint(size, 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64(size))
 			i--
 			dAtA![i] = $.uint(0x12, 8)
 		} else {
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint(0, 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, 0n)
 			i--
 			dAtA![i] = $.uint(0x12, 8)
 		}
@@ -836,7 +836,7 @@ export class RpcStreamPacket_Ack {
 		l
 		if ($.pointerValue<RpcStreamPacket_Ack>(m).Ack != null) {
 			l = RpcAck.prototype.SizeVT.call($.pointerValue<RpcStreamPacket_Ack>(m).Ack)
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		} else {
 			n = n + (2)
 		}
@@ -927,7 +927,7 @@ export class RpcStreamPacket_Data {
 		let i = $.len(dAtA)
 		i = i - ($.len($.pointerValue<RpcStreamPacket_Data>(m).Data))
 		$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<RpcStreamPacket_Data>(m).Data)
-		i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<RpcStreamPacket_Data>(m).Data), 64), 64))
+		i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<RpcStreamPacket_Data>(m).Data)))
 		i--
 		dAtA![i] = $.uint(0x1a, 8)
 		return [$.len(dAtA) - i, null]
@@ -948,7 +948,7 @@ export class RpcStreamPacket_Data {
 		let l: number = 0
 		l
 		l = $.len($.pointerValue<RpcStreamPacket_Data>(m).Data)
-		n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+		n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		return n
 	}
 
@@ -1105,7 +1105,7 @@ export class RpcStreamInit {
 		if ($.len($.pointerValue<RpcStreamInit>(m).ComponentId) > 0) {
 			i = i - ($.len($.pointerValue<RpcStreamInit>(m).ComponentId))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<RpcStreamInit>(m).ComponentId)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<RpcStreamInit>(m).ComponentId), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<RpcStreamInit>(m).ComponentId)))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -1154,7 +1154,7 @@ export class RpcStreamInit {
 		l
 		l = $.len($.pointerValue<RpcStreamInit>(m).ComponentId)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		n = n + ($.len($.pointerValue<RpcStreamInit>(m).unknownFields))
 		return n
@@ -1200,9 +1200,9 @@ export class RpcStreamInit {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple16: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple16[0], 64)
+			wire = __goscriptTuple16[0]
 			iNdEx = __goscriptTuple16[1]
 			err = __goscriptTuple16[2]
 			if (err != null) {
@@ -1222,9 +1222,9 @@ export class RpcStreamInit {
 					if (wireType != 2) {
 						return fmt.Errorf("proto: wrong wireType = %d for field ComponentId", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
-					let stringLen: number = 0
+					let stringLen: bigint = 0n
 					let __goscriptTuple17: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					stringLen = $.uint(__goscriptTuple17[0], 64)
+					stringLen = __goscriptTuple17[0]
 					iNdEx = __goscriptTuple17[1]
 					err = __goscriptTuple17[2]
 					if (err != null) {
@@ -1421,7 +1421,7 @@ export class RpcAck {
 		if ($.len($.pointerValue<RpcAck>(m).Error) > 0) {
 			i = i - ($.len($.pointerValue<RpcAck>(m).Error))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<RpcAck>(m).Error)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<RpcAck>(m).Error), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<RpcAck>(m).Error)))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -1470,7 +1470,7 @@ export class RpcAck {
 		l
 		l = $.len($.pointerValue<RpcAck>(m).Error)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		n = n + ($.len($.pointerValue<RpcAck>(m).unknownFields))
 		return n
@@ -1515,9 +1515,9 @@ export class RpcAck {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple20: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple20[0], 64)
+			wire = __goscriptTuple20[0]
 			iNdEx = __goscriptTuple20[1]
 			err = __goscriptTuple20[2]
 			if (err != null) {
@@ -1537,9 +1537,9 @@ export class RpcAck {
 					if (wireType != 2) {
 						return fmt.Errorf("proto: wrong wireType = %d for field Error", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
-					let stringLen: number = 0
+					let stringLen: bigint = 0n
 					let __goscriptTuple21: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					stringLen = $.uint(__goscriptTuple21[0], 64)
+					stringLen = __goscriptTuple21[0]
 					iNdEx = __goscriptTuple21[1]
 					err = __goscriptTuple21[2]
 					if (err != null) {

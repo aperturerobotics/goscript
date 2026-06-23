@@ -42,7 +42,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Collect results
 	let results: $.Slice<number> = $.arrayToSlice<number>([])
-	let timeout: $.Channel<time.Time> | null = time.After($.int64Mul(5, time.Second))
+	let timeout: $.Channel<time.Time> | null = time.After(5000000000n)
 
 	for (let __rangeIndex = 0; __rangeIndex < 2; __rangeIndex++) {
 		const [__goscriptSelect0HasReturn, __goscriptSelect0Value] = await $.selectStatement<any, void>([

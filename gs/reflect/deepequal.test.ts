@@ -45,6 +45,6 @@ describe('DeepEqual', () => {
       new BasicType(Uint32, 'uint32'),
     )
 
-    expect(v.Uint()).toBe(7)
+    expect(v.Uint()).toBe(7n)
   })
 })

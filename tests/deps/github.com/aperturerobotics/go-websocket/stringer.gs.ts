@@ -56,7 +56,7 @@ export function opcode_String(i: __goscript_ws_js.opcode): string {
 		}
 		default:
 		{
-			return ("opcode(" + strconv.FormatInt($.int($.int(i)), 10)) + ")"
+			return ("opcode(" + strconv.FormatInt($.int64(i), 10)) + ")"
 			break
 		}
 	}
@@ -80,7 +80,7 @@ export function __goscript_set__MessageType_index(__goscriptValue: Uint8Array): 
 export function MessageType_String(i: __goscript_ws_js.MessageType): string {
 	i = i - (1)
 	if ((i < 0) || (i >= $.len(_MessageType_index) - 1)) {
-		return ("MessageType(" + strconv.FormatInt($.int($.int(i + 1)), 10)) + ")"
+		return ("MessageType(" + strconv.FormatInt($.int64(i + 1), 10)) + ")"
 	}
 	return $.sliceStringOrBytes("MessageTextMessageBinary", _MessageType_index[i], _MessageType_index[i + 1])
 }
@@ -116,7 +116,7 @@ export function __goscript_set__StatusCode_index(__goscriptValue: number[]): voi
 export function StatusCode_String(i: __goscript_ws_js.StatusCode): string {
 	i = i - (1000)
 	if ((i < 0) || (i >= $.len(_StatusCode_index) - 1)) {
-		return ("StatusCode(" + strconv.FormatInt($.int($.int(i + 1000)), 10)) + ")"
+		return ("StatusCode(" + strconv.FormatInt($.int64(i + 1000), 10)) + ")"
 	}
 	return $.sliceStringOrBytes("StatusNormalClosureStatusGoingAwayStatusProtocolErrorStatusUnsupportedDatastatusReservedStatusNoStatusRcvdStatusAbnormalClosureStatusInvalidFramePayloadDataStatusPolicyViolationStatusMessageTooBigStatusMandatoryExtensionStatusInternalErrorStatusServiceRestartStatusTryAgainLaterStatusBadGatewayStatusTLSHandshake", _StatusCode_index[i], _StatusCode_index[i + 1])
 }

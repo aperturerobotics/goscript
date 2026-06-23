@@ -43,38 +43,38 @@ import type { Month } from './time.js'
 
 describe('time.Duration_String', () => {
   it('formats common durations', () => {
-    expect(Duration_String(0)).toBe('0s')
-    expect(Duration_String(1500 * Millisecond)).toBe('1.5s')
-    expect(Duration_String(-1500 * Millisecond)).toBe('-1.5s')
-    expect(Duration_String(2 * Second)).toBe('2s')
-    expect(Duration_String(9 * Millisecond)).toBe('9ms')
-    expect(Duration_String(1500 * Microsecond)).toBe('1.5ms')
-    expect(Duration_String(1500)).toBe('1.5\u00b5s')
-    expect(Duration_String(12)).toBe('12ns')
+    expect(Duration_String(0n)).toBe('0s')
+    expect(Duration_String(1500n * Millisecond)).toBe('1.5s')
+    expect(Duration_String(-1500n * Millisecond)).toBe('-1.5s')
+    expect(Duration_String(2n * Second)).toBe('2s')
+    expect(Duration_String(9n * Millisecond)).toBe('9ms')
+    expect(Duration_String(1500n * Microsecond)).toBe('1.5ms')
+    expect(Duration_String(1500n)).toBe('1.5\u00b5s')
+    expect(Duration_String(12n)).toBe('12ns')
   })
 })
 
 describe('time.Duration methods', () => {
   it('converts to integer and fractional units', () => {
-    expect(Duration_Nanoseconds(1500 * Microsecond)).toBe(1500000)
-    expect(Duration_Microseconds(1500 * Microsecond)).toBe(1500)
-    expect(Duration_Milliseconds(1500 * Microsecond)).toBe(1)
-    expect(Duration_Seconds(1500 * Millisecond)).toBe(1.5)
-    expect(Duration_Minutes(90 * Second)).toBe(1.5)
-    expect(Duration_Hours(90 * Minute)).toBe(1.5)
+    expect(Duration_Nanoseconds(1500n * Microsecond)).toBe(1500000n)
+    expect(Duration_Microseconds(1500n * Microsecond)).toBe(1500n)
+    expect(Duration_Milliseconds(1500n * Microsecond)).toBe(1n)
+    expect(Duration_Seconds(1500n * Millisecond)).toBe(1.5)
+    expect(Duration_Minutes(90n * Second)).toBe(1.5)
+    expect(Duration_Hours(90n * Minute)).toBe(1.5)
   })
 
   it('rounds and truncates with Go duration semantics', () => {
-    expect(Duration_Truncate(1500 * Millisecond, Second)).toBe(Second)
-    expect(Duration_Truncate(-1500 * Millisecond, Second)).toBe(-Second)
-    expect(Duration_Round(1500 * Millisecond, Second)).toBe(2 * Second)
-    expect(Duration_Round(-1500 * Millisecond, Second)).toBe(-2 * Second)
-    expect(Duration_Round(1500 * Millisecond, 0)).toBe(1500 * Millisecond)
+    expect(Duration_Truncate(1500n * Millisecond, Second)).toBe(Second)
+    expect(Duration_Truncate(-1500n * Millisecond, Second)).toBe(-Second)
+    expect(Duration_Round(1500n * Millisecond, Second)).toBe(2n * Second)
+    expect(Duration_Round(-1500n * Millisecond, Second)).toBe(-2n * Second)
+    expect(Duration_Round(1500n * Millisecond, 0n)).toBe(1500n * Millisecond)
   })
 
   it('returns absolute values', () => {
-    expect(Duration_Abs(2 * Second)).toBe(2 * Second)
-    expect(Duration_Abs(-2 * Second)).toBe(2 * Second)
+    expect(Duration_Abs(2n * Second)).toBe(2n * Second)
+    expect(Duration_Abs(-2n * Second)).toBe(2n * Second)
   })
 })
 
@@ -175,11 +175,15 @@ describe('time.Time calendar and binary helpers', () => {
     )
 
     expect(utc.MarshalBinary()).toEqual([
-      new Uint8Array([1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 255, 255]),
+      new Uint8Array([
+        1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 255, 255,
+      ]),
       null,
     ])
     expect(pdt.MarshalBinary()).toEqual([
-      new Uint8Array([1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 254, 92]),
+      new Uint8Array([
+        1, 0, 0, 0, 14, 223, 183, 54, 18, 7, 91, 205, 21, 254, 92,
+      ]),
       null,
     ])
   })

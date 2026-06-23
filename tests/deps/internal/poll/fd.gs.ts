@@ -125,14 +125,14 @@ export function __goscript_set_ErrNotPollable(__goscriptValue: $.GoError): void 
 	ErrNotPollable = __goscriptValue
 }
 
-export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: number): void {
+export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: bigint): void {
 	while ($.len($.pointerValue<$.Slice<$.Slice<number>>>(v)) > 0) {
-		let ln0 = $.int($.int($.len(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0])))
+		let ln0 = $.int64($.len(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0]))
 		if (ln0 > n) {
-			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], n, undefined)
+			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], Number(n), undefined)
 			return
 		}
-		n = $.int64Sub(n, $.int(ln0));
+		n = $.int64Sub(n, ln0);
 		($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = null
 		v!.value = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v)), 1, undefined)
 	}

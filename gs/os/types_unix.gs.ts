@@ -82,9 +82,9 @@ class fileStat {
 		return (fileStat!.Mode() & fs.ModeDir) !== 0
 	}
 
-	public Size(): number {
+	public Size(): bigint {
 		const fs = this
-		return fs!.size
+		return BigInt(fs!.size)
 	}
 
 	public Mode(): fs.FileMode {

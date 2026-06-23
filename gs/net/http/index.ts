@@ -1530,7 +1530,7 @@ interface fileServerFileSystem {
 interface fileServerFile {
   Close(): maybePromise<$.GoError>
   Read(p: $.Bytes): maybePromise<[number, $.GoError]>
-  Seek(offset: number, whence: number): maybePromise<[number, $.GoError]>
+  Seek(offset: bigint, whence: number): maybePromise<[bigint, $.GoError]>
   Readdir(count: number): maybePromise<[$.Slice<fs.FileInfo> | null, $.GoError]>
   Stat(): maybePromise<[fs.FileInfo | null, $.GoError]>
 }
@@ -1560,7 +1560,7 @@ function httpFileFromFSFile(file: Exclude<fs.File, null>): File {
     Stat: () => file.Stat(),
     Seek:
       seek == null ?
-        () => [0, errors.New('net/http: file does not support seek')]
+        () => [0n, errors.New('net/http: file does not support seek')]
       : seek.bind(file),
     Readdir: readdir == null ? () => [null, io.EOF] : readdir.bind(file),
   }
@@ -1599,7 +1599,7 @@ export function FileServer(root: fileServerFileSystem | null): Handler {
           req,
           info?.Name?.() || req.URL?.Path || '',
           file as io.Reader,
-          typeof info?.Size === 'function' ? info.Size() : null,
+          typeof info?.Size === 'function' ? Number(info.Size()) : null,
         )
       } finally {
         await file.Close()
@@ -2211,7 +2211,7 @@ export function ParseTime(text: string): [time.Time, $.GoError] {
       $.newError(`parsing time "${text}" as HTTP-date: cannot parse`),
     ]
   }
-  return [time.UnixMilli(date.getTime()), null]
+  return [time.UnixMilli(BigInt(date.getTime())), null]
 }
 
 export function DetectContentType(data: $.Slice<number>): string {
@@ -2595,7 +2595,7 @@ export function ParseSetCookie(line: string): [Cookie | null, $.GoError] {
         if (Number.isNaN(parsed.getTime())) {
           break
         }
-        cookie.Expires = time.UnixMilli(parsed.getTime())
+        cookie.Expires = time.UnixMilli(BigInt(parsed.getTime()))
         continue
       }
       case 'path':
@@ -2776,14 +2776,14 @@ async function serveContent(
 
   let size = knownSize
   if (size == null) {
-    const [end, err] = await seeker.Seek(0, io.SeekEnd)
+    const [end, err] = await seeker.Seek(0n, io.SeekEnd)
     if (err != null) {
       Error(w, err.Error(), StatusInternalServerError)
       return
     }
-    size = end
+    size = Number(end)
   }
-  const [, seekErr] = await seeker.Seek(0, io.SeekStart)
+  const [, seekErr] = await seeker.Seek(0n, io.SeekStart)
   if (seekErr != null) {
     Error(w, seekErr.Error(), StatusInternalServerError)
     return
@@ -2814,7 +2814,7 @@ async function serveContent(
   }
   Header_Set(header, 'Content-Length', String(length))
 
-  const [, rangeSeekErr] = await seeker.Seek(start, io.SeekStart)
+  const [, rangeSeekErr] = await seeker.Seek(BigInt(start), io.SeekStart)
   if (rangeSeekErr != null) {
     Error(w, rangeSeekErr.Error(), StatusInternalServerError)
     return
@@ -2826,7 +2826,7 @@ async function serveContent(
   if (length === 0) {
     return
   }
-  await io.CopyN(w as unknown as io.Writer, seeker, length)
+  await io.CopyN(w as unknown as io.Writer, seeker, BigInt(length))
 }
 
 function parseHTTPRange(

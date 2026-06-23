@@ -226,9 +226,9 @@ export class mapFileInfo {
 		return path2.Base($.pointerValue<mapFileInfo>(i).name)
 	}
 
-	public Size(): number {
+	public Size(): bigint {
 		const i: mapFileInfo | $.VarRef<mapFileInfo> | null = this
-		return $.int($.int($.len($.pointerValue<MapFile>($.pointerValue<mapFileInfo>(i).f).Data)))
+		return $.int64($.len($.pointerValue<MapFile>($.pointerValue<mapFileInfo>(i).f).Data))
 	}
 
 	public String(): string {
@@ -270,24 +270,24 @@ export class openMapFile {
 		this._fields.mapFileInfo.value = value
 	}
 
-	public get offset(): number {
+	public get offset(): bigint {
 		return this._fields.offset.value
 	}
-	public set offset(value: number) {
+	public set offset(value: bigint) {
 		this._fields.offset.value = value
 	}
 
 	public _fields: {
 		path: $.VarRef<string>
 		mapFileInfo: $.VarRef<mapFileInfo>
-		offset: $.VarRef<number>
+		offset: $.VarRef<bigint>
 	}
 
-	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, offset?: number}>) {
+	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, offset?: bigint}>) {
 		this._fields = {
 			path: $.varRef(init?.path ?? ("" as unknown as string)),
 			mapFileInfo: $.varRef(init?.mapFileInfo ? $.markAsStructValue($.cloneStructValue(init.mapFileInfo)) : $.markAsStructValue(new mapFileInfo())),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			offset: $.varRef(init?.offset ?? (0n as unknown as bigint))
 		}
 	}
 
@@ -308,30 +308,30 @@ export class openMapFile {
 
 	public Read(b: $.Slice<number>): [number, $.GoError] {
 		let f: openMapFile | $.VarRef<openMapFile> | null = this
-		if ($.pointerValue<openMapFile>(f).offset >= $.int($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data))) {
+		if ($.pointerValue<openMapFile>(f).offset >= $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data))) {
 			return [0, io.EOF]
 		}
 		if ($.pointerValue<openMapFile>(f).offset < 0) {
 			return [0, $.interfaceValue<$.GoError>(new fs.PathError({Op: "read", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
-		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, $.pointerValue<openMapFile>(f).offset, undefined))
-		$.pointerValue<openMapFile>(f).offset = $.int64Add($.pointerValue<openMapFile>(f).offset, $.int($.int(n)))
+		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, Number($.pointerValue<openMapFile>(f).offset), undefined))
+		$.pointerValue<openMapFile>(f).offset = $.int64Add($.pointerValue<openMapFile>(f).offset, $.int64(n))
 		return [n, null]
 	}
 
-	public ReadAt(b: $.Slice<number>, offset: number): [number, $.GoError] {
+	public ReadAt(b: $.Slice<number>, offset: bigint): [number, $.GoError] {
 		const f: openMapFile | $.VarRef<openMapFile> | null = this
-		if ((offset < 0) || (offset > $.int($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
+		if ((offset < 0) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
 			return [0, $.interfaceValue<$.GoError>(new fs.PathError({Op: "read", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
-		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, offset, undefined))
+		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, Number(offset), undefined))
 		if (n < $.len(b)) {
 			return [n, io.EOF]
 		}
 		return [n, null]
 	}
 
-	public Seek(offset: number, whence: number): [number, $.GoError] {
+	public Seek(offset: bigint, whence: number): [bigint, $.GoError] {
 		let f: openMapFile | $.VarRef<openMapFile> | null = this
 		switch (whence) {
 			case 0:
@@ -340,20 +340,20 @@ export class openMapFile {
 			}
 			case 1:
 			{
-				offset = $.int64Add(offset, $.int($.pointerValue<openMapFile>(f).offset))
+				offset = $.int64Add(offset, $.pointerValue<openMapFile>(f).offset)
 				break
 			}
 			case 2:
 			{
-				offset = $.int64Add(offset, $.int($.int($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data))))
+				offset = $.int64Add(offset, $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))
 				break
 			}
 		}
-		if ((offset < 0) || (offset > $.int($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
-			return [$.int(0), $.interfaceValue<$.GoError>(new fs.PathError({Op: "seek", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
+		if ((offset < 0) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
+			return [0n, $.interfaceValue<$.GoError>(new fs.PathError({Op: "seek", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
-		$.pointerValue<openMapFile>(f).offset = $.int(offset)
-		return [$.int(offset), null]
+		$.pointerValue<openMapFile>(f).offset = offset
+		return [offset, null]
 	}
 
 	public Stat(): [fs.FileInfo | null, $.GoError] {
@@ -551,7 +551,7 @@ export async function MapFS_Open(fsys: MapFS, name: string): globalThis.Promise<
 	let file: MapFile | $.VarRef<MapFile> | null = $.mapGet<string, MapFile | $.VarRef<MapFile> | null, MapFile | $.VarRef<MapFile> | null>(fsys, realName, null)[0]
 	if ((file != null) && ($.uint(($.pointerValue<MapFile>(file).Mode & fs.ModeDir), 32) == $.uint(0, 32))) {
 		// Ordinary file
-		return [$.interfaceValue<fs.File | null>(new openMapFile({path: name, mapFileInfo: (() => { const __goscriptLiteralField0 = path2.Base(name); return $.markAsStructValue(new mapFileInfo({name: __goscriptLiteralField0, f: file})) })(), offset: $.int(0)}), "*fstest.openMapFile"), null]
+		return [$.interfaceValue<fs.File | null>(new openMapFile({path: name, mapFileInfo: (() => { const __goscriptLiteralField0 = path2.Base(name); return $.markAsStructValue(new mapFileInfo({name: __goscriptLiteralField0, f: file})) })(), offset: 0n}), "*fstest.openMapFile"), null]
 	}
 
 	// Directory, possibly synthesized.

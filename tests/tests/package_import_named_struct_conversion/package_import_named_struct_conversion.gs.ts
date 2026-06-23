@@ -7,17 +7,17 @@ import * as time from "@goscript/time/index.js"
 import "@goscript/time/index.js"
 
 export class LocalTime {
-	public get wall(): number {
+	public get wall(): bigint {
 		return this._fields.wall.value
 	}
-	public set wall(value: number) {
+	public set wall(value: bigint) {
 		this._fields.wall.value = value
 	}
 
-	public get ext(): number {
+	public get ext(): bigint {
 		return this._fields.ext.value
 	}
-	public set ext(value: number) {
+	public set ext(value: bigint) {
 		this._fields.ext.value = value
 	}
 
@@ -29,15 +29,15 @@ export class LocalTime {
 	}
 
 	public _fields: {
-		wall: $.VarRef<number>
-		ext: $.VarRef<number>
+		wall: $.VarRef<bigint>
+		ext: $.VarRef<bigint>
 		loc: $.VarRef<time.Location | $.VarRef<time.Location> | null>
 	}
 
-	constructor(init?: Partial<{wall?: number, ext?: number, loc?: time.Location | $.VarRef<time.Location> | null}>) {
+	constructor(init?: Partial<{wall?: bigint, ext?: bigint, loc?: time.Location | $.VarRef<time.Location> | null}>) {
 		this._fields = {
-			wall: $.varRef(init?.wall ?? (0 as unknown as number)),
-			ext: $.varRef(init?.ext ?? (0 as unknown as number)),
+			wall: $.varRef(init?.wall ?? (0n as unknown as bigint)),
+			ext: $.varRef(init?.ext ?? (0n as unknown as bigint)),
 			loc: $.varRef(init?.loc ?? (null as unknown as time.Location | $.VarRef<time.Location> | null))
 		}
 	}
@@ -70,11 +70,11 @@ export function asLocal(t: time.Time): LocalTime {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix($.int(11), $.int(0)))).UTC() as unknown as LocalTime)))
-	$.println("as time:", $.int($.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix()))
+	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix(11n, 0n))).UTC() as unknown as LocalTime)))
+	$.println("as time:", $.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix())
 
-	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix($.int(22), $.int(0)))).UTC())))))
-	$.println("as local:", $.int($.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix()))
+	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix(22n, 0n))).UTC())))))
+	$.println("as local:", $.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix())
 }
 
 if ($.isMainScript(import.meta)) {

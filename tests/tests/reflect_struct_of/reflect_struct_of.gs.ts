@@ -20,7 +20,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let value = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(reflect.New($.pointerValueOrNil(typ)!))).Elem()))
 	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(value)).FieldByName("Name"))).SetString("Ada")
-	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(value)).Field(1))).SetInt($.int(3))
+	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(value)).Field(1))).SetInt(3n)
 	let __goscriptTuple0: any = json.Marshal($.markAsStructValue($.cloneStructValue(value)).Interface())
 	let data: $.Slice<number> = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]
@@ -39,8 +39,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("visible:", $.len(visible), visible![0].Name, $.len(visible![1].Index), visible![1].Index![0], visible![1].Index![1])
 
 	let outerValue = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(reflect.New($.pointerValueOrNil(outer)!))).Elem()))
-	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(outerValue)).FieldByIndex($.arrayToSlice<number>([0, 0])))).SetInt($.int(9))
-	$.println("promoted:", $.int($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(outerValue)).FieldByName("ID"))).Int()))
+	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(outerValue)).FieldByIndex($.arrayToSlice<number>([0, 0])))).SetInt(9n)
+	$.println("promoted:", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(outerValue)).FieldByName("ID"))).Int())
 
 	$.println("same:", $.comparableEqual(typ, reflect.StructOf(fields)))
 	$.println("different-pkg:", $.comparableEqual(reflect.StructOf($.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "x", PkgPath: "a", Type: intType}))])), reflect.StructOf($.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "x", PkgPath: "b", Type: intType}))]))))

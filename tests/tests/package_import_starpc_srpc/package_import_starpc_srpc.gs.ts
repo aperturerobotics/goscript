@@ -609,7 +609,7 @@ export async function openHeldStreams(ctx: context.Context | null, client: srpc.
 			{
 				id: 1,
 				isSend: false,
-				channel: time.After($.int64Mul(5, time.Second)),
+				channel: time.After(5000000000n),
 				onSelected: async (__goscriptSelect3Result) => {
 					$.println("hold open timeout")
 					return [streams, false]
@@ -684,7 +684,7 @@ export async function probeConcurrentStreams(ctx: context.Context | null, client
 			{
 				id: 1,
 				isSend: false,
-				channel: time.After($.int64Mul(5, time.Second)),
+				channel: time.After(5000000000n),
 				onSelected: async (__goscriptSelect4Result) => {
 					$.println("probe timeout:", i)
 					return false
@@ -927,7 +927,7 @@ export async function exerciseRpcStreamHandle(): globalThis.Promise<boolean> {
 		{
 			id: 1,
 			isSend: false,
-			channel: time.After($.int64Mul(5, time.Second)),
+			channel: time.After(5000000000n),
 			onSelected: async (__goscriptSelect8Result) => {
 				$.println("rpcstream invoke timeout")
 				return false
@@ -966,7 +966,7 @@ export async function exerciseRpcStreamHandle(): globalThis.Promise<boolean> {
 		{
 			id: 1,
 			isSend: false,
-			channel: time.After($.int64Mul(5, time.Second)),
+			channel: time.After(5000000000n),
 			onSelected: async (__goscriptSelect9Result) => {
 				$.println("rpcstream handle timeout")
 				return false
@@ -1075,7 +1075,7 @@ export async function exercisePushablePacketWriter(): globalThis.Promise<boolean
 
 export async function main(): globalThis.Promise<void> {
 	await using __defer = new $.AsyncDisposableStack()
-	let [ctx, cancel] = context.WithTimeout($.pointerValueOrNil(context.Background())!, $.int64Mul(20, time.Second))
+	let [ctx, cancel] = context.WithTimeout($.pointerValueOrNil(context.Background())!, 20000000000n)
 	__defer.defer(async () => { await cancel!() })
 
 	let mux = srpc.NewMux(null)

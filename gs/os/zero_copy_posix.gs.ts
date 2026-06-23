@@ -20,9 +20,9 @@ export function wrapSyscallError(name: string, err: $.GoError): $.GoError {
 // tryLimitedReader tries to assert the io.Reader to io.LimitedReader, it returns the io.LimitedReader,
 // the underlying io.Reader and the remaining amount of bytes if the assertion succeeds,
 // otherwise it just returns the original io.Reader and the theoretical unlimited remaining amount of bytes.
-export function tryLimitedReader(r: io.Reader): [io.LimitedReader | null, io.Reader, number] {
+export function tryLimitedReader(r: io.Reader): [io.LimitedReader | null, io.Reader, bigint] {
 	// by default, copy until EOF
-	let remain: number = Number.MAX_SAFE_INTEGER - 1
+	let remain: bigint = (1n << 63n) - 1n
 
 	let { value: lr, ok: ok } = $.typeAssert<io.LimitedReader | null>(r, {kind: $.TypeKind.Pointer, elemType: 'io.LimitedReader'})
 	if (!ok) {

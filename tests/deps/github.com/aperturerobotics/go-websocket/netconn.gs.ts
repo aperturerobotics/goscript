@@ -242,13 +242,13 @@ export class netConn {
 
 	public SetReadDeadline(t: time.Time): $.GoError {
 		const nc: netConn | $.VarRef<netConn> | null = this
-		$.pointerValue<netConn>(nc).readExpired.Store($.int(0))
+		$.pointerValue<netConn>(nc).readExpired.Store(0n)
 		if ($.markAsStructValue($.cloneStructValue(t)).IsZero()) {
 			time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer))
 		} else {
 			let dur = time.Until($.markAsStructValue($.cloneStructValue(t)))
 			if (dur <= 0) {
-				dur = 1
+				dur = 1n
 			}
 			time.Timer.prototype.Reset.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer), dur)
 		}
@@ -257,13 +257,13 @@ export class netConn {
 
 	public SetWriteDeadline(t: time.Time): $.GoError {
 		const nc: netConn | $.VarRef<netConn> | null = this
-		$.pointerValue<netConn>(nc).writeExpired.Store($.int(0))
+		$.pointerValue<netConn>(nc).writeExpired.Store(0n)
 		if ($.markAsStructValue($.cloneStructValue(t)).IsZero()) {
 			time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer))
 		} else {
 			let dur = time.Until($.markAsStructValue($.cloneStructValue(t)))
 			if (dur <= 0) {
-				dur = 1
+				dur = 1n
 			}
 			time.Timer.prototype.Reset.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer), dur)
 		}
@@ -276,7 +276,7 @@ export class netConn {
 		await __goscript_ws_js.mu.prototype.forceLock.call($.pointerValue<netConn>(nc).writeMu)
 		__defer.defer(async () => { await __goscript_ws_js.mu.prototype.unlock.call($.pointerValue<netConn>(nc).writeMu) })
 
-		if ($.int($.pointerValue<netConn>(nc).writeExpired.Load()) == $.int(1)) {
+		if ($.pointerValue<netConn>(nc).writeExpired.Load() == 1n) {
 			return [0, fmt.Errorf("failed to write: %w", (context.DeadlineExceeded as any))]
 		}
 
@@ -289,7 +289,7 @@ export class netConn {
 
 	public async read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		let nc: netConn | $.VarRef<netConn> | null = this
-		if ($.int($.pointerValue<netConn>(nc).readExpired.Load()) == $.int(1)) {
+		if ($.pointerValue<netConn>(nc).readExpired.Load() == 1n) {
 			return [0, fmt.Errorf("failed to read: %w", (context.DeadlineExceeded as any))]
 		}
 
@@ -372,7 +372,7 @@ export class websocketAddr {
 }
 
 export async function NetConn(ctx: context.Context | null, c: __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null, msgType: __goscript_ws_js.MessageType): globalThis.Promise<net.Conn | null> {
-	__goscript_ws_js.Conn.prototype.SetReadLimit.call(c, $.int(-1))
+	__goscript_ws_js.Conn.prototype.SetReadLimit.call(c, -1n)
 
 	let nc: netConn | $.VarRef<netConn> | null = (() => { const __goscriptLiteralField0 = __goscript_ws_js.newMu(c); const __goscriptLiteralField1 = __goscript_ws_js.newMu(c); return new netConn({c: c, msgType: msgType, readMu: __goscriptLiteralField0, writeMu: __goscriptLiteralField1}) })()
 
@@ -383,7 +383,7 @@ export async function NetConn(ctx: context.Context | null, c: __goscript_ws_js.C
 	$.pointerValue<netConn>(nc).readCtx = __goscriptTuple1[0]
 	$.pointerValue<netConn>(nc).readCancel = __goscriptTuple1[1]
 
-	$.pointerValue<netConn>(nc).writeTimer = time.AfterFunc($.int("9223372036854775807", 64), $.functionValue(async (): globalThis.Promise<void> => {
+	$.pointerValue<netConn>(nc).writeTimer = time.AfterFunc(9223372036854775807n, $.functionValue(async (): globalThis.Promise<void> => {
 		await using __defer = new $.AsyncDisposableStack()
 		if (!await __goscript_ws_js.mu.prototype.tryLock.call($.pointerValue<netConn>(nc).writeMu)) {
 			// If the lock cannot be acquired, then there is an
@@ -394,13 +394,13 @@ export async function NetConn(ctx: context.Context | null, c: __goscript_ws_js.C
 		__defer.defer(async () => { await __goscript_ws_js.mu.prototype.unlock.call($.pointerValue<netConn>(nc).writeMu) })
 
 		// Prevents future writes from writing until the deadline is reset.
-		$.pointerValue<netConn>(nc).writeExpired.Store($.int(1))
+		$.pointerValue<netConn>(nc).writeExpired.Store(1n)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	if (!time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer))) {
 		await $.chanRecv($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer).C)
 	}
 
-	$.pointerValue<netConn>(nc).readTimer = time.AfterFunc($.int("9223372036854775807", 64), $.functionValue(async (): globalThis.Promise<void> => {
+	$.pointerValue<netConn>(nc).readTimer = time.AfterFunc(9223372036854775807n, $.functionValue(async (): globalThis.Promise<void> => {
 		await using __defer = new $.AsyncDisposableStack()
 		if (!await __goscript_ws_js.mu.prototype.tryLock.call($.pointerValue<netConn>(nc).readMu)) {
 			// If the lock cannot be acquired, then there is an
@@ -411,7 +411,7 @@ export async function NetConn(ctx: context.Context | null, c: __goscript_ws_js.C
 		__defer.defer(async () => { await __goscript_ws_js.mu.prototype.unlock.call($.pointerValue<netConn>(nc).readMu) })
 
 		// Prevents future reads from reading until the deadline is reset.
-		$.pointerValue<netConn>(nc).readExpired.Store($.int(1))
+		$.pointerValue<netConn>(nc).readExpired.Store(1n)
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	if (!time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer))) {
 		await $.chanRecv($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer).C)

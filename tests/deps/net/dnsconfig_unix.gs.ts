@@ -35,7 +35,7 @@ import "./parse.gs.ts"
 
 export async function dnsReadConfig(filename: string): globalThis.Promise<__goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null> {
 	using __defer = new $.DisposableStack()
-	let __goscriptShadow0: __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null = new __goscript_dnsconfig.dnsConfig({ndots: 1, timeout: $.int64Mul(5, time.Second), attempts: 2})
+	let __goscriptShadow0: __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null = new __goscript_dnsconfig.dnsConfig({ndots: 1, timeout: 5000000000n, attempts: 2})
 	let __goscriptTuple0: any = __goscript_parse.open(filename)
 	let __goscriptShadow1: __goscript_parse.file | $.VarRef<__goscript_parse.file> | null = __goscriptTuple0[0]
 	let err = __goscriptTuple0[1]

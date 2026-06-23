@@ -58,7 +58,7 @@ export async function main(): globalThis.Promise<void> {
 	let ctx = context.Background()
 	await run(ctx)
 
-	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValueOrNil(ctx)!, $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(time.Hour))))
+	let [deadlineCtx, cancel] = context.WithDeadline($.pointerValueOrNil(ctx)!, $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Now())).Add(3600000000000n))))
 	__defer.defer(async () => { await cancel!() })
 	let [deadline, ok] = await $.pointerValue<Exclude<context.Context, null>>(deadlineCtx).Deadline()
 	$.println("deadline ok:", ok)

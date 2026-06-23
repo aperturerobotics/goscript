@@ -59,7 +59,7 @@ export class ping {
 			pingResponse: $.varRef(init?.pingResponse ?? (null as unknown as $.Channel<{}> | null)),
 			done: $.varRef(init?.done ?? (null as unknown as $.Channel<{}> | null)),
 			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			duration: $.varRef(init?.duration ?? (0 as unknown as time.Duration))
+			duration: $.varRef(init?.duration ?? (0n as unknown as time.Duration))
 		}
 	}
 

@@ -26,8 +26,8 @@ class info implements FileInfo {
     return this.name
   }
 
-  Size(): number {
-    return 0
+  Size(): bigint {
+    return 0n
   }
 
   Sys(): null {

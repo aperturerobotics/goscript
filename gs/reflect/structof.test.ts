@@ -41,7 +41,7 @@ describe('StructOf', () => {
 
     const value = New(typ).Elem()
     value.Field(0).SetString('Ada')
-    value.FieldByName('Count').SetInt(3)
+    value.FieldByName('Count').SetInt(3n)
 
     const [data, err] = Marshal(value.Interface())
     expect(err).toBeNull()
@@ -51,7 +51,7 @@ describe('StructOf', () => {
     expect(TypeOf(clone).String()).toBe(typ.String())
     expect(clone.Name).toBe('Ada')
     expect(clone.Count).toBe(3)
-    value.FieldByName('Count').SetInt(4)
+    value.FieldByName('Count').SetInt(4n)
     expect(clone.Count).toBe(3)
   })
 
@@ -348,9 +348,9 @@ describe('StructOf', () => {
     ])
 
     const value = New(outer).Elem()
-    value.FieldByIndex($.arrayToSlice([0, 0])).SetInt(7)
+    value.FieldByIndex($.arrayToSlice([0, 0])).SetInt(7n)
     value.FieldByName('Label').SetString('seven')
-    expect(value.FieldByName('ID').Int()).toBe(7)
+    expect(value.FieldByName('ID').Int()).toBe(7n)
     expect(value.FieldByIndex($.arrayToSlice([0, 1])).String()).toBe('seven')
   })
 

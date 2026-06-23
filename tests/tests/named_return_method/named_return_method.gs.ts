@@ -50,21 +50,21 @@ export class content {
 		return [result, status, valid]
 	}
 
-	public ReadAt(b: $.Slice<number>, off: number): [number, $.GoError] {
+	public ReadAt(b: $.Slice<number>, off: bigint): [number, $.GoError] {
 		const c: content | $.VarRef<content> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		if ((off < 0) || (off >= $.int($.len($.pointerValue<content>(c).bytes)))) {
+		if ((off < 0) || (off >= $.int64($.len($.pointerValue<content>(c).bytes)))) {
 			err = null
 			return [n, err]
 		}
 
-		let l = $.int($.int($.len(b)))
-		if (($.int64Add(off, l)) > $.int($.len($.pointerValue<content>(c).bytes))) {
-			l = $.int($.int64Sub($.int($.len($.pointerValue<content>(c).bytes)), off))
+		let l = $.int64($.len(b))
+		if (($.int64Add(off, l)) > $.int64($.len($.pointerValue<content>(c).bytes))) {
+			l = $.int64Sub($.int64($.len($.pointerValue<content>(c).bytes)), off)
 		}
 
-		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, off, $.int64Add(off, l))
+		let btr: $.Slice<number> = $.goSlice($.pointerValue<content>(c).bytes, Number(off), Number($.int64Add(off, l)))
 		n = $.copy(b, btr)
 		return [n, err]
 	}
@@ -83,7 +83,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt method
 	let buf: $.Slice<number> = $.makeSlice<number>(5, undefined, "byte")
-	let [n1, err1] = content.prototype.ReadAt.call(c, buf, $.int(0))
+	let [n1, err1] = content.prototype.ReadAt.call(c, buf, 0n)
 	$.println(n1)
 	if (err1 == null) {
 		$.println("nil")
@@ -94,7 +94,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test ReadAt with different offset
 	let buf2: $.Slice<number> = $.makeSlice<number>(6, undefined, "byte")
-	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, $.int(7))
+	let [n2, err2] = content.prototype.ReadAt.call(c, buf2, 7n)
 	$.println(n2)
 	if (err2 == null) {
 		$.println("nil")

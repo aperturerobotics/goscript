@@ -13,22 +13,22 @@ export class FileStatus {
 		this._fields.mode.value = value
 	}
 
-	public get size(): number {
+	public get size(): bigint {
 		return this._fields.size.value
 	}
-	public set size(value: number) {
+	public set size(value: bigint) {
 		this._fields.size.value = value
 	}
 
 	public _fields: {
 		mode: $.VarRef<MyFileMode>
-		size: $.VarRef<number>
+		size: $.VarRef<bigint>
 	}
 
-	constructor(init?: Partial<{mode?: MyFileMode, size?: number}>) {
+	constructor(init?: Partial<{mode?: MyFileMode, size?: bigint}>) {
 		this._fields = {
 			mode: $.varRef(init?.mode ?? (0 as unknown as MyFileMode)),
-			size: $.varRef(init?.size ?? (0 as unknown as number))
+			size: $.varRef(init?.size ?? (0n as unknown as bigint))
 		}
 	}
 
@@ -61,10 +61,10 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Mode string:", MyFileMode_String(mode))
 
 	// Test using in struct
-	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: $.int(1024)}))
+	let status = $.markAsStructValue(new FileStatus({mode: 0o755, size: 1024n}))
 
 	$.println("Status mode:", $.int(status.mode))
-	$.println("Status size:", $.int(status.size))
+	$.println("Status size:", status.size)
 
 	// Test type assertion and conversion
 	let genericMode: MyFileMode = 0o777

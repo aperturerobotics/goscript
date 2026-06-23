@@ -807,7 +807,7 @@ export class Regexp {
 			r1 = $.int(__goscriptTuple5[0], 32)
 			width1 = __goscriptTuple5[1]
 		}
-		let flag: __goscript_exec.lazyFlag = 0
+		let flag: __goscript_exec.lazyFlag = 0n
 		if (pos == 0) {
 			flag = __goscript_exec.newLazyFlag($.int(-1, 32), $.int(r, 32))
 		} else {
@@ -1544,7 +1544,7 @@ export class inputReader {
 
 	public context(pos: number): __goscript_exec.lazyFlag {
 		const i: inputReader | $.VarRef<inputReader> | null = this
-		return 0
+		return 0n
 	}
 
 	public hasPrefix(re: Regexp | $.VarRef<Regexp> | null): boolean {

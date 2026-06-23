@@ -34,10 +34,10 @@ import "./net.gs.ts"
 import "./net_fake.gs.ts"
 import "./sockaddr_posix.gs.ts"
 
-export function spliceFrom(_p0: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, _p1: io.Reader | null): [number, $.GoError, boolean] {
-	return [$.int(0), null, false]
+export function spliceFrom(_p0: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, _p1: io.Reader | null): [bigint, $.GoError, boolean] {
+	return [0n, null, false]
 }
 
-export function spliceTo(_p0: io.Writer | null, _p1: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null): [number, $.GoError, boolean] {
-	return [$.int(0), null, false]
+export function spliceTo(_p0: io.Writer | null, _p1: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null): [bigint, $.GoError, boolean] {
+	return [0n, null, false]
 }

@@ -24,7 +24,7 @@ export async function main(): globalThis.Promise<void> {
 	err = await zip.Writer.prototype.Close.call(zw)
 	$.println("close", err == null, buf.value.Len() > 0)
 
-	let __goscriptTuple1: any = await zip.NewReader($.interfaceValue<io.ReaderAt | null>(bytes.NewReader(buf.value.Bytes()), "*bytes.Reader"), $.int($.int(buf.value.Len())))
+	let __goscriptTuple1: any = await zip.NewReader($.interfaceValue<io.ReaderAt | null>(bytes.NewReader(buf.value.Bytes()), "*bytes.Reader"), $.int64(buf.value.Len()))
 	let zr: zip.Reader | $.VarRef<zip.Reader> | null = __goscriptTuple1[0]
 	err = __goscriptTuple1[1]
 	if (err != null) {

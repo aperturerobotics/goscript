@@ -149,7 +149,7 @@ export class nsswitchConfig {
 		__defer.defer(async () => { await nsswitchConfig.prototype.releaseSema.call(conf) })
 
 		let now = $.markAsStructValue($.cloneStructValue(time.Now()))
-		if ($.markAsStructValue($.cloneStructValue($.pointerValue<nsswitchConfig>(conf).lastChecked)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Mul(-5, time.Second)))))) {
+		if ($.markAsStructValue($.cloneStructValue($.pointerValue<nsswitchConfig>(conf).lastChecked)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(-5000000000n))))) {
 			return
 		}
 		$.pointerValue<nsswitchConfig>(conf).lastChecked = $.markAsStructValue($.cloneStructValue(now))

@@ -223,20 +223,20 @@ export class Int32 {
 }
 
 export class Int64 {
-	public get v(): number {
+	public get v(): bigint {
 		return this._fields.v.value
 	}
-	public set v(value: number) {
+	public set v(value: bigint) {
 		this._fields.v.value = value
 	}
 
 	public _fields: {
-		v: $.VarRef<number>;
+		v: $.VarRef<bigint>;
 	}
 
-	constructor(init?: Partial<{v?: number}>) {
+	constructor(init?: Partial<{v?: bigint}>) {
 		this._fields = {
-			v: $.varRef(init?.v ?? 0)
+			v: $.varRef(init?.v ?? 0n)
 		}
 	}
 
@@ -249,45 +249,45 @@ export class Int64 {
 	}
 
 	// Load atomically loads and returns the value stored in x.
-	public Load(): number {
+	public Load(): bigint {
 		const x = this
 		return LoadInt64(x._fields.v)
 	}
 
 	// Store atomically stores val into x.
-	public Store(val: number): void {
+	public Store(val: bigint): void {
 		const x = this
 		StoreInt64(x._fields.v, val)
 	}
 
 	// Swap atomically stores new into x and returns the previous value.
-	public Swap(_new: number): number {
+	public Swap(_new: bigint): bigint {
 		const x = this
 		return SwapInt64(x._fields.v, _new)
 	}
 
 	// CompareAndSwap executes the compare-and-swap operation for x.
-	public CompareAndSwap(old: number, _new: number): boolean {
+	public CompareAndSwap(old: bigint, _new: bigint): boolean {
 		const x = this
 		return CompareAndSwapInt64(x._fields.v, old, _new)
 	}
 
 	// Add atomically adds delta to x and returns the new value.
-	public Add(delta: number): number {
+	public Add(delta: bigint): bigint {
 		const x = this
 		return AddInt64(x._fields.v, delta)
 	}
 
 	// And atomically performs a bitwise AND operation on x using the bitmask
 	// provided as mask and returns the old value.
-	public And(mask: number): number {
+	public And(mask: bigint): bigint {
 		const x = this
 		return AndInt64(x._fields.v, mask)
 	}
 
 	// Or atomically performs a bitwise OR operation on x using the bitmask
 	// provided as mask and returns the old value.
-	public Or(mask: number): number {
+	public Or(mask: bigint): bigint {
 		const x = this
 		return OrInt64(x._fields.v, mask)
 	}
@@ -296,9 +296,9 @@ export class Int64 {
 	static __typeInfo = $.registerStructType(
 	  'Int64',
 	  new Int64(),
-	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "int64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "int64" } }] }],
 	  Int64,
-	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "int64" } }]
 	);
 }
 
@@ -383,20 +383,20 @@ export class Uint32 {
 }
 
 export class Uint64 {
-	public get v(): number {
+	public get v(): bigint {
 		return this._fields.v.value
 	}
-	public set v(value: number) {
+	public set v(value: bigint) {
 		this._fields.v.value = value
 	}
 
 	public _fields: {
-		v: $.VarRef<number>;
+		v: $.VarRef<bigint>;
 	}
 
-	constructor(init?: Partial<{v?: number}>) {
+	constructor(init?: Partial<{v?: bigint}>) {
 		this._fields = {
-			v: $.varRef(init?.v ?? 0)
+			v: $.varRef(init?.v ?? 0n)
 		}
 	}
 
@@ -409,45 +409,45 @@ export class Uint64 {
 	}
 
 	// Load atomically loads and returns the value stored in x.
-	public Load(): number {
+	public Load(): bigint {
 		const x = this
 		return LoadUint64(x._fields.v)
 	}
 
 	// Store atomically stores val into x.
-	public Store(val: number): void {
+	public Store(val: bigint): void {
 		const x = this
 		StoreUint64(x._fields.v, val)
 	}
 
 	// Swap atomically stores new into x and returns the previous value.
-	public Swap(_new: number): number {
+	public Swap(_new: bigint): bigint {
 		const x = this
 		return SwapUint64(x._fields.v, _new)
 	}
 
 	// CompareAndSwap executes the compare-and-swap operation for x.
-	public CompareAndSwap(old: number, _new: number): boolean {
+	public CompareAndSwap(old: bigint, _new: bigint): boolean {
 		const x = this
 		return CompareAndSwapUint64(x._fields.v, old, _new)
 	}
 
 	// Add atomically adds delta to x and returns the new value.
-	public Add(delta: number): number {
+	public Add(delta: bigint): bigint {
 		const x = this
 		return AddUint64(x._fields.v, delta)
 	}
 
 	// And atomically performs a bitwise AND operation on x using the bitmask
 	// provided as mask and returns the old value.
-	public And(mask: number): number {
+	public And(mask: bigint): bigint {
 		const x = this
 		return AndUint64(x._fields.v, mask)
 	}
 
 	// Or atomically performs a bitwise OR operation on x using the bitmask
 	// provided as mask and returns the old value.
-	public Or(mask: number): number {
+	public Or(mask: bigint): bigint {
 		const x = this
 		return OrUint64(x._fields.v, mask)
 	}
@@ -456,9 +456,9 @@ export class Uint64 {
 	static __typeInfo = $.registerStructType(
 	  'Uint64',
 	  new Uint64(),
-	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "number" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "number" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "number" } }] }],
+	  [{ name: "Load", args: [], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint64" } }] }, { name: "Store", args: [{ name: "val", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [] }, { name: "Swap", args: [{ name: "new", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint64" } }] }, { name: "CompareAndSwap", args: [{ name: "old", type: { kind: $.TypeKind.Basic, name: "uint64" } }, { name: "new", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "boolean" } }] }, { name: "Add", args: [{ name: "delta", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint64" } }] }, { name: "And", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint64" } }] }, { name: "Or", args: [{ name: "mask", type: { kind: $.TypeKind.Basic, name: "uint64" } }], returns: [{ type: { kind: $.TypeKind.Basic, name: "uint64" } }] }],
 	  Uint64,
-	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "number" } }]
+	  [{ name: "v", key: "v", type: { kind: $.TypeKind.Basic, name: "uint64" } }]
 	);
 }
 

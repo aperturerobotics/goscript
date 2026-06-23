@@ -117,10 +117,10 @@ export class nullMemoryManagerImpl {
 }
 
 export class Session {
-	public get rtt(): number {
+	public get rtt(): bigint {
 		return this._fields.rtt.value
 	}
-	public set rtt(value: number) {
+	public set rtt(value: bigint) {
 		this._fields.rtt.value = value
 	}
 
@@ -365,7 +365,7 @@ export class Session {
 	}
 
 	public _fields: {
-		rtt: $.VarRef<number>
+		rtt: $.VarRef<bigint>
 		remoteGoAway: $.VarRef<number>
 		localGoAway: $.VarRef<number>
 		nextStreamID: $.VarRef<number>
@@ -398,9 +398,9 @@ export class Session {
 		keepaliveActive: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{rtt?: number, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null, numIncomingStreams?: number, streams?: globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
+	constructor(init?: Partial<{rtt?: bigint, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: __goscript_mux.Config | $.VarRef<__goscript_mux.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [MemoryManager | null, $.GoError] | globalThis.Promise<[MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null, numIncomingStreams?: number, streams?: globalThis.Map<number, __goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<__goscript_stream.Stream | $.VarRef<__goscript_stream.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
 		this._fields = {
-			rtt: $.varRef(init?.rtt ?? (0 as unknown as number)),
+			rtt: $.varRef(init?.rtt ?? (0n as unknown as bigint)),
 			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as unknown as number)),
 			localGoAway: $.varRef(init?.localGoAway ?? (0 as unknown as number)),
 			nextStreamID: $.varRef(init?.nextStreamID ?? (0 as unknown as number)),
@@ -737,7 +737,7 @@ export class Session {
 
 	public async Ping(): globalThis.Promise<[time.Duration, $.GoError]> {
 		let s: Session | $.VarRef<Session> | null = this
-		let dur: time.Duration = 0
+		let dur: time.Duration = 0n
 		let err: $.GoError = null as $.GoError
 		await using __defer = new $.AsyncDisposableStack()
 		// Prepare a ping.
@@ -785,7 +785,7 @@ export class Session {
 				isSend: false,
 				channel: $.pointerValue<time.Timer>(timer).C,
 				onSelected: async (__goscriptSelect4Result) => {
-					const __goscriptReturn1: [time.Duration, $.GoError] = [0, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
+					const __goscriptReturn1: [time.Duration, $.GoError] = [0n, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
 					dur = __goscriptReturn1[0]
 					err = __goscriptReturn1[1]
 					await __defer[Symbol.asyncDispose]()
@@ -797,7 +797,7 @@ export class Session {
 				isSend: false,
 				channel: $.pointerValue<Session>(s).shutdownCh,
 				onSelected: async (__goscriptSelect4Result) => {
-					const __goscriptReturn2: [time.Duration, $.GoError] = [0, $.pointerValue<Session>(s).shutdownErr]
+					const __goscriptReturn2: [time.Duration, $.GoError] = [0n, $.pointerValue<Session>(s).shutdownErr]
 					dur = __goscriptReturn2[0]
 					err = __goscriptReturn2[1]
 					await __defer[Symbol.asyncDispose]()
@@ -831,7 +831,7 @@ export class Session {
 				isSend: false,
 				channel: $.pointerValue<time.Timer>(timer).C,
 				onSelected: async (__goscriptSelect5Result) => {
-					const __goscriptReturn3: [time.Duration, $.GoError] = [0, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
+					const __goscriptReturn3: [time.Duration, $.GoError] = [0n, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
 					dur = __goscriptReturn3[0]
 					err = __goscriptReturn3[1]
 					await __defer[Symbol.asyncDispose]()
@@ -843,7 +843,7 @@ export class Session {
 				isSend: false,
 				channel: $.pointerValue<Session>(s).shutdownCh,
 				onSelected: async (__goscriptSelect5Result) => {
-					const __goscriptReturn4: [time.Duration, $.GoError] = [0, $.pointerValue<Session>(s).shutdownErr]
+					const __goscriptReturn4: [time.Duration, $.GoError] = [0n, $.pointerValue<Session>(s).shutdownErr]
 					dur = __goscriptReturn4[0]
 					err = __goscriptReturn4[1]
 					await __defer[Symbol.asyncDispose]()
@@ -1120,7 +1120,7 @@ export class Session {
 			// Drain any data on the wire
 			if (($.uint(__goscript__const.header_MsgType(hdr), 8) == $.uint(0, 8)) && (__goscript__const.header_Length(hdr) > 0)) {
 				{
-					let [, err] = await io.CopyN($.pointerValueOrNil(io.Discard)!, $.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.int($.int(__goscript__const.header_Length(hdr))))
+					let [, err] = await io.CopyN($.pointerValueOrNil(io.Discard)!, $.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.int64(__goscript__const.header_Length(hdr)))
 					if (err != null) {
 						return null
 					}
@@ -1245,10 +1245,10 @@ export class Session {
 		if (err != null) {
 			return
 		}
-		if (!atomic.CompareAndSwapInt64($.pointerValue<Session>(s)._fields.rtt, $.int(0), $.int(time.Duration_Nanoseconds(rtt)))) {
-			let prev = $.int(atomic.LoadInt64($.pointerValue<Session>(s)._fields.rtt))
-			let smoothedRTT = $.int($.int64Add(($.int64Div(prev, 2)), ($.int64Div(time.Duration_Nanoseconds(rtt), 2))))
-			atomic.StoreInt64($.pointerValue<Session>(s)._fields.rtt, $.int(smoothedRTT))
+		if (!atomic.CompareAndSwapInt64($.pointerValue<Session>(s)._fields.rtt, 0n, time.Duration_Nanoseconds(rtt))) {
+			let prev = atomic.LoadInt64($.pointerValue<Session>(s)._fields.rtt)
+			let smoothedRTT = $.int64Add(($.int64Div(prev, 2)), ($.int64Div(time.Duration_Nanoseconds(rtt), 2)))
+			atomic.StoreInt64($.pointerValue<Session>(s)._fields.rtt, smoothedRTT)
 		}
 	}
 

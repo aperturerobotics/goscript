@@ -77,18 +77,18 @@ export class decimal {
 		return $.markAsStructValue(cloned)
 	}
 
-	public Assign(v: number): void {
+	public Assign(v: bigint): void {
 		let a: decimal | $.VarRef<decimal> | null = this
 		let buf: Uint8Array = new Uint8Array(24)
 
 		// Write reversed decimal in buf.
 		let n = 0
 		while (v > 0) {
-			let v1 = $.uint($.uint64Div(v, 10), 64)
-			v = $.uint64Sub(v, $.uint($.uint64Mul(10, v1), 64))
+			let v1 = $.uint64Div(v, 10)
+			v = $.uint64Sub(v, $.uint64Mul(10, v1))
 			buf[n] = $.uint($.uint($.uint64Add(v, 48), 8), 8)
 			n++
-			v = $.uint(v1, 64)
+			v = v1
 		}
 
 		// Reverse again to produce forward decimal in a.d.
@@ -145,23 +145,23 @@ export class decimal {
 		$.pointerValue<decimal>(a).dp++
 	}
 
-	public RoundedInteger(): number {
+	public RoundedInteger(): bigint {
 		const a: decimal | $.VarRef<decimal> | null = this
 		if ($.pointerValue<decimal>(a).dp > 20) {
-			return $.uint("18446744073709551615", 64)
+			return 18446744073709551615n
 		}
 		let i: number = 0
-		let n = $.uint($.uint(0, 64), 64)
+		let n = 0n
 		for (i = 0; (i < $.pointerValue<decimal>(a).dp) && (i < $.pointerValue<decimal>(a).nd); i++) {
-			n = $.uint($.uint64Add(($.uint64Mul(n, 10)), $.uint($.pointerValue<decimal>(a).d[i] - 48, 64)), 64)
+			n = $.uint64Add(($.uint64Mul(n, 10)), $.uint64($.pointerValue<decimal>(a).d[i] - 48))
 		}
 		for (; i < $.pointerValue<decimal>(a).dp; i++) {
-			n = $.uint64Mul(n, $.uint(10, 64))
+			n = $.uint64Mul(n, 10n)
 		}
 		if (shouldRoundUp(a, $.pointerValue<decimal>(a).dp)) {
 			n++
 		}
-		return $.uint(n, 64)
+		return n
 	}
 
 	public Shift(k: number): void {
@@ -238,12 +238,12 @@ export class decimal {
 		return $.bytesToString($.goSlice(buf, 0, w))
 	}
 
-	public floatBits(flt: __goscript_ftoa.floatInfo | $.VarRef<__goscript_ftoa.floatInfo> | null): [number, boolean] {
+	public floatBits(flt: __goscript_ftoa.floatInfo | $.VarRef<__goscript_ftoa.floatInfo> | null): [bigint, boolean] {
 		const d: decimal | $.VarRef<decimal> | null = this
-		let b: number = 0
+		let b: bigint = 0n
 		let overflow: boolean = false
 		let exp: number = 0
-		let mant: number = 0
+		let mant: bigint = 0n
 		// Binary shift left (k > 0) or right (k < 0).
 
 		out: {
@@ -251,7 +251,7 @@ export class decimal {
 				// Binary shift left (k > 0) or right (k < 0).
 
 				if ($.pointerValue<decimal>(d).nd == 0) {
-					mant = $.uint(0, 64)
+					mant = 0n
 					exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 					break out
 				}
@@ -261,7 +261,7 @@ export class decimal {
 				}
 				if ($.pointerValue<decimal>(d).dp < -330) {
 
-					mant = $.uint(0, 64)
+					mant = 0n
 					exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 					break out
 				}
@@ -302,33 +302,33 @@ export class decimal {
 				}
 
 				// Round a up to nd digits (or fewer).
-				decimal.prototype.Shift.call(d, $.int($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)))
-				mant = $.uint(decimal.prototype.RoundedInteger.call(d), 64)
+				decimal.prototype.Shift.call(d, $.int($.uint($.uint64Add(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64)))
+				mant = decimal.prototype.RoundedInteger.call(d)
 
-				if ($.uint(mant, 64) == $.uint(($.uint64Shl(2, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 64)) {
-					mant = $.uint64Shr(mant, $.uint(1, 64))
+				if (mant == ($.uint64Shl(2, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits))) {
+					mant = $.uint64Shr(mant, 1n)
 					exp++
 					if ((exp - $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) >= ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1)) {
 						break overflow
 					}
 				}
 
-				if ($.uint(($.uint64And(mant, ($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)))), 64) == $.uint(0, 64)) {
+				if (($.uint64And(mant, ($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)))) == 0n) {
 					exp = $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 				}
 				break out
 			}
 
-			mant = $.uint(0, 64)
+			mant = 0n
 			exp = ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1) + $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias
 			overflow = true
 		}
-		let bits = $.uint($.uint64And(mant, ($.uint64Sub(($.uint64Shl($.uint(1, 64), $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 1))), 64)
-		bits = $.uint64Or(bits, $.uint($.uint64Shl($.uint((exp - $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) & ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1), 64), $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits), 64))
+		let bits = $.uint64And(mant, ($.uint64Sub(($.uint64Shl(1n, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), 1)))
+		bits = $.uint64Or(bits, $.uint64Shl($.uint64((exp - $.pointerValue<__goscript_ftoa.floatInfo>(flt).bias) & ((1 << $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits) - 1)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits))
 		if ($.pointerValue<decimal>(d).neg) {
-			bits = $.uint64Or(bits, $.uint($.uint64Shl(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits), 64))
+			bits = $.uint64Or(bits, $.uint64Shl(($.uint64Shl(1, $.pointerValue<__goscript_ftoa.floatInfo>(flt).mantbits)), $.pointerValue<__goscript_ftoa.floatInfo>(flt).expbits))
 		}
-		return [$.uint(bits, 64), overflow]
+		return [bits, overflow]
 	}
 
 	public ["set"](s: string): boolean {
@@ -525,49 +525,49 @@ export function rightShift(a: decimal | $.VarRef<decimal> | null, k: number): vo
 
 	// Pick up enough leading digits to cover first shift.
 	let n: number = 0
-	for (; ($.uint64Shr(n, k)) == 0; r++) {
+	for (; ($.uint($.uint64Shr(n, k), 64)) == 0; r++) {
 		if (r >= $.pointerValue<decimal>(a).nd) {
 			if (n == 0) {
 				// a == 0; shouldn't get here, but handle anyway.
 				$.pointerValue<decimal>(a).nd = 0
 				return
 			}
-			while (($.uint64Shr(n, k)) == 0) {
-				n = $.uint64Mul(n, 10)
+			while (($.uint($.uint64Shr(n, k), 64)) == 0) {
+				n = $.uint($.uint64Mul(n, 10), 64)
 				r++
 			}
 			break
 		}
 		let c = $.uint($.pointerValue<decimal>(a).d[r], 64)
-		n = $.uint64Sub(($.uint64Add(($.uint64Mul(n, 10)), c)), 48)
+		n = $.uint($.uint64Sub(($.uint($.uint64Add(($.uint($.uint64Mul(n, 10), 64)), c), 64)), 48), 64)
 	}
 	$.pointerValue<decimal>(a).dp = $.pointerValue<decimal>(a).dp - (r - 1)
 
-	let mask: number = $.uint64Sub(($.uint64Shl(1, k)), 1)
+	let mask: number = $.uint($.uint64Sub(($.uint($.uint64Shl(1, k), 64)), 1), 64)
 
 	// Pick up a digit, put down a digit.
 	for (; r < $.pointerValue<decimal>(a).nd; r++) {
 		let c = $.uint($.pointerValue<decimal>(a).d[r], 64)
-		let dig = $.uint64Shr(n, k)
-		n = $.uint64And(n, mask)
-		$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint64Add(dig, 48), 8), 8)
+		let dig = $.uint($.uint64Shr(n, k), 64)
+		n = $.uint($.uint64And(n, mask), 64)
+		$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint($.uint64Add(dig, 48), 64), 8), 8)
 		w++
-		n = $.uint64Sub(($.uint64Add(($.uint64Mul(n, 10)), c)), 48)
+		n = $.uint($.uint64Sub(($.uint($.uint64Add(($.uint($.uint64Mul(n, 10), 64)), c), 64)), 48), 64)
 	}
 
 	// Put down extra digits.
 	while (n > 0) {
-		let dig = $.uint64Shr(n, k)
-		n = $.uint64And(n, mask)
+		let dig = $.uint($.uint64Shr(n, k), 64)
+		n = $.uint($.uint64And(n, mask), 64)
 		if (w < $.len($.pointerValue<decimal>(a).d)) {
-			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint64Add(dig, 48), 8), 8)
+			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint($.uint64Add(dig, 48), 64), 8), 8)
 			w++
 		} else {
 			if (dig > 0) {
 				$.pointerValue<decimal>(a).trunc = true
 			}
 		}
-		n = $.uint64Mul(n, 10)
+		n = $.uint($.uint64Mul(n, 10), 64)
 	}
 
 	$.pointerValue<decimal>(a).nd = w
@@ -604,12 +604,12 @@ export function leftShift(a: decimal | $.VarRef<decimal> | null, k: number): voi
 	// Pick up a digit, put down a digit.
 	let n: number = 0
 	for (r--; r >= 0; r--) {
-		n = $.uint64Add(n, $.uint64Shl(($.uint64Sub($.uint($.pointerValue<decimal>(a).d[r], 64), 48)), k))
-		let quo = $.uint64Div(n, 10)
-		let rem = $.uint64Sub(n, ($.uint64Mul(10, quo)))
+		n = $.uint($.uint64Add(n, $.uint($.uint64Shl(($.uint($.uint64Sub($.uint($.pointerValue<decimal>(a).d[r], 64), 48), 64)), k), 64)), 64)
+		let quo = $.uint($.uint64Div(n, 10), 64)
+		let rem = $.uint($.uint64Sub(n, ($.uint($.uint64Mul(10, quo), 64))), 64)
 		w--
 		if (w < $.len($.pointerValue<decimal>(a).d)) {
-			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint64Add(rem, 48), 8), 8)
+			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint($.uint64Add(rem, 48), 64), 8), 8)
 		} else {
 			if (rem != 0) {
 				$.pointerValue<decimal>(a).trunc = true
@@ -620,11 +620,11 @@ export function leftShift(a: decimal | $.VarRef<decimal> | null, k: number): voi
 
 	// Put down extra digits.
 	while (n > 0) {
-		let quo = $.uint64Div(n, 10)
-		let rem = $.uint64Sub(n, ($.uint64Mul(10, quo)))
+		let quo = $.uint($.uint64Div(n, 10), 64)
+		let rem = $.uint($.uint64Sub(n, ($.uint($.uint64Mul(10, quo), 64))), 64)
 		w--
 		if (w < $.len($.pointerValue<decimal>(a).d)) {
-			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint64Add(rem, 48), 8), 8)
+			$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint($.uint64Add(rem, 48), 64), 8), 8)
 		} else {
 			if (rem != 0) {
 				$.pointerValue<decimal>(a).trunc = true

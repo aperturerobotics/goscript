@@ -73,8 +73,8 @@ export class File {
 		return [0, ErrUnimplemented]
 	}
 
-	public Seek(offset: number, whence: number): [number, $.GoError] {
-		return [0, ErrUnimplemented]
+	public Seek(offset: bigint, whence: number): [bigint, $.GoError] {
+		return [0n, ErrUnimplemented]
 	}
 
 	public WriteString(s: string): [number, $.GoError] {

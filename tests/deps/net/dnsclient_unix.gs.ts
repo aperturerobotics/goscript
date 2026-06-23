@@ -213,7 +213,7 @@ export class resolverConfig {
 		__defer.defer(async () => { await resolverConfig.prototype.releaseSema.call(conf) })
 
 		let now = $.markAsStructValue($.cloneStructValue(time.Now()))
-		if ($.markAsStructValue($.cloneStructValue($.pointerValue<resolverConfig>(conf).lastChecked)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Mul(-5, time.Second)))))) {
+		if ($.markAsStructValue($.cloneStructValue($.pointerValue<resolverConfig>(conf).lastChecked)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(-5000000000n))))) {
 			return
 		}
 		$.pointerValue<resolverConfig>(conf).lastChecked = $.markAsStructValue($.cloneStructValue(now))

@@ -28,7 +28,7 @@ export async function main(): globalThis.Promise<void> {
 			return
 		}
 		if (false) {
-			$.println("size:", $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size()))
+			$.println("size:", await $.pointerValue<Exclude<fs.FileInfo, null>>(info).Size())
 		} else {
 			$.println("stat closure ok")
 		}

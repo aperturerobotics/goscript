@@ -172,12 +172,12 @@ export class NS {
 	)
 }
 
-export function runtime_rand(): number {
-	return 0
+export function runtime_rand(): bigint {
+	return 0n
 }
 
 export function randInt(): number {
-	return $.int($.uint64Shr($.uint(runtime_rand(), 64), 1))
+	return $.int($.uint($.uint64Shr($.uint(runtime_rand(), 64), 1), 64))
 }
 
 export function randIntn(n: number): number {

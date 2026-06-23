@@ -30,10 +30,10 @@ import "@goscript/time/index.js"
 import "./stream-yamux.gs.ts"
 
 export class yamuxConn {
-	public get rtt(): number {
+	public get rtt(): bigint {
 		return this._fields.rtt.value
 	}
-	public set rtt(value: number) {
+	public set rtt(value: bigint) {
 		this._fields.rtt.value = value
 	}
 
@@ -248,7 +248,7 @@ export class yamuxConn {
 	}
 
 	public _fields: {
-		rtt: $.VarRef<number>
+		rtt: $.VarRef<bigint>
 		remoteGoAway: $.VarRef<number>
 		localGoAway: $.VarRef<number>
 		nextStreamID: $.VarRef<number>
@@ -281,9 +281,9 @@ export class yamuxConn {
 		keepaliveActive: $.VarRef<boolean>
 	}
 
-	constructor(init?: Partial<{rtt?: number, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: yamux2.Config | $.VarRef<yamux2.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [yamux2.MemoryManager | null, $.GoError] | globalThis.Promise<[yamux2.MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: any, numIncomingStreams?: number, streams?: globalThis.Map<number, yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
+	constructor(init?: Partial<{rtt?: bigint, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: yamux2.Config | $.VarRef<yamux2.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [yamux2.MemoryManager | null, $.GoError] | globalThis.Promise<[yamux2.MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: any, numIncomingStreams?: number, streams?: globalThis.Map<number, yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
 		this._fields = {
-			rtt: $.varRef(init?.rtt ?? (0 as unknown as number)),
+			rtt: $.varRef(init?.rtt ?? (0n as unknown as bigint)),
 			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as unknown as number)),
 			localGoAway: $.varRef(init?.localGoAway ?? (0 as unknown as number)),
 			nextStreamID: $.varRef(init?.nextStreamID ?? (0 as unknown as number)),

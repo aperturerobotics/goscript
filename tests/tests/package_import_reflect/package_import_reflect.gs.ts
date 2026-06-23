@@ -74,7 +74,7 @@ export async function main(): globalThis.Promise<void> {
 	let x = 42
 	let v = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.namedValueInterfaceValue<any>(x, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))))
 	$.println("Type:", await $.pointerValue<Exclude<reflect.Type, null>>(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})).String())
-	$.println("Value:", $.int($.markAsStructValue($.cloneStructValue(v)).Int()))
+	$.println("Value:", $.markAsStructValue($.cloneStructValue(v)).Int())
 	$.println("Kind:", reflect.Kind_String($.markAsStructValue($.cloneStructValue(v)).Kind()))
 
 	// Test with string
@@ -100,7 +100,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test Zero value
 	let zeroInt = $.markAsStructValue($.cloneStructValue(reflect.Zero($.pointerValueOrNil(reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}))!)))
-	$.println("Zero int:", $.int($.markAsStructValue($.cloneStructValue(zeroInt)).Int()))
+	$.println("Zero int:", $.markAsStructValue($.cloneStructValue(zeroInt)).Int())
 
 	// Test type construction functions
 	let intType = reflect.TypeFor({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }})
@@ -310,7 +310,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("Select recv type:", await $.pointerValue<Exclude<reflect.Type, null>>($.markAsStructValue($.cloneStructValue(recv)).Type()).String())
 		// Print the actual received value
 		if (chosen == 0) {
-			$.println("Select recv value:", $.int($.markAsStructValue($.cloneStructValue(recv)).Int()))
+			$.println("Select recv value:", $.markAsStructValue($.cloneStructValue(recv)).Int())
 		} else {
 			if (chosen == 1) {
 				$.println("Select recv value:", $.markAsStructValue($.cloneStructValue(recv)).String())

@@ -9,7 +9,7 @@ export function Stat(name: string): [null | {
 	ModTime(): any
 	Mode(): any
 	Name(): string
-	Size(): number
+	Size(): bigint
 	Sys(): null | any
 }, $.GoError] {
 	// testlog.Stat(name) // Testlog not available in JavaScript
@@ -29,7 +29,7 @@ export function Lstat(name: string): [null | {
 	ModTime(): Time
 	Mode(): FileMode
 	Name(): string
-	Size(): number
+	Size(): bigint
 	Sys(): null | any
 }, $.GoError] {
 	// testlog.Stat(name) // Testlog not available in JavaScript

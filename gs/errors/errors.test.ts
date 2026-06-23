@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { AsType, Errorf, Is, Join, Wrap, Wrapf } from './errors.js'
+import {
+  AsType,
+  ErrUnsupported,
+  Errorf,
+  Is,
+  Join,
+  New,
+  Wrap,
+  Wrapf,
+} from './errors.js'
 
 class DNSError {
   public readonly IsNotFound = true
@@ -81,5 +90,39 @@ describe('errors github.com/pkg/errors compatibility helpers', () => {
     expect(Wrapf(base, 'context %d', 7)?.Error()).toBe('context 7: root')
     expect(Wrap(null, 'context')).toBe(null)
     expect(Wrapf(null, 'context %d', 7)).toBe(null)
+  })
+})
+
+describe('errors.Is identity semantics', () => {
+  it('does not match distinct errors with equal text', () => {
+    expect(Is(New('boom'), New('boom'))).toBe(false)
+  })
+
+  it('does not match ErrUnsupported by message text', () => {
+    expect(Is(New('unsupported operation'), ErrUnsupported)).toBe(false)
+  })
+
+  it('matches the same error value', () => {
+    const e = New('boom')
+    expect(Is(e, e)).toBe(true)
+  })
+
+  it('finds a target in any Join position depth-first', () => {
+    const a = New('a')
+    const b = New('b')
+    expect(Is(Join(a, b), b)).toBe(true)
+    expect(Is(Join(a, b), a)).toBe(true)
+    expect(Is(Join(a, b), New('b'))).toBe(false)
+  })
+
+  it('matches a wrapped sentinel through Wrap', () => {
+    expect(Is(Wrap(ErrUnsupported, 'ctx'), ErrUnsupported)).toBe(true)
+  })
+
+  it('finds a typed error in a later Join position via AsType', () => {
+    const dns = $.interfaceValue<$.GoError>(new DNSError(), '*net.DNSError')
+    const [matched, ok] = AsType(dnsTypeArgs, Join(New('first'), dns))
+    expect(ok).toBe(true)
+    expect(matched).toBe(dns)
   })
 })

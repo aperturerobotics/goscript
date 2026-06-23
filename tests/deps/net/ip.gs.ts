@@ -161,7 +161,7 @@ export function CIDRMask(ones: number, bits: number): IPMask {
 	for (let i = 0; i < l; i++) {
 		if (n >= 8) {
 			m![i] = $.uint(0xff, 8)
-			n = $.uint64Sub(n, 8)
+			n = $.uint($.uint64Sub(n, 8), 64)
 			continue
 		}
 		m![i] = $.uint($.uint(~$.uint($.uintShr(0xff, n, 8), 8), 8), 8)

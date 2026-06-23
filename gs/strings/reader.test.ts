@@ -126,8 +126,8 @@ describe('strings/Reader', () => {
     it('should seek from start', () => {
       const r = new Reader({ s: 'hello world' })
 
-      const [pos, err] = r.Seek(6, io.SeekStart)
-      expect(pos).toBe(6)
+      const [pos, err] = r.Seek(6n, io.SeekStart)
+      expect(pos).toBe(6n)
       expect(err).toBeNull()
       expect(r.Len()).toBe(5)
     })
@@ -136,32 +136,32 @@ describe('strings/Reader', () => {
       const r = new Reader({ s: 'hello world' })
       r.ReadByte() // advance to position 1
 
-      const [pos, err] = r.Seek(2, io.SeekCurrent)
-      expect(pos).toBe(3)
+      const [pos, err] = r.Seek(2n, io.SeekCurrent)
+      expect(pos).toBe(3n)
       expect(err).toBeNull()
     })
 
     it('should seek from end', () => {
       const r = new Reader({ s: 'hello world' })
 
-      const [pos, err] = r.Seek(-5, io.SeekEnd)
-      expect(pos).toBe(6)
+      const [pos, err] = r.Seek(-5n, io.SeekEnd)
+      expect(pos).toBe(6n)
       expect(err).toBeNull()
     })
 
     it('should handle invalid whence in seek', () => {
       const r = new Reader({ s: 'hello' })
 
-      const [pos, err] = r.Seek(0, 999)
-      expect(pos).toBe(0)
+      const [pos, err] = r.Seek(0n, 999)
+      expect(pos).toBe(0n)
       expect(err).not.toBeNull()
     })
 
     it('should handle negative position in seek', () => {
       const r = new Reader({ s: 'hello' })
 
-      const [pos, err] = r.Seek(-10, io.SeekStart)
-      expect(pos).toBe(0)
+      const [pos, err] = r.Seek(-10n, io.SeekStart)
+      expect(pos).toBe(0n)
       expect(err).not.toBeNull()
     })
 

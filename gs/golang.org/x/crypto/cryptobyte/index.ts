@@ -1378,7 +1378,7 @@ function makeTime(
   const millis =
     globalThis.Date.UTC(year, month - 1, day, hour, minute, second) -
     offsetMinutes * 60 * 1000
-  return time.Unix(Math.floor(millis / 1000), 0)
+  return time.Unix(BigInt(Math.floor(millis / 1000)), 0n)
 }
 
 function parseGeneralizedTime(value: string): time.Time | null {

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resetHostRuntimeForTests } from '@goscript/builtin/hostio.js'
 import * as $ from '@goscript/builtin/index.js'
+import * as errors from '@goscript/errors/index.js'
 import * as os from '@goscript/os/index.js'
 import * as fmt from './fmt.js'
 
@@ -86,6 +87,21 @@ describe('fmt basic value formatting', () => {
     expect(fmt.Sprintf('%q', 97)).toBe(JSON.stringify('a'))
   })
 
+  it('%c encodes runes including astral planes and invalid code points', () => {
+    expect(fmt.Sprintf('%c', 0x597d)).toBe('好')
+    // U+1F600 is above U+FFFF; fromCharCode would have truncated it.
+    expect(fmt.Sprintf('%c', 0x1f600)).toBe('😀')
+    expect(fmt.Sprintf('%c', 0x1f600).codePointAt(0)).toBe(0x1f600)
+    // Invalid code points map to U+FFFD instead of throwing.
+    expect(fmt.Sprintf('%c', 0x110000)).toBe('�')
+    expect(fmt.Sprintf('%c', -1)).toBe('�')
+  })
+
+  it('%q on an astral rune does not throw and round-trips the code point', () => {
+    expect(fmt.Sprintf('%q', 0x1f600)).toBe(JSON.stringify('😀'))
+    expect(fmt.Sprintf('%q', 0x110000)).toBe(JSON.stringify('�'))
+  })
+
   it('%p pointer-ish formatting fallback', () => {
     expect(fmt.Sprintf('%p', {})).toBe('0x0')
     expect(fmt.Sprintf('%p', { __address: 255 })).toBe('0xff')
@@ -134,6 +150,21 @@ describe('fmt basic value formatting', () => {
   it('%w formats errors by Error method', () => {
     const err = $.newError('root')
     expect(fmt.Errorf('wrap: %w', err)?.Error()).toBe('wrap: root')
+  })
+
+  it('%w wraps so Unwrap and errors.Is reach the operand', () => {
+    const base = $.newError('root')
+    const wrapped = fmt.Errorf('ctx: %w', base)
+    expect((wrapped as any).Unwrap()).toBe(base)
+    expect(errors.Is(wrapped, base)).toBe(true)
+  })
+
+  it('multiple %w unwrap to every operand', () => {
+    const a = $.newError('a')
+    const b = $.newError('b')
+    const wrapped = fmt.Errorf('%w and %w', a, b)
+    expect(errors.Is(wrapped, a)).toBe(true)
+    expect(errors.Is(wrapped, b)).toBe(true)
   })
 
   it('%s formats stringers by String method', () => {

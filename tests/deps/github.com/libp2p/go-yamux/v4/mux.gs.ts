@@ -190,15 +190,15 @@ export class Config {
 			AcceptBacklog: $.varRef(init?.AcceptBacklog ?? (0 as unknown as number)),
 			PingBacklog: $.varRef(init?.PingBacklog ?? (0 as unknown as number)),
 			EnableKeepAlive: $.varRef(init?.EnableKeepAlive ?? (false as unknown as boolean)),
-			KeepAliveInterval: $.varRef(init?.KeepAliveInterval ?? (0 as unknown as time.Duration)),
-			MeasureRTTInterval: $.varRef(init?.MeasureRTTInterval ?? (0 as unknown as time.Duration)),
-			ConnectionWriteTimeout: $.varRef(init?.ConnectionWriteTimeout ?? (0 as unknown as time.Duration)),
+			KeepAliveInterval: $.varRef(init?.KeepAliveInterval ?? (0n as unknown as time.Duration)),
+			MeasureRTTInterval: $.varRef(init?.MeasureRTTInterval ?? (0n as unknown as time.Duration)),
+			ConnectionWriteTimeout: $.varRef(init?.ConnectionWriteTimeout ?? (0n as unknown as time.Duration)),
 			MaxIncomingStreams: $.varRef(init?.MaxIncomingStreams ?? (0 as unknown as number)),
 			InitialStreamWindowSize: $.varRef(init?.InitialStreamWindowSize ?? (0 as unknown as number)),
 			MaxStreamWindowSize: $.varRef(init?.MaxStreamWindowSize ?? (0 as unknown as number)),
 			LogOutput: $.varRef(init?.LogOutput ?? (null as unknown as io.Writer | null)),
 			ReadBufSize: $.varRef(init?.ReadBufSize ?? (0 as unknown as number)),
-			WriteCoalesceDelay: $.varRef(init?.WriteCoalesceDelay ?? (0 as unknown as time.Duration)),
+			WriteCoalesceDelay: $.varRef(init?.WriteCoalesceDelay ?? (0n as unknown as time.Duration)),
 			MaxMessageSize: $.varRef(init?.MaxMessageSize ?? (0 as unknown as number))
 		}
 	}
@@ -233,17 +233,17 @@ export class Config {
 }
 
 export function DefaultConfig(): Config | $.VarRef<Config> | null {
-	return new Config({AcceptBacklog: 256, PingBacklog: 32, EnableKeepAlive: true, KeepAliveInterval: $.int64Mul(30, time.Second), MeasureRTTInterval: $.int64Mul(30, time.Second), ConnectionWriteTimeout: $.int64Mul(10, time.Second), MaxIncomingStreams: $.uint(1000, 32), InitialStreamWindowSize: $.uint(262144, 32), MaxStreamWindowSize: $.uint(16777216, 32), LogOutput: $.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"), ReadBufSize: 4096, MaxMessageSize: $.uint(64 * 1024, 32), WriteCoalesceDelay: $.int64Mul(100, time.Microsecond)})
+	return new Config({AcceptBacklog: 256, PingBacklog: 32, EnableKeepAlive: true, KeepAliveInterval: 30000000000n, MeasureRTTInterval: 30000000000n, ConnectionWriteTimeout: 10000000000n, MaxIncomingStreams: $.uint(1000, 32), InitialStreamWindowSize: $.uint(262144, 32), MaxStreamWindowSize: $.uint(16777216, 32), LogOutput: $.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"), ReadBufSize: 4096, MaxMessageSize: $.uint(64 * 1024, 32), WriteCoalesceDelay: 100000n})
 }
 
 export function VerifyConfig(config: Config | $.VarRef<Config> | null): $.GoError {
 	if ($.pointerValue<Config>(config).AcceptBacklog <= 0) {
 		return fmt.Errorf("backlog must be positive")
 	}
-	if ($.pointerValue<Config>(config).EnableKeepAlive && ($.pointerValue<Config>(config).KeepAliveInterval == 0)) {
+	if ($.pointerValue<Config>(config).EnableKeepAlive && ($.pointerValue<Config>(config).KeepAliveInterval == 0n)) {
 		return fmt.Errorf("keep-alive interval must be positive")
 	}
-	if ($.pointerValue<Config>(config).MeasureRTTInterval == 0) {
+	if ($.pointerValue<Config>(config).MeasureRTTInterval == 0n) {
 		return fmt.Errorf("measure-rtt interval must be positive")
 	}
 

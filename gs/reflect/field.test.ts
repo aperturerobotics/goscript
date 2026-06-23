@@ -63,7 +63,7 @@ describe('reflect struct field access', () => {
       ValueOf(person)
         .FieldByIndex(arrayToSlice([1]))
         .Int(),
-    ).toBe(3)
+    ).toBe(3n)
     expect(ValueOf(person).FieldByName('Missing').IsValid()).toBe(false)
 
     const stringMethod = ValueOf(person).MethodByName('String')

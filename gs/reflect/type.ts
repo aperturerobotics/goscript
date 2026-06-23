@@ -587,9 +587,24 @@ export class Value {
   }
 
   // Methods required by godoc.txt and used throughout the codebase
-  public Int(): number {
+
+  // integerValue reads the underlying value as a bigint regardless of whether it
+  // is stored as a number (int8..int32/uint8..uint32) or a bigint (int64/uint64).
+  private integerValue(): bigint | null {
+    if (typeof this._value === 'bigint') {
+      return this._value
+    }
     const value = this.numericValue()
     if (value !== null && Number.isInteger(value)) {
+      return BigInt(value)
+    }
+    return null
+  }
+
+  // Int returns v's underlying value as an int64, matching reflect.Value.Int.
+  public Int(): bigint {
+    const value = this.integerValue()
+    if (value !== null) {
       return value
     }
     throw new Error(
@@ -599,9 +614,10 @@ export class Value {
     )
   }
 
-  public Uint(): number {
-    const value = this.numericValue()
-    if (value !== null && value >= 0) {
+  // Uint returns v's underlying value as a uint64, matching reflect.Value.Uint.
+  public Uint(): bigint {
+    const value = this.integerValue()
+    if (value !== null && value >= 0n) {
       return value
     }
     throw new Error(
@@ -1159,8 +1175,9 @@ export class Value {
     }
   }
 
-  // SetInt sets v's underlying value to x
-  public SetInt(x: number): void {
+  // SetInt sets v's underlying value to x. x is an int64 (bigint); the stored
+  // value uses the field's representation: bigint for Int64, number otherwise.
+  public SetInt(x: bigint): void {
     if (!this.CanSet()) {
       throw new Error(
         'reflect: call of reflect.Value.SetInt on unaddressable value',
@@ -1172,17 +1189,19 @@ export class Value {
         'reflect: call of reflect.Value.SetInt on ' + k + ' Value',
       )
     }
-    this._value = x
+    const stored: number | bigint = k === Int64 ? x : Number(x)
+    this._value = stored
     if (this._parentVarRef) {
-      this._parentVarRef.value = x
+      this._parentVarRef.value = stored
     }
     if (this._parentStruct && this._fieldName) {
-      this._parentStruct[this._fieldName] = x
+      this._parentStruct[this._fieldName] = stored
     }
   }
 
-  // SetUint sets v's underlying value to x
-  public SetUint(x: number): void {
+  // SetUint sets v's underlying value to x. x is a uint64 (bigint); the stored
+  // value uses the field's representation: bigint for Uint64, number otherwise.
+  public SetUint(x: bigint): void {
     if (!this.CanSet()) {
       throw new Error(
         'reflect: call of reflect.Value.SetUint on unaddressable value',
@@ -1201,12 +1220,13 @@ export class Value {
         'reflect: call of reflect.Value.SetUint on ' + k + ' Value',
       )
     }
-    this._value = x
+    const stored: number | bigint = k === Uint64 ? x : Number(x)
+    this._value = stored
     if (this._parentVarRef) {
-      this._parentVarRef.value = x
+      this._parentVarRef.value = stored
     }
     if (this._parentStruct && this._fieldName) {
-      this._parentStruct[this._fieldName] = x
+      this._parentStruct[this._fieldName] = stored
     }
   }
 

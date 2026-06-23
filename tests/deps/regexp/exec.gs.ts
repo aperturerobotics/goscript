@@ -507,7 +507,7 @@ export class machine {
 			r1 = $.int(__goscriptTuple1[0], 32)
 			width1 = __goscriptTuple1[1]
 		}
-		let flag: $.VarRef<lazyFlag> = $.varRef(0)
+		let flag: $.VarRef<lazyFlag> = $.varRef(0n)
 		if (pos == 0) {
 			flag.value = newLazyFlag($.int(-1, 32), $.int(r, 32))
 		} else {
@@ -698,10 +698,10 @@ export class onePassMachine {
 	)
 }
 
-export type lazyFlag = number
+export type lazyFlag = bigint
 
 export function newLazyFlag(r1: number, r2: number): lazyFlag {
-	return $.uint64Add(($.uint64Mul(r1, (2 ** 32))), $.uint($.uint(r2, 32), 64))
+	return $.uint64Add(($.uint64Mul(r1, (2 ** 32))), $.uint64($.uint(r2, 32)))
 }
 
 export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {

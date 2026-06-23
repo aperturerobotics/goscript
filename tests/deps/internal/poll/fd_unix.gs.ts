@@ -328,7 +328,7 @@ export class FD {
 		}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))
 	}
 
-	public async Ftruncate(size: number): globalThis.Promise<$.GoError> {
+	public async Ftruncate(size: bigint): globalThis.Promise<$.GoError> {
 		const fd: FD | $.VarRef<FD> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		{
@@ -339,7 +339,7 @@ export class FD {
 		}
 		__defer.defer(async () => { await FD.prototype.decref.call(fd) })
 		return await __goscript_fd_posix.ignoringEINTR($.functionValue((): $.GoError => {
-			return syscall.Ftruncate($.pointerValue<FD>(fd).Sysfd, $.int(size))
+			return syscall.Ftruncate($.pointerValue<FD>(fd).Sysfd, size)
 		}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo)))
 	}
 
@@ -364,7 +364,7 @@ export class FD {
 		return err
 	}
 
-	public async Pread(p: $.Slice<number>, off: number): globalThis.Promise<[number, $.GoError]> {
+	public async Pread(p: $.Slice<number>, off: bigint): globalThis.Promise<[number, $.GoError]> {
 		const fd: FD | $.VarRef<FD> | null = this
 		// Call incref, not readLock, because since pread specifies the
 		// offset it is independent from other reads.
@@ -379,7 +379,7 @@ export class FD {
 			p = $.goSlice(p, undefined, 1073741824)
 		}
 		let __goscriptTuple0: any = await __goscript_fd_posix.ignoringEINTR2(undefined, $.functionValue((): [number, $.GoError] => {
-			return syscall.Pread($.pointerValue<FD>(fd).Sysfd, p, $.int(off))
+			return syscall.Pread($.pointerValue<FD>(fd).Sysfd, p, off)
 		}, ({ kind: $.TypeKind.Function, params: [], results: [{ kind: $.TypeKind.Basic, name: "int" }, "error"] } as $.FunctionTypeInfo)))
 		let n = (__goscriptTuple0[0] as number)
 		let err = __goscriptTuple0[1]
@@ -391,7 +391,7 @@ export class FD {
 		return [n, err]
 	}
 
-	public async Pwrite(p: $.Slice<number>, off: number): globalThis.Promise<[number, $.GoError]> {
+	public async Pwrite(p: $.Slice<number>, off: bigint): globalThis.Promise<[number, $.GoError]> {
 		const fd: FD | $.VarRef<FD> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		// Call incref, not writeLock, because since pwrite specifies the
@@ -410,7 +410,7 @@ export class FD {
 			if ($.pointerValue<FD>(fd).IsStream && ((max - nn) > 1073741824)) {
 				max = nn + 1073741824
 			}
-			let [n, err] = syscall.Pwrite($.pointerValue<FD>(fd).Sysfd, $.goSlice(p, nn, max), $.int($.int64Add(off, $.int(nn))))
+			let [n, err] = syscall.Pwrite($.pointerValue<FD>(fd).Sysfd, $.goSlice(p, nn, max), $.int64Add(off, $.int64(nn)))
 			if ($.comparableEqual(err, syscall.EINTR)) {
 				continue
 			}
@@ -807,19 +807,17 @@ export class FD {
 		throw new globalThis.Error("goscript: unreachable return")
 	}
 
-	public async Seek(offset: number, whence: number): globalThis.Promise<[number, $.GoError]> {
+	public async Seek(offset: bigint, whence: number): globalThis.Promise<[bigint, $.GoError]> {
 		const fd: FD | $.VarRef<FD> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		{
 			let err = FD.prototype.incref.call(fd)
 			if (err != null) {
-				return [$.int(0), err]
+				return [0n, err]
 			}
 		}
 		__defer.defer(async () => { await FD.prototype.decref.call(fd) })
-		const __goscriptReturn2 = syscall.Seek($.pointerValue<FD>(fd).Sysfd, $.int(offset), whence)
-		return [$.int(__goscriptReturn2[0]), __goscriptReturn2[1]]
-		throw new globalThis.Error("goscript: unreachable return")
+		return syscall.Seek($.pointerValue<FD>(fd).Sysfd, offset, whence)
 	}
 
 	public async SetBlocking(): globalThis.Promise<$.GoError> {
@@ -1164,7 +1162,7 @@ export class FD {
 
 	public closing(): boolean {
 		const fd: FD | $.VarRef<FD> | null = this
-		return $.uint(($.uint64And(atomic.LoadUint64($.pointerValue<FD>(fd).fdmu._fields.state), 1)), 64) != $.uint(0, 64)
+		return ($.uint64And(atomic.LoadUint64($.pointerValue<FD>(fd).fdmu._fields.state), 1)) != 0n
 	}
 
 	public async decref(): globalThis.Promise<$.GoError> {

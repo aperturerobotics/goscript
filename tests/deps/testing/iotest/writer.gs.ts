@@ -14,22 +14,22 @@ export class truncateWriter {
 		this._fields.w.value = value
 	}
 
-	public get n(): number {
+	public get n(): bigint {
 		return this._fields.n.value
 	}
-	public set n(value: number) {
+	public set n(value: bigint) {
 		this._fields.n.value = value
 	}
 
 	public _fields: {
 		w: $.VarRef<io.Writer | null>
-		n: $.VarRef<number>
+		n: $.VarRef<bigint>
 	}
 
-	constructor(init?: Partial<{w?: io.Writer | null, n?: number}>) {
+	constructor(init?: Partial<{w?: io.Writer | null, n?: bigint}>) {
 		this._fields = {
 			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
-			n: $.varRef(init?.n ?? (0 as unknown as number))
+			n: $.varRef(init?.n ?? (0n as unknown as bigint))
 		}
 	}
 
@@ -51,13 +51,13 @@ export class truncateWriter {
 		}
 		// real write
 		n = $.len(p)
-		if ($.int(n) > $.pointerValue<truncateWriter>(t).n) {
+		if ($.int64(n) > $.pointerValue<truncateWriter>(t).n) {
 			n = $.int($.pointerValue<truncateWriter>(t).n)
 		}
 		let __goscriptTuple0: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<truncateWriter>(t).w).Write($.goSlice(p, 0, n))
 		n = __goscriptTuple0[0]
 		err = __goscriptTuple0[1]
-		$.pointerValue<truncateWriter>(t).n = $.int64Sub($.pointerValue<truncateWriter>(t).n, $.int($.int(n)))
+		$.pointerValue<truncateWriter>(t).n = $.int64Sub($.pointerValue<truncateWriter>(t).n, $.int64(n))
 		if (err == null) {
 			n = $.len(p)
 		}
@@ -73,6 +73,6 @@ export class truncateWriter {
 	)
 }
 
-export function TruncateWriter(w: io.Writer | null, n: number): io.Writer | null {
-	return $.interfaceValue<io.Writer | null>(new truncateWriter({w: w, n: $.int(n)}), "*iotest.truncateWriter")
+export function TruncateWriter(w: io.Writer | null, n: bigint): io.Writer | null {
+	return $.interfaceValue<io.Writer | null>(new truncateWriter({w: w, n: n}), "*iotest.truncateWriter")
 }

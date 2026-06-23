@@ -95,7 +95,7 @@ export function Fsync(_fd: number): $.GoError {
   return ENOSYS
 }
 
-export function Ftruncate(_fd: number, _length: number): $.GoError {
+export function Ftruncate(_fd: number, _length: bigint): $.GoError {
   return ENOSYS
 }
 
@@ -113,7 +113,7 @@ export function ReadDirent(
 export function Pread(
   _fd: number,
   _b: $.Bytes | null,
-  _offset: number,
+  _offset: bigint,
 ): [number, $.GoError] {
   return [0, ENOSYS]
 }
@@ -121,17 +121,17 @@ export function Pread(
 export function Pwrite(
   _fd: number,
   _b: $.Bytes | null,
-  _offset: number,
+  _offset: bigint,
 ): [number, $.GoError] {
   return [0, ENOSYS]
 }
 
 export function Seek(
   _fd: number,
-  _offset: number,
+  _offset: bigint,
   _whence: number,
-): [number, $.GoError] {
-  return [0, ENOSYS]
+): [bigint, $.GoError] {
+  return [0n, ENOSYS]
 }
 
 export function Write(_fd: number, _b: $.Bytes | null): [number, $.GoError] {
@@ -213,11 +213,11 @@ export function SendmsgN(
   return [0, ENOSYS]
 }
 
-export function SetReadDeadline(_fd: number, _t: number): $.GoError {
+export function SetReadDeadline(_fd: number, _t: bigint): $.GoError {
   return ENOSYS
 }
 
-export function SetWriteDeadline(_fd: number, _t: number): $.GoError {
+export function SetWriteDeadline(_fd: number, _t: bigint): $.GoError {
   return ENOSYS
 }
 

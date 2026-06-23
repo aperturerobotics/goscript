@@ -401,10 +401,8 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 		if (ok) {
 			// Seek(0, 1) should report the current file position (EOF).
 			{
-				let __goscriptTuple4: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
-				let off = $.int(__goscriptTuple4[0])
-				let __goscriptShadow2 = __goscriptTuple4[1]
-				if (($.int(off) != $.int($.int($.len(content)))) || (__goscriptShadow2 != null)) {
+				let [off, __goscriptShadow2] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek(0n, 1)
+				if ((off != $.int64($.len(content))) || (__goscriptShadow2 != null)) {
 					return fmt.Errorf("Seek(0, 1) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow2 as any), $.namedValueInterfaceValue<any>($.len(content), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
@@ -414,26 +412,20 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			let middle = $.len(content) - (Math.trunc($.len(content) / 3))
 			if (middle > 0) {
 				{
-					let __goscriptTuple5: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(-1), 1)
-					let off = $.int(__goscriptTuple5[0])
-					let __goscriptShadow3 = __goscriptTuple5[1]
-					if (($.int(off) != $.int($.int($.len(content) - 1))) || (__goscriptShadow3 != null)) {
+					let [off, __goscriptShadow3] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek(-1n, 1)
+					if ((off != $.int64($.len(content) - 1)) || (__goscriptShadow3 != null)) {
 						return fmt.Errorf("Seek(-1, 1) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(-off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow3 as any), $.namedValueInterfaceValue<any>($.len(content) - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
 				{
-					let __goscriptTuple6: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 1)
-					let off = $.int(__goscriptTuple6[0])
-					let __goscriptShadow4 = __goscriptTuple6[1]
-					if (($.int(off) != $.int($.int(middle - 1))) || (__goscriptShadow4 != null)) {
+					let [off, __goscriptShadow4] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int64(Math.trunc(-$.len(content) / 3)), 1)
+					if ((off != $.int64(middle - 1)) || (__goscriptShadow4 != null)) {
 						return fmt.Errorf("Seek(%d, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(-$.len(content) / 3), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>($.len(content) - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow4 as any), $.namedValueInterfaceValue<any>(middle - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
 				{
-					let __goscriptTuple7: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(+1), 1)
-					let off = $.int(__goscriptTuple7[0])
-					let __goscriptShadow5 = __goscriptTuple7[1]
-					if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow5 != null)) {
+					let [off, __goscriptShadow5] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek(1n, 1)
+					if ((off != $.int64(middle)) || (__goscriptShadow5 != null)) {
 						return fmt.Errorf("Seek(+1, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(middle - 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow5 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}
@@ -441,18 +433,16 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Seek(0, 1) should report the current file position (middle).
 			{
-				let __goscriptTuple8: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int(0), 1)
-				let off = $.int(__goscriptTuple8[0])
-				let __goscriptShadow6 = __goscriptTuple8[1]
-				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow6 != null)) {
+				let [off, __goscriptShadow6] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek(0n, 1)
+				if ((off != $.int64(middle)) || (__goscriptShadow6 != null)) {
 					return fmt.Errorf("Seek(0, 1) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow6 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 
 			// Reading forward should return the last part of the file.
-			let __goscriptTuple9: any = await io.ReadAll($.pointerValueOrNil($.interfaceValue<io.Reader | null>(new smallByteReader({r: (__goscriptShadow1 as io.Reader | null)}), "*iotest.smallByteReader"))!)
-			let __goscriptShadow7: $.Slice<number> = __goscriptTuple9[0]
-			let __goscriptShadow8 = __goscriptTuple9[1]
+			let __goscriptTuple4: any = await io.ReadAll($.pointerValueOrNil($.interfaceValue<io.Reader | null>(new smallByteReader({r: (__goscriptShadow1 as io.Reader | null)}), "*iotest.smallByteReader"))!)
+			let __goscriptShadow7: $.Slice<number> = __goscriptTuple4[0]
+			let __goscriptShadow8 = __goscriptTuple4[1]
 			if (__goscriptShadow8 != null) {
 				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
@@ -462,26 +452,22 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Seek relative to end of file, but start elsewhere.
 			{
-				let __goscriptTuple10: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
-				let off = $.int(__goscriptTuple10[0])
-				let __goscriptShadow9 = __goscriptTuple10[1]
-				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow9 != null)) {
+				let [off, __goscriptShadow9] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int64(Math.trunc(middle / 2)), 0)
+				if ((off != $.int64(Math.trunc(middle / 2))) || (__goscriptShadow9 != null)) {
 					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow9 as any), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 			{
-				let __goscriptTuple11: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(-$.len(content) / 3))), 2)
-				let off = $.int(__goscriptTuple11[0])
-				let __goscriptShadow10 = __goscriptTuple11[1]
-				if (($.int(off) != $.int($.int(middle))) || (__goscriptShadow10 != null)) {
+				let [off, __goscriptShadow10] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int64(Math.trunc(-$.len(content) / 3)), 2)
+				if ((off != $.int64(middle)) || (__goscriptShadow10 != null)) {
 					return fmt.Errorf("Seek(%d, 2) from %d = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(-$.len(content) / 3), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow10 as any), $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
 
 			// Reading forward should return the last part of the file (again).
-			let __goscriptTuple12: any = await io.ReadAll($.pointerValueOrNil($.interfaceValue<io.Reader | null>(new smallByteReader({r: (__goscriptShadow1 as io.Reader | null)}), "*iotest.smallByteReader"))!)
-			__goscriptShadow7 = __goscriptTuple12[0]
-			__goscriptShadow8 = __goscriptTuple12[1]
+			let __goscriptTuple5: any = await io.ReadAll($.pointerValueOrNil($.interfaceValue<io.Reader | null>(new smallByteReader({r: (__goscriptShadow1 as io.Reader | null)}), "*iotest.smallByteReader"))!)
+			__goscriptShadow7 = __goscriptTuple5[0]
+			__goscriptShadow8 = __goscriptTuple5[1]
 			if (__goscriptShadow8 != null) {
 				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(middle, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
@@ -491,16 +477,14 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 			// Absolute seek & read forward.
 			{
-				let __goscriptTuple13: any = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int($.int(Math.trunc(middle / 2))), 0)
-				let off = $.int(__goscriptTuple13[0])
-				let __goscriptShadow11 = __goscriptTuple13[1]
-				if (($.int(off) != $.int($.int(Math.trunc(middle / 2)))) || (__goscriptShadow11 != null)) {
+				let [off, __goscriptShadow11] = await $.pointerValue<Exclude<io.ReadSeeker, null>>(__goscriptShadow1).Seek($.int64(Math.trunc(middle / 2)), 0)
+				if ((off != $.int64(Math.trunc(middle / 2))) || (__goscriptShadow11 != null)) {
 					return fmt.Errorf("Seek(%d, 0) from EOF = %d, %v, want %d, nil", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(off, "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }), (__goscriptShadow11 as any), $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 				}
 			}
-			let __goscriptTuple14: any = await io.ReadAll($.pointerValueOrNil((__goscriptShadow1 as io.Reader | null))!)
-			__goscriptShadow7 = __goscriptTuple14[0]
-			__goscriptShadow8 = __goscriptTuple14[1]
+			let __goscriptTuple6: any = await io.ReadAll($.pointerValueOrNil((__goscriptShadow1 as io.Reader | null))!)
+			__goscriptShadow7 = __goscriptTuple6[0]
+			__goscriptShadow8 = __goscriptTuple6[1]
 			if (__goscriptShadow8 != null) {
 				return fmt.Errorf("ReadAll from offset %d: %v", $.namedValueInterfaceValue<any>(Math.trunc(middle / 2), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow8 as any))
 			}
@@ -512,15 +496,15 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 
 	let __goscriptShadow12 = r
 	{
-		let __goscriptTuple15: any = $.typeAssertTuple<io.ReaderAt | null>(__goscriptShadow12, "io.ReaderAt")
-		let __goscriptShadow13 = __goscriptTuple15[0]
-		let ok = __goscriptTuple15[1]
+		let __goscriptTuple7: any = $.typeAssertTuple<io.ReaderAt | null>(__goscriptShadow12, "io.ReaderAt")
+		let __goscriptShadow13 = __goscriptTuple7[0]
+		let ok = __goscriptTuple7[1]
 		if (ok) {
 			let __goscriptShadow14: $.Slice<number> = $.makeSlice<number>($.len(content), $.len(content) + 1, "byte")
 			for (let __goscriptRangeTarget0 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
-			let [__goscriptShadow15, __goscriptShadow16] = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt(__goscriptShadow14, $.int(0))
+			let [__goscriptShadow15, __goscriptShadow16] = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt(__goscriptShadow14, 0n)
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || ((__goscriptShadow16 != null) && (!$.comparableEqual(__goscriptShadow16, io.EOF)))) {
 				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, nil or EOF", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			}
@@ -528,9 +512,9 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				return fmt.Errorf("ReadAt(%d, 0) = %q\n\twant %q", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>(__goscriptShadow14, "[]byte"), $.interfaceValue<any>(content, "[]byte"))
 			}
 
-			let __goscriptTuple16: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, 1), $.int($.int($.len(__goscriptShadow14))))
-			__goscriptShadow15 = __goscriptTuple16[0]
-			__goscriptShadow16 = __goscriptTuple16[1]
+			let __goscriptTuple8: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, 1), $.int64($.len(__goscriptShadow14)))
+			__goscriptShadow15 = __goscriptTuple8[0]
+			__goscriptShadow16 = __goscriptTuple8[1]
 			if ((__goscriptShadow15 != 0) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
 				return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 0, EOF", $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any))
 			}
@@ -538,9 +522,9 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 			for (let __goscriptRangeTarget1 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
-			let __goscriptTuple17: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, $.cap(__goscriptShadow14)), $.int(0))
-			__goscriptShadow15 = __goscriptTuple17[0]
-			__goscriptShadow16 = __goscriptTuple17[1]
+			let __goscriptTuple9: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, undefined, $.cap(__goscriptShadow14)), 0n)
+			__goscriptShadow15 = __goscriptTuple9[0]
+			__goscriptShadow16 = __goscriptTuple9[1]
 			if ((__goscriptShadow15 != $.len(__goscriptShadow14)) || (!$.comparableEqual(__goscriptShadow16, io.EOF))) {
 				return fmt.Errorf("ReadAt(%d, 0) = %v, %v, want %d, EOF", $.namedValueInterfaceValue<any>($.cap(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), $.namedValueInterfaceValue<any>($.len(__goscriptShadow14), "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 			}
@@ -552,9 +536,9 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 				__goscriptShadow14![i] = $.uint(0xfe, 8)
 			}
 			for (let __goscriptRangeTarget3 = __goscriptShadow14, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
-				let __goscriptTuple18: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, i, i + 1), $.int($.int(i)))
-				__goscriptShadow15 = __goscriptTuple18[0]
-				__goscriptShadow16 = __goscriptTuple18[1]
+				let __goscriptTuple10: any = await $.pointerValue<Exclude<io.ReaderAt, null>>(__goscriptShadow13).ReadAt($.goSlice(__goscriptShadow14, i, i + 1), $.int64(i))
+				__goscriptShadow15 = __goscriptTuple10[0]
+				__goscriptShadow16 = __goscriptTuple10[1]
 				if ((__goscriptShadow15 != 1) || ((__goscriptShadow16 != null) && ((i != ($.len(__goscriptShadow14) - 1)) || (!$.comparableEqual(__goscriptShadow16, io.EOF))))) {
 					let want = "nil"
 					if (i == ($.len(__goscriptShadow14) - 1)) {

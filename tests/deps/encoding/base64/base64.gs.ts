@@ -15,7 +15,7 @@ import "@goscript/io/index.js"
 import "@goscript/slices/index.js"
 import "@goscript/strconv/index.js"
 
-export type CorruptInputError = number
+export type CorruptInputError = bigint
 
 export class Encoding {
 	public get encode(): Uint8Array {
@@ -114,19 +114,17 @@ export class Encoding {
 		while (((strconv.IntSize >= 64) && (($.len(src) - si) >= 8)) && (($.len(dst) - n) >= 8)) {
 			let src2: $.Slice<number> = $.goSlice(src, si, si + 8)
 			{
-				let __goscriptTuple1: any = assemble64($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![4]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![5]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![6]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![7]], 8))
-				let dn = $.uint(__goscriptTuple1[0], 64)
-				let ok = __goscriptTuple1[1]
+				let [dn, ok] = assemble64($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![4]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![5]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![6]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![7]], 8))
 				if (ok) {
-					byteorder.BEPutUint64($.goSlice(dst, n, undefined), $.uint(dn, 64))
+					byteorder.BEPutUint64($.goSlice(dst, n, undefined), dn)
 					n = n + (6)
 					si = si + (8)
 				} else {
 					let ninc: number = 0
-					let __goscriptTuple2: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
-					si = __goscriptTuple2[0]
-					ninc = __goscriptTuple2[1]
-					err = __goscriptTuple2[2]
+					let __goscriptTuple1: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+					si = __goscriptTuple1[0]
+					ninc = __goscriptTuple1[1]
+					err = __goscriptTuple1[2]
 					n = n + (ninc)
 					if (err != null) {
 						return [n, err]
@@ -138,19 +136,19 @@ export class Encoding {
 		while ((($.len(src) - si) >= 4) && (($.len(dst) - n) >= 4)) {
 			let src2: $.Slice<number> = $.goSlice(src, si, si + 4)
 			{
-				let __goscriptTuple3: any = assemble32($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8))
-				let dn = $.uint(__goscriptTuple3[0], 32)
-				let ok = __goscriptTuple3[1]
+				let __goscriptTuple2: any = assemble32($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8))
+				let dn = $.uint(__goscriptTuple2[0], 32)
+				let ok = __goscriptTuple2[1]
 				if (ok) {
 					byteorder.BEPutUint32($.goSlice(dst, n, undefined), $.uint(dn, 32))
 					n = n + (3)
 					si = si + (4)
 				} else {
 					let ninc: number = 0
-					let __goscriptTuple4: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
-					si = __goscriptTuple4[0]
-					ninc = __goscriptTuple4[1]
-					err = __goscriptTuple4[2]
+					let __goscriptTuple3: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+					si = __goscriptTuple3[0]
+					ninc = __goscriptTuple3[1]
+					err = __goscriptTuple3[2]
 					n = n + (ninc)
 					if (err != null) {
 						return [n, err]
@@ -161,10 +159,10 @@ export class Encoding {
 
 		while (si < $.len(src)) {
 			let ninc: number = 0
-			let __goscriptTuple5: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
-			si = __goscriptTuple5[0]
-			ninc = __goscriptTuple5[1]
-			err = __goscriptTuple5[2]
+			let __goscriptTuple4: any = Encoding.prototype.decodeQuantum.call(enc, $.goSlice(dst, n, undefined), src, si)
+			si = __goscriptTuple4[0]
+			ninc = __goscriptTuple4[1]
+			err = __goscriptTuple4[2]
 			n = n + (ninc)
 			if (err != null) {
 				return [n, err]
@@ -200,12 +198,12 @@ export class Encoding {
 		let n = (Math.trunc($.len(src) / 3)) * 3
 		while (si < n) {
 			// Convert 3x 8bit source bytes into 4 bytes
-			let val = $.uint64Or(($.uint64Or(($.uint64Shl($.uint(src![si + 0], 64), 16)), ($.uint64Shl($.uint(src![si + 1], 64), 8)))), $.uint(src![si + 2], 64))
+			let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint(src![si + 0], 64), 16), 64)), ($.uint($.uint64Shl($.uint(src![si + 1], 64), 8), 64))), 64)), $.uint(src![si + 2], 64)), 64)
 
-			dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 18)), 0x3F)], 8)
-			dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 12)), 0x3F)], 8)
-			dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 6)), 0x3F)], 8)
-			dst![di + 3] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(val, 0x3F)], 8)
+			dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)], 8)
+			dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)], 8)
+			dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)], 8)
+			dst![di + 3] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(val, 0x3F), 64)], 8)
 
 			si = si + (3)
 			di = di + (4)
@@ -216,18 +214,18 @@ export class Encoding {
 			return
 		}
 		// Add the remaining small block
-		let val = $.uint64Shl($.uint(src![si + 0], 64), 16)
+		let val = $.uint($.uint64Shl($.uint(src![si + 0], 64), 16), 64)
 		if (remain == 2) {
-			val = $.uint64Or(val, $.uint64Shl($.uint(src![si + 1], 64), 8))
+			val = $.uint($.uint64Or(val, $.uint($.uint64Shl($.uint(src![si + 1], 64), 8), 64)), 64)
 		}
 
-		dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 18)), 0x3F)], 8)
-		dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 12)), 0x3F)], 8)
+		dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)], 8)
+		dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)], 8)
 
 		switch (remain) {
 			case 2:
 			{
-				dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint64And(($.uint64Shr(val, 6)), 0x3F)], 8)
+				dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)], 8)
 				if ($.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32)) {
 					dst![di + 3] = $.uint($.uint($.pointerValue<Encoding>(enc).padChar, 8), 8)
 				}
@@ -371,10 +369,10 @@ export class Encoding {
 		}
 
 		// Convert 4x 6bit source bytes into 3 bytes
-		let val = $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Shl($.uint(dbuf[0], 64), 18)), ($.uint64Shl($.uint(dbuf[1], 64), 12)))), ($.uint64Shl($.uint(dbuf[2], 64), 6)))), $.uint(dbuf[3], 64))
-		let __goscriptAssign0_0: number = $.uint($.uint($.uint64Shr(val, 0), 8), 8)
-		let __goscriptAssign0_1: number = $.uint($.uint($.uint64Shr(val, 8), 8), 8)
-		let __goscriptAssign0_2: number = $.uint($.uint($.uint64Shr(val, 16), 8), 8)
+		let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint(dbuf[0], 64), 18), 64)), ($.uint($.uint64Shl($.uint(dbuf[1], 64), 12), 64))), 64)), ($.uint($.uint64Shl($.uint(dbuf[2], 64), 6), 64))), 64)), $.uint(dbuf[3], 64)), 64)
+		let __goscriptAssign0_0: number = $.uint($.uint($.uint($.uint64Shr(val, 0), 64), 8), 8)
+		let __goscriptAssign0_1: number = $.uint($.uint($.uint($.uint64Shr(val, 8), 64), 8), 8)
+		let __goscriptAssign0_2: number = $.uint($.uint($.uint($.uint64Shr(val, 16), 64), 8), 8)
 		dbuf[2] = __goscriptAssign0_0
 		dbuf[1] = __goscriptAssign0_1
 		dbuf[0] = __goscriptAssign0_2
@@ -495,8 +493,8 @@ export class encoder {
 		// If there's anything left in the buffer, flush it out
 		if (($.pointerValue<encoder>(e).err == null) && ($.pointerValue<encoder>(e).nbuf > 0)) {
 			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice($.pointerValue<encoder>(e).buf, undefined, $.pointerValue<encoder>(e).nbuf))
-			let __goscriptTuple6: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, Encoding.prototype.EncodedLen.call($.pointerValue<encoder>(e).enc, $.pointerValue<encoder>(e).nbuf)))
-			$.pointerValue<encoder>(e).err = __goscriptTuple6[1]
+			let __goscriptTuple5: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, Encoding.prototype.EncodedLen.call($.pointerValue<encoder>(e).enc, $.pointerValue<encoder>(e).nbuf)))
+			$.pointerValue<encoder>(e).err = __goscriptTuple5[1]
 			$.pointerValue<encoder>(e).nbuf = 0
 		}
 		return $.pointerValue<encoder>(e).err
@@ -524,8 +522,8 @@ export class encoder {
 			}
 			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice($.pointerValue<encoder>(e).buf, undefined, undefined))
 			{
-				let __goscriptTuple7: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, 4))
-				$.pointerValue<encoder>(e).err = __goscriptTuple7[1]
+				let __goscriptTuple6: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, undefined, 4))
+				$.pointerValue<encoder>(e).err = __goscriptTuple6[1]
 				if ($.pointerValue<encoder>(e).err != null) {
 					return [n, $.pointerValue<encoder>(e).err]
 				}
@@ -542,8 +540,8 @@ export class encoder {
 			}
 			Encoding.prototype.Encode.call($.pointerValue<encoder>(e).enc, $.goSlice($.pointerValue<encoder>(e).out, undefined, undefined), $.goSlice(p, undefined, nn))
 			{
-				let __goscriptTuple8: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, 0, (Math.trunc(nn / 3)) * 4))
-				$.pointerValue<encoder>(e).err = __goscriptTuple8[1]
+				let __goscriptTuple7: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<encoder>(e).w).Write($.goSlice($.pointerValue<encoder>(e).out, 0, (Math.trunc(nn / 3)) * 4))
+				$.pointerValue<encoder>(e).err = __goscriptTuple7[1]
 				if ($.pointerValue<encoder>(e).err != null) {
 					return [n, $.pointerValue<encoder>(e).err]
 				}
@@ -690,9 +688,9 @@ export class decoder {
 			if (nn > $.len($.pointerValue<decoder>(d).buf)) {
 				nn = $.len($.pointerValue<decoder>(d).buf)
 			}
-			let __goscriptTuple9: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<decoder>(d).r).Read($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).nbuf, nn))
-			nn = __goscriptTuple9[0]
-			$.pointerValue<decoder>(d).readErr = __goscriptTuple9[1]
+			let __goscriptTuple8: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<decoder>(d).r).Read($.goSlice($.pointerValue<decoder>(d).buf, $.pointerValue<decoder>(d).nbuf, nn))
+			nn = __goscriptTuple8[0]
+			$.pointerValue<decoder>(d).readErr = __goscriptTuple8[1]
 			$.pointerValue<decoder>(d).nbuf = $.pointerValue<decoder>(d).nbuf + (nn)
 		}
 
@@ -700,9 +698,9 @@ export class decoder {
 			if (($.int($.pointerValue<Encoding>($.pointerValue<decoder>(d).enc).padChar, 32) == $.int(-1, 32)) && ($.pointerValue<decoder>(d).nbuf > 0)) {
 				// Decode final fragment, without padding.
 				let nw: number = 0
-				let __goscriptTuple10: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, $.pointerValue<decoder>(d).nbuf))
-				nw = __goscriptTuple10[0]
-				$.pointerValue<decoder>(d).err = __goscriptTuple10[1]
+				let __goscriptTuple9: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, $.pointerValue<decoder>(d).nbuf))
+				nw = __goscriptTuple9[0]
+				$.pointerValue<decoder>(d).err = __goscriptTuple9[1]
 				$.pointerValue<decoder>(d).nbuf = 0
 				$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, nw)
 				n = $.copy(p, $.pointerValue<decoder>(d).out)
@@ -725,16 +723,16 @@ export class decoder {
 		let nr = (Math.trunc($.pointerValue<decoder>(d).nbuf / 4)) * 4
 		let nw = (Math.trunc($.pointerValue<decoder>(d).nbuf / 4)) * 3
 		if (nw > $.len(p)) {
-			let __goscriptTuple11: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
-			nw = __goscriptTuple11[0]
-			$.pointerValue<decoder>(d).err = __goscriptTuple11[1]
+			let __goscriptTuple10: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, undefined), $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
+			nw = __goscriptTuple10[0]
+			$.pointerValue<decoder>(d).err = __goscriptTuple10[1]
 			$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).outbuf, undefined, nw)
 			n = $.copy(p, $.pointerValue<decoder>(d).out)
 			$.pointerValue<decoder>(d).out = $.goSlice($.pointerValue<decoder>(d).out, n, undefined)
 		} else {
-			let __goscriptTuple12: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, p, $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
-			n = __goscriptTuple12[0]
-			$.pointerValue<decoder>(d).err = __goscriptTuple12[1]
+			let __goscriptTuple11: any = Encoding.prototype.Decode.call($.pointerValue<decoder>(d).enc, p, $.goSlice($.pointerValue<decoder>(d).buf, undefined, nr))
+			n = __goscriptTuple11[0]
+			$.pointerValue<decoder>(d).err = __goscriptTuple11[1]
 		}
 		$.pointerValue<decoder>(d).nbuf = $.pointerValue<decoder>(d).nbuf - (nr)
 		$.copy($.goSlice($.pointerValue<decoder>(d).buf, undefined, $.pointerValue<decoder>(d).nbuf), $.goSlice($.pointerValue<decoder>(d).buf, nr, undefined))
@@ -794,9 +792,9 @@ export class newlineFilteringReader {
 				return [offset, err]
 			}
 			// Previous buffer entirely whitespace, read again
-			let __goscriptTuple13: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<newlineFilteringReader>(r).wrapped).Read(p)
-			n = __goscriptTuple13[0]
-			err = __goscriptTuple13[1]
+			let __goscriptTuple12: any = await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<newlineFilteringReader>(r).wrapped).Read(p)
+			n = __goscriptTuple12[0]
+			err = __goscriptTuple12[1]
 		}
 		return [n, err]
 	}
@@ -878,7 +876,7 @@ export function NewEncoder(enc: Encoding | $.VarRef<Encoding> | null, w: io.Writ
 }
 
 export function CorruptInputError_Error(e: CorruptInputError): string {
-	return "illegal base64 data at input byte " + strconv.FormatInt($.int($.int(e)), 10)
+	return "illegal base64 data at input byte " + strconv.FormatInt($.int64(e), 10)
 }
 
 export function assemble32(n1: number, n2: number, n3: number, n4: number): [number, boolean] {
@@ -892,15 +890,15 @@ export function assemble32(n1: number, n2: number, n3: number, n4: number): [num
 	return [$.uint(((($.uint(n1, 32) << 26) | ($.uint(n2, 32) << 20)) | ($.uint(n3, 32) << 14)) | ($.uint(n4, 32) << 8), 32), true]
 }
 
-export function assemble64(n1: number, n2: number, n3: number, n4: number, n5: number, n6: number, n7: number, n8: number): [number, boolean] {
-	let dn: number = 0
+export function assemble64(n1: number, n2: number, n3: number, n4: number, n5: number, n6: number, n7: number, n8: number): [bigint, boolean] {
+	let dn: bigint = 0n
 	let ok: boolean = false
 	// Check that all the digits are valid. If any of them was 0xff, their
 	// bitwise OR will be 0xff.
 	if ($.uint((((((((n1 | n2) | n3) | n4) | n5) | n6) | n7) | n8), 8) == $.uint(0xff, 8)) {
-		return [$.uint(0, 64), false]
+		return [0n, false]
 	}
-	return [$.uint($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Mul($.uint(n1, 64), (2 ** 58))), ($.uint64Mul($.uint(n2, 64), (2 ** 52))))), ($.uint64Mul($.uint(n3, 64), (2 ** 46))))), ($.uint64Mul($.uint(n4, 64), (2 ** 40))))), ($.uint64Mul($.uint(n5, 64), (2 ** 34))))), ($.uint64Shl($.uint(n6, 64), 28)))), ($.uint64Shl($.uint(n7, 64), 22)))), ($.uint64Shl($.uint(n8, 64), 16))), 64), true]
+	return [$.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Mul($.uint64(n1), (2 ** 58))), ($.uint64Mul($.uint64(n2), (2 ** 52))))), ($.uint64Mul($.uint64(n3), (2 ** 46))))), ($.uint64Mul($.uint64(n4), (2 ** 40))))), ($.uint64Mul($.uint64(n5), (2 ** 34))))), ($.uint64Shl($.uint64(n6), 28)))), ($.uint64Shl($.uint64(n7), 22)))), ($.uint64Shl($.uint64(n8), 16))), true]
 }
 
 export function NewDecoder(enc: Encoding | $.VarRef<Encoding> | null, r: io.Reader | null): io.Reader | null {

@@ -308,12 +308,12 @@ export class Dialer {
 
 	constructor(init?: Partial<{Timeout?: time.Duration, Deadline?: time.Time, LocalAddr?: __goscript_net.Addr | null, DualStack?: boolean, FallbackDelay?: time.Duration, KeepAlive?: time.Duration, KeepAliveConfig?: __goscript_tcpsock.KeepAliveConfig, Resolver?: __goscript_lookup.Resolver | $.VarRef<__goscript_lookup.Resolver> | null, Cancel?: $.Channel<{}> | null, Control?: ((network: string, address: string, c: syscall.RawConn | null) => $.GoError | globalThis.Promise<$.GoError>) | null, ControlContext?: ((ctx: context.Context | null, network: string, address: string, c: syscall.RawConn | null) => $.GoError | globalThis.Promise<$.GoError>) | null, mptcpStatus?: mptcpStatusDial}>) {
 		this._fields = {
-			Timeout: $.varRef(init?.Timeout ?? (0 as unknown as time.Duration)),
+			Timeout: $.varRef(init?.Timeout ?? (0n as unknown as time.Duration)),
 			Deadline: $.varRef(init?.Deadline ? $.markAsStructValue($.cloneStructValue(init.Deadline)) : $.markAsStructValue(new time.Time())),
 			LocalAddr: $.varRef(init?.LocalAddr ?? (null as unknown as __goscript_net.Addr | null)),
 			DualStack: $.varRef(init?.DualStack ?? (false as unknown as boolean)),
-			FallbackDelay: $.varRef(init?.FallbackDelay ?? (0 as unknown as time.Duration)),
-			KeepAlive: $.varRef(init?.KeepAlive ?? (0 as unknown as time.Duration)),
+			FallbackDelay: $.varRef(init?.FallbackDelay ?? (0n as unknown as time.Duration)),
+			KeepAlive: $.varRef(init?.KeepAlive ?? (0n as unknown as time.Duration)),
 			KeepAliveConfig: $.varRef(init?.KeepAliveConfig ? $.markAsStructValue($.cloneStructValue(init.KeepAliveConfig)) : $.markAsStructValue(new __goscript_tcpsock.KeepAliveConfig())),
 			Resolver: $.varRef(init?.Resolver ?? (null as unknown as __goscript_lookup.Resolver | $.VarRef<__goscript_lookup.Resolver> | null)),
 			Cancel: $.varRef(init?.Cancel ?? (null as unknown as $.Channel<{}> | null)),
@@ -443,7 +443,7 @@ export class Dialer {
 	public async deadline(ctx: context.Context | null, now: time.Time): globalThis.Promise<time.Time> {
 		const d: Dialer | $.VarRef<Dialer> | null = this
 		let earliest: time.Time = $.markAsStructValue(new time.Time())
-		if ($.pointerValue<Dialer>(d).Timeout != 0) {
+		if ($.pointerValue<Dialer>(d).Timeout != 0n) {
 			earliest = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.pointerValue<Dialer>(d).Timeout)))
 		}
 		{
@@ -525,7 +525,7 @@ export class Dialer {
 		if ($.pointerValue<Dialer>(d).FallbackDelay > 0) {
 			return $.pointerValue<Dialer>(d).FallbackDelay
 		} else {
-			return $.int64Mul(300, time.Millisecond)
+			return 300000000n
 		}
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -834,7 +834,7 @@ export class sysDialer {
 							// was running (hadn't yet started the fallback), but
 							// we just got an error on the primary path, so start
 							// the fallback immediately (in 0 nanoseconds).
-							time.Timer.prototype.Reset.call($.pointerValue<time.Timer>(fallbackTimer), 0)
+							time.Timer.prototype.Reset.call($.pointerValue<time.Timer>(fallbackTimer), 0n)
 						}
 					}
 				}
@@ -1227,7 +1227,7 @@ export class ListenConfig {
 	constructor(init?: Partial<{Control?: ((network: string, address: string, c: syscall.RawConn | null) => $.GoError | globalThis.Promise<$.GoError>) | null, KeepAlive?: time.Duration, KeepAliveConfig?: __goscript_tcpsock.KeepAliveConfig, mptcpStatus?: mptcpStatusListen}>) {
 		this._fields = {
 			Control: $.varRef(init?.Control ?? (null as unknown as ((network: string, address: string, c: syscall.RawConn | null) => $.GoError | globalThis.Promise<$.GoError>) | null)),
-			KeepAlive: $.varRef(init?.KeepAlive ?? (0 as unknown as time.Duration)),
+			KeepAlive: $.varRef(init?.KeepAlive ?? (0n as unknown as time.Duration)),
 			KeepAliveConfig: $.varRef(init?.KeepAliveConfig ? $.markAsStructValue($.cloneStructValue(init.KeepAliveConfig)) : $.markAsStructValue(new __goscript_tcpsock.KeepAliveConfig())),
 			mptcpStatus: $.varRef(init?.mptcpStatus ?? (0 as unknown as mptcpStatusListen))
 		}
@@ -1589,9 +1589,9 @@ export class sysListener {
 	)
 }
 
-export const defaultTCPKeepAliveIdle: time.Duration = 15000000000
+export const defaultTCPKeepAliveIdle: time.Duration = 15000000000n
 
-export const defaultTCPKeepAliveInterval: time.Duration = 15000000000
+export const defaultTCPKeepAliveInterval: time.Duration = 15000000000n
 
 export const defaultTCPKeepAliveCount: number = 9
 
@@ -1707,12 +1707,12 @@ export function partialDeadline(now: time.Time, deadline: time.Time, addrsRemain
 	// Tentatively allocate equal time to each remaining address.
 	let __goscriptShadow3 = $.int64Div(timeRemaining, addrsRemaining)
 	// If the time per address is too short, steal from the end of the list.
-	const saneMinimum: time.Duration = 2000000000
-	if (__goscriptShadow3 < 2000000000) {
-		if (timeRemaining < 2000000000) {
+	const saneMinimum: time.Duration = 2000000000n
+	if (__goscriptShadow3 < 2000000000n) {
+		if (timeRemaining < 2000000000n) {
 			__goscriptShadow3 = timeRemaining
 		} else {
-			__goscriptShadow3 = 2000000000
+			__goscriptShadow3 = 2000000000n
 		}
 	}
 	return [$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(__goscriptShadow3))), null]

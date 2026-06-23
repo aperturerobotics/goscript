@@ -421,9 +421,9 @@ export class Packet {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple5: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple5[0], 64)
+			wire = __goscriptTuple5[0]
 			iNdEx = __goscriptTuple5[1]
 			err = __goscriptTuple5[2]
 			if (err != null) {
@@ -444,9 +444,9 @@ export class Packet {
 						return fmt.Errorf("proto: wrong wireType = %d for field CallStart", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let msglen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple6: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple6[0], 64)
+					_v = __goscriptTuple6[0]
 					iNdEx = __goscriptTuple6[1]
 					err = __goscriptTuple6[2]
 					msglen = $.int(_v)
@@ -494,9 +494,9 @@ export class Packet {
 						return fmt.Errorf("proto: wrong wireType = %d for field CallData", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let msglen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple8: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple8[0], 64)
+					_v = __goscriptTuple8[0]
 					iNdEx = __goscriptTuple8[1]
 					err = __goscriptTuple8[2]
 					msglen = $.int(_v)
@@ -544,9 +544,9 @@ export class Packet {
 						return fmt.Errorf("proto: wrong wireType = %d for field CallCancel", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let v: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple10: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple10[0], 64)
+					_v = __goscriptTuple10[0]
 					iNdEx = __goscriptTuple10[1]
 					err = __goscriptTuple10[2]
 					v = $.int(_v)
@@ -709,11 +709,11 @@ export class Packet_CallStart {
 				return [0, err]
 			}
 			i = i - (size)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint(size, 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64(size))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		} else {
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint(0, 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, 0n)
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -736,7 +736,7 @@ export class Packet_CallStart {
 		l
 		if ($.pointerValue<Packet_CallStart>(m).CallStart != null) {
 			l = CallStart.prototype.SizeVT.call($.pointerValue<Packet_CallStart>(m).CallStart)
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		} else {
 			n = n + (2)
 		}
@@ -838,11 +838,11 @@ export class Packet_CallData {
 				return [0, err]
 			}
 			i = i - (size)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint(size, 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64(size))
 			i--
 			dAtA![i] = $.uint(0x12, 8)
 		} else {
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint(0, 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, 0n)
 			i--
 			dAtA![i] = $.uint(0x12, 8)
 		}
@@ -865,7 +865,7 @@ export class Packet_CallData {
 		l
 		if ($.pointerValue<Packet_CallData>(m).CallData != null) {
 			l = CallData.prototype.SizeVT.call($.pointerValue<Packet_CallData>(m).CallData)
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		} else {
 			n = n + (2)
 		}
@@ -1256,21 +1256,21 @@ export class CallStart {
 		if ($.len($.pointerValue<CallStart>(m).Data) > 0) {
 			i = i - ($.len($.pointerValue<CallStart>(m).Data))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<CallStart>(m).Data)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<CallStart>(m).Data), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<CallStart>(m).Data)))
 			i--
 			dAtA![i] = $.uint(0x1a, 8)
 		}
 		if ($.len($.pointerValue<CallStart>(m).RpcMethod) > 0) {
 			i = i - ($.len($.pointerValue<CallStart>(m).RpcMethod))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<CallStart>(m).RpcMethod)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<CallStart>(m).RpcMethod), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<CallStart>(m).RpcMethod)))
 			i--
 			dAtA![i] = $.uint(0x12, 8)
 		}
 		if ($.len($.pointerValue<CallStart>(m).RpcService) > 0) {
 			i = i - ($.len($.pointerValue<CallStart>(m).RpcService))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<CallStart>(m).RpcService)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<CallStart>(m).RpcService), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<CallStart>(m).RpcService)))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -1319,15 +1319,15 @@ export class CallStart {
 		l
 		l = $.len($.pointerValue<CallStart>(m).RpcService)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		l = $.len($.pointerValue<CallStart>(m).RpcMethod)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		l = $.len($.pointerValue<CallStart>(m).Data)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		if ($.pointerValue<CallStart>(m).DataIsZero) {
 			n = n + (2)
@@ -1396,9 +1396,9 @@ export class CallStart {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple16: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple16[0], 64)
+			wire = __goscriptTuple16[0]
 			iNdEx = __goscriptTuple16[1]
 			err = __goscriptTuple16[2]
 			if (err != null) {
@@ -1418,9 +1418,9 @@ export class CallStart {
 					if (wireType != 2) {
 						return fmt.Errorf("proto: wrong wireType = %d for field RpcService", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
-					let stringLen: number = 0
+					let stringLen: bigint = 0n
 					let __goscriptTuple17: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					stringLen = $.uint(__goscriptTuple17[0], 64)
+					stringLen = __goscriptTuple17[0]
 					iNdEx = __goscriptTuple17[1]
 					err = __goscriptTuple17[2]
 					if (err != null) {
@@ -1446,9 +1446,9 @@ export class CallStart {
 					if (wireType != 2) {
 						return fmt.Errorf("proto: wrong wireType = %d for field RpcMethod", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
-					let stringLen: number = 0
+					let stringLen: bigint = 0n
 					let __goscriptTuple18: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					stringLen = $.uint(__goscriptTuple18[0], 64)
+					stringLen = __goscriptTuple18[0]
 					iNdEx = __goscriptTuple18[1]
 					err = __goscriptTuple18[2]
 					if (err != null) {
@@ -1475,9 +1475,9 @@ export class CallStart {
 						return fmt.Errorf("proto: wrong wireType = %d for field Data", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let byteLen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple19: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple19[0], 64)
+					_v = __goscriptTuple19[0]
 					iNdEx = __goscriptTuple19[1]
 					err = __goscriptTuple19[2]
 					byteLen = $.int(_v)
@@ -1507,9 +1507,9 @@ export class CallStart {
 						return fmt.Errorf("proto: wrong wireType = %d for field DataIsZero", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let v: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple20: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple20[0], 64)
+					_v = __goscriptTuple20[0]
 					iNdEx = __goscriptTuple20[1]
 					err = __goscriptTuple20[2]
 					v = $.int(_v)
@@ -1821,7 +1821,7 @@ export class CallData {
 		if ($.len($.pointerValue<CallData>(m).Error) > 0) {
 			i = i - ($.len($.pointerValue<CallData>(m).Error))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<CallData>(m).Error)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<CallData>(m).Error), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<CallData>(m).Error)))
 			i--
 			dAtA![i] = $.uint(0x22, 8)
 		}
@@ -1848,7 +1848,7 @@ export class CallData {
 		if ($.len($.pointerValue<CallData>(m).Data) > 0) {
 			i = i - ($.len($.pointerValue<CallData>(m).Data))
 			$.copy($.goSlice(dAtA, i, undefined), $.pointerValue<CallData>(m).Data)
-			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint($.uint($.len($.pointerValue<CallData>(m).Data), 64), 64))
+			i = protobuf_go_lite.EncodeVarint(dAtA, i, $.uint64($.len($.pointerValue<CallData>(m).Data)))
 			i--
 			dAtA![i] = $.uint(0xa, 8)
 		}
@@ -1897,7 +1897,7 @@ export class CallData {
 		l
 		l = $.len($.pointerValue<CallData>(m).Data)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		if ($.pointerValue<CallData>(m).DataIsZero) {
 			n = n + (2)
@@ -1907,7 +1907,7 @@ export class CallData {
 		}
 		l = $.len($.pointerValue<CallData>(m).Error)
 		if (l > 0) {
-			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint($.uint(l, 64), 64)))
+			n = n + ((1 + l) + protobuf_go_lite.SizeOfVarint($.uint64(l)))
 		}
 		n = n + ($.len($.pointerValue<CallData>(m).unknownFields))
 		return n
@@ -1971,9 +1971,9 @@ export class CallData {
 		let err: $.GoError = null as $.GoError
 		while (iNdEx < l) {
 			let preIndex = iNdEx
-			let wire: number = 0
+			let wire: bigint = 0n
 			let __goscriptTuple23: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-			wire = $.uint(__goscriptTuple23[0], 64)
+			wire = __goscriptTuple23[0]
 			iNdEx = __goscriptTuple23[1]
 			err = __goscriptTuple23[2]
 			if (err != null) {
@@ -1994,9 +1994,9 @@ export class CallData {
 						return fmt.Errorf("proto: wrong wireType = %d for field Data", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let byteLen: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple24: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple24[0], 64)
+					_v = __goscriptTuple24[0]
 					iNdEx = __goscriptTuple24[1]
 					err = __goscriptTuple24[2]
 					byteLen = $.int(_v)
@@ -2026,9 +2026,9 @@ export class CallData {
 						return fmt.Errorf("proto: wrong wireType = %d for field DataIsZero", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let v: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple25: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple25[0], 64)
+					_v = __goscriptTuple25[0]
 					iNdEx = __goscriptTuple25[1]
 					err = __goscriptTuple25[2]
 					v = $.int(_v)
@@ -2044,9 +2044,9 @@ export class CallData {
 						return fmt.Errorf("proto: wrong wireType = %d for field Complete", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 					let v: number = 0
-					let _v: number = 0
+					let _v: bigint = 0n
 					let __goscriptTuple26: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					_v = $.uint(__goscriptTuple26[0], 64)
+					_v = __goscriptTuple26[0]
 					iNdEx = __goscriptTuple26[1]
 					err = __goscriptTuple26[2]
 					v = $.int(_v)
@@ -2061,9 +2061,9 @@ export class CallData {
 					if (wireType != 2) {
 						return fmt.Errorf("proto: wrong wireType = %d for field Error", $.namedValueInterfaceValue<any>(wireType, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
-					let stringLen: number = 0
+					let stringLen: bigint = 0n
 					let __goscriptTuple27: any = protobuf_go_lite.DecodeVarint(dAtA, iNdEx)
-					stringLen = $.uint(__goscriptTuple27[0], 64)
+					stringLen = __goscriptTuple27[0]
 					iNdEx = __goscriptTuple27[1]
 					err = __goscriptTuple27[2]
 					if (err != null) {

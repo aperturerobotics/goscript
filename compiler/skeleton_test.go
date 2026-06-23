@@ -741,7 +741,7 @@ func TestCompilePackagesLowersWideIntegerConstantsForUint64Targets(t *testing.T)
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	for _, want := range []string{`$.uint("18014398509481983", 64)`, `$.uint("9007199254740993", 64)`} {
+	for _, want := range []string{`18014398509481983n`, `9007199254740993n`} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing wide integer constant %q in generated output:\n%s", want, text)
 		}
@@ -1584,7 +1584,7 @@ func TestCompilePackagesLowersUnsafeBytePointerArithmetic(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "$.indexByteAddress(bits!, $.uint64Shr(idx, 6), 8)") {
+	if !strings.Contains(text, "$.indexByteAddress(bits!, Number($.uint64Shr(idx, 6)), 8)") {
 		t.Fatalf("missing byte-addressed unsafe pointer root:\n%s", text)
 	}
 	if !strings.Contains(text, "$.unsafePointerRef<number>(ptr).value =") {
@@ -1640,7 +1640,7 @@ func TestCompilePackagesLowersGMSUnsafeArrayPointerConversions(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef([n.value], 0), 8, 8, 1)") {
+	if !strings.Contains(text, "$.arrayPointerFromIndexRef<bigint>($.indexRef([n.value], 0), 8, 8, 1)") {
 		t.Fatalf("missing scalar unsafe array pointer conversion:\n%s", text)
 	}
 	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef($.stringToBytes(str.value), 0), 2147418112, 1, 1)") {
@@ -5225,9 +5225,9 @@ func TestCompilePackagesLowersUnaryBitwiseComplement(t *testing.T) {
 	}
 	text := string(content)
 	for _, want := range []string{
-		"return $.uint($.uint64Xor(crc, -1n), 64)",
+		"return $.uint64Xor(crc, -1n)",
 		"mask = mask & ~((3))",
-		"$.println($.int64Xor(value, -1n), $.uint($.uint64Xor(wide, -1n), 64), $.int($.int64Xor(signed, -1n)), $.uint(invert($.uint(wide, 64)), 64), value & ~(3), mask, 0o700)",
+		"$.println(Number($.int64Xor(value, -1n)), $.uint64Xor(wide, -1n), $.int64Xor(signed, -1n), invert(wide), value & ~(3), mask, 0o700)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -5303,8 +5303,8 @@ func TestCompilePackagesNormalizesWideIntegerReturnTargets(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return $.uint(await $.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64(), 64)") {
-		t.Fatalf("missing uint64 return normalization:\n%s", text)
+	if !strings.Contains(text, "return await $.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64()") {
+		t.Fatalf("missing uint64 return passthrough:\n%s", text)
 	}
 }
 

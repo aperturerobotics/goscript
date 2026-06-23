@@ -147,18 +147,18 @@ export class FileHeader {
 	}
 
 	// CompressedSize64 is the compressed size of the file in bytes.
-	public get CompressedSize64(): number {
+	public get CompressedSize64(): bigint {
 		return this._fields.CompressedSize64.value
 	}
-	public set CompressedSize64(value: number) {
+	public set CompressedSize64(value: bigint) {
 		this._fields.CompressedSize64.value = value
 	}
 
 	// UncompressedSize64 is the uncompressed size of the file in bytes.
-	public get UncompressedSize64(): number {
+	public get UncompressedSize64(): bigint {
 		return this._fields.UncompressedSize64.value
 	}
-	public set UncompressedSize64(value: number) {
+	public set UncompressedSize64(value: bigint) {
 		this._fields.UncompressedSize64.value = value
 	}
 
@@ -190,13 +190,13 @@ export class FileHeader {
 		CRC32: $.VarRef<number>
 		CompressedSize: $.VarRef<number>
 		UncompressedSize: $.VarRef<number>
-		CompressedSize64: $.VarRef<number>
-		UncompressedSize64: $.VarRef<number>
+		CompressedSize64: $.VarRef<bigint>
+		UncompressedSize64: $.VarRef<bigint>
 		Extra: $.VarRef<$.Slice<number>>
 		ExternalAttrs: $.VarRef<number>
 	}
 
-	constructor(init?: Partial<{Name?: string, Comment?: string, NonUTF8?: boolean, CreatorVersion?: number, ReaderVersion?: number, Flags?: number, Method?: number, Modified?: time.Time, ModifiedTime?: number, ModifiedDate?: number, CRC32?: number, CompressedSize?: number, UncompressedSize?: number, CompressedSize64?: number, UncompressedSize64?: number, Extra?: $.Slice<number>, ExternalAttrs?: number}>) {
+	constructor(init?: Partial<{Name?: string, Comment?: string, NonUTF8?: boolean, CreatorVersion?: number, ReaderVersion?: number, Flags?: number, Method?: number, Modified?: time.Time, ModifiedTime?: number, ModifiedDate?: number, CRC32?: number, CompressedSize?: number, UncompressedSize?: number, CompressedSize64?: bigint, UncompressedSize64?: bigint, Extra?: $.Slice<number>, ExternalAttrs?: number}>) {
 		this._fields = {
 			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
 			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
@@ -211,8 +211,8 @@ export class FileHeader {
 			CRC32: $.varRef(init?.CRC32 ?? (0 as unknown as number)),
 			CompressedSize: $.varRef(init?.CompressedSize ?? (0 as unknown as number)),
 			UncompressedSize: $.varRef(init?.UncompressedSize ?? (0 as unknown as number)),
-			CompressedSize64: $.varRef(init?.CompressedSize64 ?? (0 as unknown as number)),
-			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? (0 as unknown as number)),
+			CompressedSize64: $.varRef(init?.CompressedSize64 ?? (0n as unknown as bigint)),
+			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? (0n as unknown as bigint)),
 			Extra: $.varRef(init?.Extra ?? (null as unknown as $.Slice<number>)),
 			ExternalAttrs: $.varRef(init?.ExternalAttrs ?? (0 as unknown as number))
 		}
@@ -372,12 +372,12 @@ export class headerFileInfo {
 		return path.Base($.pointerValue<FileHeader>(fi.fh).Name)
 	}
 
-	public Size(): number {
+	public Size(): bigint {
 		const fi = this
 		if ($.pointerValue<FileHeader>(fi.fh).UncompressedSize64 > 0) {
-			return $.int($.int($.pointerValue<FileHeader>(fi.fh).UncompressedSize64))
+			return $.int64($.pointerValue<FileHeader>(fi.fh).UncompressedSize64)
 		}
-		return $.int($.int($.pointerValue<FileHeader>(fi.fh).UncompressedSize))
+		return $.int64($.pointerValue<FileHeader>(fi.fh).UncompressedSize)
 	}
 
 	public String(): string {
@@ -419,31 +419,31 @@ export class directoryEnd {
 		this._fields.dirDiskNbr.value = value
 	}
 
-	public get dirRecordsThisDisk(): number {
+	public get dirRecordsThisDisk(): bigint {
 		return this._fields.dirRecordsThisDisk.value
 	}
-	public set dirRecordsThisDisk(value: number) {
+	public set dirRecordsThisDisk(value: bigint) {
 		this._fields.dirRecordsThisDisk.value = value
 	}
 
-	public get directoryRecords(): number {
+	public get directoryRecords(): bigint {
 		return this._fields.directoryRecords.value
 	}
-	public set directoryRecords(value: number) {
+	public set directoryRecords(value: bigint) {
 		this._fields.directoryRecords.value = value
 	}
 
-	public get directorySize(): number {
+	public get directorySize(): bigint {
 		return this._fields.directorySize.value
 	}
-	public set directorySize(value: number) {
+	public set directorySize(value: bigint) {
 		this._fields.directorySize.value = value
 	}
 
-	public get directoryOffset(): number {
+	public get directoryOffset(): bigint {
 		return this._fields.directoryOffset.value
 	}
-	public set directoryOffset(value: number) {
+	public set directoryOffset(value: bigint) {
 		this._fields.directoryOffset.value = value
 	}
 
@@ -464,22 +464,22 @@ export class directoryEnd {
 	public _fields: {
 		diskNbr: $.VarRef<number>
 		dirDiskNbr: $.VarRef<number>
-		dirRecordsThisDisk: $.VarRef<number>
-		directoryRecords: $.VarRef<number>
-		directorySize: $.VarRef<number>
-		directoryOffset: $.VarRef<number>
+		dirRecordsThisDisk: $.VarRef<bigint>
+		directoryRecords: $.VarRef<bigint>
+		directorySize: $.VarRef<bigint>
+		directoryOffset: $.VarRef<bigint>
 		commentLen: $.VarRef<number>
 		comment: $.VarRef<string>
 	}
 
-	constructor(init?: Partial<{diskNbr?: number, dirDiskNbr?: number, dirRecordsThisDisk?: number, directoryRecords?: number, directorySize?: number, directoryOffset?: number, commentLen?: number, comment?: string}>) {
+	constructor(init?: Partial<{diskNbr?: number, dirDiskNbr?: number, dirRecordsThisDisk?: bigint, directoryRecords?: bigint, directorySize?: bigint, directoryOffset?: bigint, commentLen?: number, comment?: string}>) {
 		this._fields = {
 			diskNbr: $.varRef(init?.diskNbr ?? (0 as unknown as number)),
 			dirDiskNbr: $.varRef(init?.dirDiskNbr ?? (0 as unknown as number)),
-			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? (0 as unknown as number)),
-			directoryRecords: $.varRef(init?.directoryRecords ?? (0 as unknown as number)),
-			directorySize: $.varRef(init?.directorySize ?? (0 as unknown as number)),
-			directoryOffset: $.varRef(init?.directoryOffset ?? (0 as unknown as number)),
+			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? (0n as unknown as bigint)),
+			directoryRecords: $.varRef(init?.directoryRecords ?? (0n as unknown as bigint)),
+			directorySize: $.varRef(init?.directorySize ?? (0n as unknown as bigint)),
+			directoryOffset: $.varRef(init?.directoryOffset ?? (0n as unknown as bigint)),
 			commentLen: $.varRef(init?.commentLen ?? (0 as unknown as number)),
 			comment: $.varRef(init?.comment ?? ("" as unknown as string))
 		}
@@ -594,8 +594,8 @@ export const msdosDir: number = 16
 export const msdosReadOnly: number = 1
 
 export async function FileInfoHeader(fi: fs.FileInfo | null): globalThis.Promise<[FileHeader | $.VarRef<FileHeader> | null, $.GoError]> {
-	let size = $.int(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size())
-	let fh: FileHeader | $.VarRef<FileHeader> | null = (await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint($.uint(size, 64), 64)}) })())
+	let size = await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Size()
+	let fh: FileHeader | $.VarRef<FileHeader> | null = (await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint64(size)}) })())
 	FileHeader.prototype.SetModTime.call(fh, $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime())))
 	FileHeader.prototype.SetMode.call(fh, $.uint(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Mode(), 32))
 	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > 4294967295) {
@@ -607,12 +607,12 @@ export async function FileInfoHeader(fi: fs.FileInfo | null): globalThis.Promise
 }
 
 export function timeZone(offset: time.Duration): time.Location | $.VarRef<time.Location> | null {
-	const minOffset: time.Duration = -43200000000000
-	const maxOffset: time.Duration = 50400000000000
-	const offsetAlias: time.Duration = 900000000000
-	offset = time.Duration_Round(offset, 900000000000)
-	if ((offset < -43200000000000) || (50400000000000 < offset)) {
-		offset = 0
+	const minOffset: time.Duration = -43200000000000n
+	const maxOffset: time.Duration = 50400000000000n
+	const offsetAlias: time.Duration = 900000000000n
+	offset = time.Duration_Round(offset, 900000000000n)
+	if ((offset < -43200000000000n) || (50400000000000n < offset)) {
+		offset = 0n
 	}
 	return time.FixedZone("", $.int($.int64Div(offset, time.Second)))
 }

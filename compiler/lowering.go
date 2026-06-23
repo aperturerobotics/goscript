@@ -1318,7 +1318,7 @@ func (o *LoweringOwner) lowerGenDecl(ctx lowerFileContext, decl *ast.GenDecl) ([
 				}
 				value := o.lowerDeclarationZeroValueExpr(ctx, obj.Type())
 				if constObj, ok := obj.(*types.Const); ok {
-					if constValue, ok := lowerConstantValue(constObj.Val()); ok {
+					if constValue, ok := lowerConstantValueForType(constObj.Val(), constObj.Type()); ok {
 						value = constValue
 					}
 				} else if idx < len(typed.Values) {
@@ -2580,6 +2580,17 @@ func lowerLargeIntegerConstantValue(value constant.Value) (string, bool) {
 		return "", false
 	}
 	return value.ExactString(), true
+}
+
+// lowerConstantValueForType lowers an integer constant to a bigint literal when
+// its declared type is bigint-backed (int64/uint64 and named types over them),
+// so that const declarations and inlined const references carry the same
+// representation as the values they participate in arithmetic with.
+func lowerConstantValueForType(value constant.Value, typ types.Type) (string, bool) {
+	if value != nil && value.Kind() == constant.Int && isBigIntBackedType(typ) {
+		return value.ExactString() + "n", true
+	}
+	return lowerConstantValue(value)
 }
 
 func lowerWideIntegerConstantValue(value constant.Value) (string, bool) {
@@ -4014,17 +4025,22 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 		}
 		return append(out, lowered...), diagnostics
 	case *ast.IncDecStmt:
+		// A bigint-backed operand (int64/uint64) needs a bigint step literal so
+		// the generated +/- does not mix bigint and number.
+		oneLiteral := "1"
+		if isBigIntBackedType(ctx.semPkg.source.TypesInfo.TypeOf(typed.X)) {
+			oneLiteral = "1n"
+		}
 		if star, ok := unwrapParenExpr(typed.X).(*ast.StarExpr); ok {
 			expr, diagnostics := o.lowerPointerStorageExpr(ctx, star.X)
 			return append(out, loweredStmt{text: expr + typed.Tok.String()}), diagnostics
 		}
 		if index, ok := unwrapParenExpr(typed.X).(*ast.IndexExpr); ok && isMapType(ctx.semPkg.source.TypesInfo.TypeOf(index.X)) {
-			right := "1"
 			tok := token.ADD_ASSIGN
 			if typed.Tok == token.DEC {
 				tok = token.SUB_ASSIGN
 			}
-			stmts, diagnostics := o.lowerMapIndexUpdateStmts(ctx, index, tok, right, ctx.semPkg.source.TypesInfo.TypeOf(typed.X))
+			stmts, diagnostics := o.lowerMapIndexUpdateStmts(ctx, index, tok, oneLiteral, ctx.semPkg.source.TypesInfo.TypeOf(typed.X))
 			return append(out, stmts...), diagnostics
 		}
 		if setter, ok := o.packageVarSetterForAssignment(ctx, typed.X); ok {
@@ -4033,7 +4049,7 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 			if typed.Tok == token.DEC {
 				op = "-"
 			}
-			return append(out, loweredStmt{text: setter + "(" + expr + " " + op + " 1)"}), diagnostics
+			return append(out, loweredStmt{text: setter + "(" + expr + " " + op + " " + oneLiteral + ")"}), diagnostics
 		}
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return append(out, loweredStmt{text: expr + typed.Tok.String()}), diagnostics
@@ -4955,7 +4971,8 @@ func (o *LoweringOwner) lowerAssignStmt(ctx lowerFileContext, stmt *ast.AssignSt
 			continue
 		}
 		if helper, ok := wideIntegerAssignHelper(targetType, stmt.Tok); ok {
-			stmts = append(stmts, loweredStmt{text: left + " = " + o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")"})
+			call := coerceWideHelperResult(o.runtimeOwner, targetType, o.runtimeOwner.QualifiedHelper(helper)+"("+left+", "+right+")")
+			stmts = append(stmts, loweredStmt{text: left + " = " + call})
 			continue
 		}
 		if value, ok := integerQuotientAssignExpr(targetType, left, right, stmt.Tok); ok {
@@ -5010,7 +5027,7 @@ func lowerCompoundAssignValue(
 	tok token.Token,
 ) string {
 	if helper, ok := wideIntegerAssignHelper(targetType, tok); ok {
-		return runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")"
+		return coerceWideHelperResult(runtimeOwner, targetType, runtimeOwner.QualifiedHelper(helper)+"("+left+", "+right+")")
 	}
 	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
 		return value
@@ -7101,8 +7118,7 @@ func isFunctionType(typ types.Type) bool {
 }
 
 func isBoolType(typ types.Type) bool {
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.Bool
+	return basicKind(typ, types.Bool)
 }
 
 func isUntypedNilType(typ types.Type) bool {
@@ -7385,17 +7401,22 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			return lowerPrefixUnaryExpr(typed.Op, value), diagnostics
 		}
 		if typed.Op == token.XOR {
-			if bits, ok := unsignedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok {
+			resultType := ctx.semPkg.source.TypesInfo.TypeOf(typed)
+			// The int64*/uint64* family returns bigint; number-typed wide results
+			// (uint, uintptr) keep full 64-bit width through coerceWideHelperResult.
+			wideComplement := func(helper RuntimeHelper) string {
+				return coerceWideHelperResult(o.runtimeOwner, resultType,
+					o.runtimeOwner.QualifiedHelper(helper)+"("+value+", -1n)")
+			}
+			if bits, ok := unsignedIntegerBits(resultType); ok {
 				if bits <= 32 {
 					return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
 						"(~" + value + ", " + strconv.Itoa(bits) + ")", diagnostics
 				}
-				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Xor) +
-					"(" + value + ", -1n)", diagnostics
+				return wideComplement(RuntimeHelperUint64Xor), diagnostics
 			}
-			if bits, ok := signedIntegerBits(ctx.semPkg.source.TypesInfo.TypeOf(typed)); ok && bits > 32 {
-				return o.runtimeOwner.QualifiedHelper(RuntimeHelperInt64Xor) +
-					"(" + value + ", -1n)", diagnostics
+			if bits, ok := signedIntegerBits(resultType); ok && bits > 32 {
+				return wideComplement(RuntimeHelperInt64Xor), diagnostics
 			}
 			return "~" + value, diagnostics
 		}
@@ -7637,7 +7658,7 @@ func (o *LoweringOwner) lowerIdent(ctx lowerFileContext, ident *ast.Ident, raw b
 		return alias
 	}
 	if constObj, ok := obj.(*types.Const); ok && !raw {
-		if constValue, ok := lowerConstantValue(constObj.Val()); ok {
+		if constValue, ok := lowerConstantValueForType(constObj.Val(), constObj.Type()); ok {
 			return constValue
 		}
 	}
@@ -8278,11 +8299,13 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		if len(expr.Args) >= 2 {
 			var lengthDiagnostics []Diagnostic
 			length, lengthDiagnostics = o.lowerExpr(ctx, expr.Args[1])
+			length = o.lowerNumberIndexValue(ctx, expr.Args[1], length)
 			diagnostics = append(diagnostics, lengthDiagnostics...)
 		}
 		if len(expr.Args) >= 3 {
 			var capacityDiagnostics []Diagnostic
 			capacity, capacityDiagnostics = o.lowerExpr(ctx, expr.Args[2])
+			capacity = o.lowerNumberIndexValue(ctx, expr.Args[2], capacity)
 			diagnostics = append(diagnostics, capacityDiagnostics...)
 		}
 		args := []string{length}
@@ -8315,6 +8338,7 @@ func (o *LoweringOwner) lowerMakeExpr(ctx lowerFileContext, expr *ast.CallExpr) 
 		if len(expr.Args) >= 2 {
 			var capacityDiagnostics []Diagnostic
 			capacity, capacityDiagnostics = o.lowerExpr(ctx, expr.Args[1])
+			capacity = o.lowerNumberIndexValue(ctx, expr.Args[1], capacity)
 			diagnostics = append(diagnostics, capacityDiagnostics...)
 		}
 		return o.runtimeOwner.QualifiedHelper(RuntimeHelperMakeChannel) +
@@ -8459,7 +8483,17 @@ func (o *LoweringOwner) lowerConversionExpr(
 	}
 	if isNumericType(targetType) {
 		if isFloatType(targetType) {
+			if isBigIntBackedType(sourceType) {
+				return "Number(" + value + ")", diagnostics
+			}
 			return value, diagnostics
+		}
+		if isBigIntBackedType(targetType) {
+			helper := RuntimeHelperInt64
+			if _, ok := unsignedIntegerBits(targetType); ok {
+				helper = RuntimeHelperUint64
+			}
+			return o.runtimeOwner.QualifiedHelper(helper) + "(" + value + ")", diagnostics
 		}
 		if bits, ok := unsignedIntegerBits(targetType); ok {
 			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
@@ -8474,14 +8508,39 @@ func (o *LoweringOwner) lowerConversionExpr(
 	return value, diagnostics
 }
 
+// coerceWideHelperResult coerces a bigint result from the int64*/uint64* runtime
+// family back to resultType's representation. int64/uint64 results stay bigint.
+// Unsigned number-typed wide results (uint, uintptr) flow through $.uint(_, 64),
+// which keeps values above 2^53 as a runtime bigint so full 64-bit width
+// survives; a precision-losing Number() wrap would truncate values like
+// ^uint(0). Signed platform int coerces with Number (accepted precision loss
+// above 2^53, matching Model A's int->number mapping): $.uint on a signed value
+// would reinterpret its sign bit as magnitude.
+func coerceWideHelperResult(runtimeOwner *RuntimeContractOwner, resultType types.Type, call string) string {
+	if isBigIntBackedType(resultType) {
+		return call
+	}
+	if _, ok := unsignedIntegerBits(resultType); ok {
+		return runtimeOwner.QualifiedHelper(RuntimeHelperUint) + "(" + call + ", 64)"
+	}
+	return "Number(" + call + ")"
+}
+
 func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, bool) {
-	resultWide := isRuntimeWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr))
+	resultType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
+	resultWide := isRuntimeWideIntegerType(resultType)
 	leftWide := isRuntimeWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
 	if !resultWide && !leftWide {
 		return "", false
 	}
-	signed := isFixedSignedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) ||
+	signed := isFixedSignedWideIntegerType(resultType) ||
 		isFixedSignedWideIntegerType(ctx.semPkg.source.TypesInfo.TypeOf(expr.X))
+	wrap := func(call string) string {
+		return coerceWideHelperResult(o.runtimeOwner, resultType, call)
+	}
+	helperCall := func(helper RuntimeHelper) string {
+		return wrap(o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")")
+	}
 	switch expr.Op {
 	case token.SHL, token.SHR:
 		helper := RuntimeHelperUint64Shr
@@ -8495,27 +8554,27 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 			}
 		}
 		if _, ok := constantShiftAmount(ctx, expr.Y); !ok {
-			return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+			return helperCall(helper), true
 		}
 		amount, ok := constantShiftAmount(ctx, expr.Y)
 		if ok && amount >= 32 && expr.Op == token.SHL && !signed {
 			base := o.lowerWideShiftLeftOperand(ctx, expr.X, left)
-			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) +
-				"(" + base + ", " + shiftMultiplier(amount) + ")", true
+			return wrap(o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Mul) +
+				"(" + base + ", " + shiftMultiplier(amount) + ")"), true
 		}
-		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+		return helperCall(helper), true
 	case token.MUL:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Mul, RuntimeHelperInt64Mul)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Mul, RuntimeHelperInt64Mul)), true
 	case token.QUO:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Div, RuntimeHelperInt64Div)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Div, RuntimeHelperInt64Div)), true
 	case token.REM:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Mod, RuntimeHelperInt64Mod)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Mod, RuntimeHelperInt64Mod)), true
 	case token.ADD:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Add, RuntimeHelperInt64Add)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Add, RuntimeHelperInt64Add)), true
 	case token.SUB:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub)), true
 	case token.AND:
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And)), true
 	case token.XOR:
 		if isZeroIntegerExpr(ctx, expr.Y) {
 			return left, true
@@ -8523,15 +8582,15 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 		if isZeroIntegerExpr(ctx, expr.X) {
 			return right, true
 		}
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Xor, RuntimeHelperInt64Xor)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Xor, RuntimeHelperInt64Xor)), true
 	case token.OR:
 		shift, ok := wideLeftShiftExpr(ctx, expr.X)
 		if ok && !signed {
 			if bits, ok := lowIntegerBits(ctx, expr.Y); ok && bits <= shift {
-				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint64Add) + "(" + left + ", " + right + ")", true
+				return helperCall(RuntimeHelperUint64Add), true
 			}
 		}
-		return o.runtimeOwner.QualifiedHelper(wideIntegerHelper(signed, RuntimeHelperUint64Or, RuntimeHelperInt64Or)) + "(" + left + ", " + right + ")", true
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Or, RuntimeHelperInt64Or)), true
 	default:
 		return "", false
 	}
@@ -9024,7 +9083,7 @@ func (o *LoweringOwner) packageVarAssignmentValue(
 		return left + " & ~(" + right + ")", true
 	}
 	if helper, ok := wideIntegerAssignHelper(targetType, tok); ok {
-		return o.runtimeOwner.QualifiedHelper(helper) + "(" + left + ", " + right + ")", true
+		return coerceWideHelperResult(o.runtimeOwner, targetType, o.runtimeOwner.QualifiedHelper(helper)+"("+left+", "+right+")"), true
 	}
 	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
 		return value, true
@@ -9487,7 +9546,7 @@ func (o *LoweringOwner) lowerIndexAddressExpr(ctx lowerFileContext, expr *ast.In
 	if isStringType(targetType) || isMapType(targetType) {
 		return "undefined", append(diagnostics, loweringUnsupportedAt(ctx, expr, "expression", ctx.semPkg.pkgPath, "unsupported address expression"))
 	}
-	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexRef) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + o.lowerNumberIndexValue(ctx, expr.Index, index) + ")", diagnostics
 }
 
 func (o *LoweringOwner) lowerAddressEqualityExpr(
@@ -9565,7 +9624,7 @@ func (o *LoweringOwner) lowerIndexAddressIntegerExpr(
 		return "", diagnostics, false
 	}
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexAddress) +
-		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ")", diagnostics, true
+		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + o.lowerNumberIndexValue(ctx, indexExpr.Index, index) + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerIndexByteAddressIntegerExpr(
@@ -9589,7 +9648,7 @@ func (o *LoweringOwner) lowerIndexByteAddressIntegerExpr(
 	}
 	elementSize := goScriptElementByteSize(ctx, indexElementType(targetType))
 	return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexByteAddress) +
-		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + index + ", " + strconv.FormatInt(elementSize, 10) + ")", diagnostics, true
+		"(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + o.lowerNumberIndexValue(ctx, indexExpr.Index, index) + ", " + strconv.FormatInt(elementSize, 10) + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerPointerValueExpr(ctx lowerFileContext, expr ast.Expr) (string, []Diagnostic) {
@@ -10096,12 +10155,25 @@ func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr
 	targetType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
 	switch {
 	case isStringType(targetType):
-		return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexStringOrBytes) + "(" + target + ", " + index + ")", diagnostics
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperIndexStringOrBytes) + "(" + target + ", " + o.lowerNumberIndexValue(ctx, expr.Index, index) + ")", diagnostics
 	case isMapType(targetType):
 		return o.lowerMapGetValue(ctx, expr, target, index), diagnostics
 	default:
-		return o.lowerIndexTarget(ctx, target, targetType) + "[" + index + "]", diagnostics
+		return o.lowerIndexTarget(ctx, target, targetType) + "[" + o.lowerNumberIndexValue(ctx, expr.Index, index) + "]", diagnostics
 	}
+}
+
+// lowerNumberIndexValue coerces an index or size expression to a JS number when
+// its Go type is bigint-backed (int64/uint64/uint/uintptr). Array indices, slice
+// bounds, string/byte offsets, and make/len sizes must be number, not bigint.
+func (o *LoweringOwner) lowerNumberIndexValue(ctx lowerFileContext, expr ast.Expr, value string) string {
+	if expr == nil {
+		return value
+	}
+	if isBigIntBackedType(ctx.semPkg.source.TypesInfo.TypeOf(expr)) {
+		return "Number(" + value + ")"
+	}
+	return value
 }
 
 func (o *LoweringOwner) lowerGenericFunctionValue(
@@ -10162,6 +10234,9 @@ func (o *LoweringOwner) lowerSliceExpr(ctx lowerFileContext, expr *ast.SliceExpr
 	low, lowDiagnostics := o.lowerOptionalExpr(ctx, expr.Low)
 	high, highDiagnostics := o.lowerOptionalExpr(ctx, expr.High)
 	max, maxDiagnostics := o.lowerOptionalExpr(ctx, expr.Max)
+	low = o.lowerNumberIndexValue(ctx, expr.Low, low)
+	high = o.lowerNumberIndexValue(ctx, expr.High, high)
+	max = o.lowerNumberIndexValue(ctx, expr.Max, max)
 	diagnostics = append(diagnostics, lowDiagnostics...)
 	diagnostics = append(diagnostics, highDiagnostics...)
 	diagnostics = append(diagnostics, maxDiagnostics...)
@@ -10589,6 +10664,9 @@ func (o *LoweringOwner) lowerNumericConstantExprForTarget(ctx lowerFileContext, 
 	}
 	tv, ok := ctx.semPkg.source.TypesInfo.Types[expr]
 	if ok && tv.Value != nil {
+		if isBigIntBackedType(targetType) && tv.Value.Kind() == constant.Int {
+			return tv.Value.ExactString() + "n", true
+		}
 		if bits, ok := unsignedIntegerBits(targetType); ok && bits >= 64 {
 			if value, ok := lowerWideIntegerConstantValue(tv.Value); ok {
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) + "(" +
@@ -10675,6 +10753,16 @@ func (o *LoweringOwner) lowerValueForTargetTypes(
 		return o.lowerStructClone(value)
 	}
 	if isIntegerType(targetType) && isIntegerType(sourceType) {
+		if isBigIntBackedType(targetType) {
+			if isBigIntBackedType(sourceType) {
+				return value
+			}
+			helper := RuntimeHelperInt64
+			if _, ok := unsignedIntegerBits(targetType); ok {
+				helper = RuntimeHelperUint64
+			}
+			return o.runtimeOwner.QualifiedHelper(helper) + "(" + value + ")"
+		}
 		if isBasicFixedWideIntegerType(targetType) {
 			if bits, ok := unsignedIntegerBits(targetType); ok {
 				return o.runtimeOwner.QualifiedHelper(RuntimeHelperUint) +
@@ -10820,6 +10908,10 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 			return "\"\""
 		}
 		if typed.Info()&types.IsNumeric != 0 {
+			switch typed.Kind() {
+			case types.Int64, types.Uint64:
+				return "0n"
+			}
 			return "0"
 		}
 		return "undefined"
@@ -10872,6 +10964,13 @@ func (o *LoweringOwner) runtimeTypeAssertInfoExpr(ctx lowerFileContext, typ type
 	return o.runtimeTypeAssertInfoExprWithSeen(ctx, typ, make(map[types.Type]bool))
 }
 
+// runtimeTypeAssertInfoExprWithSeen renders the runtime type descriptor for a
+// type-assertion or type-switch target. It mirrors runtimeTypeInfoExprWithSeen
+// but threads ctx so a type parameter in scope resolves to its runtime
+// __typeArgs entry. Keep the two structurally in sync: the named-type checks,
+// the underlying switch arms, and the leaf cases must stay parallel; the only
+// intended differences are the type-parameter prefix and the ctx-threaded
+// recursion.
 func (o *LoweringOwner) runtimeTypeAssertInfoExprWithSeen(ctx lowerFileContext, typ types.Type, seen map[types.Type]bool) string {
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
 	if ok && typeParamInScope(ctx, typeParam) {
@@ -10891,11 +10990,11 @@ func (o *LoweringOwner) runtimeTypeAssertInfoExprWithSeen(ctx lowerFileContext, 
 		seen[typeKey] = true
 		defer delete(seen, typeKey)
 	}
-	if named := namedFunctionType(typ); named != nil {
-		return o.runtimeFunctionTypeAssertInfoWithSeen(ctx, named.Underlying().(*types.Signature), runtimeNamedTypeName(named), seen)
-	}
 	if named := namedStructType(typ); named != nil {
 		return strconv.Quote(runtimeNamedTypeName(named))
+	}
+	if named := namedFunctionType(typ); named != nil {
+		return o.runtimeFunctionTypeAssertInfoWithSeen(ctx, named.Underlying().(*types.Signature), runtimeNamedTypeName(named), seen)
 	}
 	if named := namedNonStructType(typ); named != nil {
 		if basic, ok := types.Unalias(named.Underlying()).(*types.Basic); ok {
@@ -10904,6 +11003,8 @@ func (o *LoweringOwner) runtimeTypeAssertInfoExprWithSeen(ctx lowerFileContext, 
 		return strconv.Quote(runtimeNamedTypeName(named))
 	}
 	switch typed := types.Unalias(typ).Underlying().(type) {
+	case *types.Basic:
+		return runtimeBasicTypeInfoExpr(typeKind, typed, "")
 	case *types.Pointer:
 		return "{ kind: " + typeKind + ".Pointer, elemType: " + o.runtimeTypeAssertInfoExprWithSeen(ctx, typed.Elem(), seen) + " }"
 	case *types.Struct:
@@ -10926,6 +11027,8 @@ func (o *LoweringOwner) runtimeTypeAssertInfoExprWithSeen(ctx lowerFileContext, 
 	}
 }
 
+// runtimeTypeInfoExprWithSeen renders the runtime type descriptor for typ. Keep
+// it structurally in sync with runtimeTypeAssertInfoExprWithSeen.
 func (o *LoweringOwner) runtimeTypeInfoExprWithSeen(typ types.Type, seen map[types.Type]bool) string {
 	typeKind := o.runtimeOwner.QualifiedHelper(RuntimeHelperTypeKind)
 	if typ == nil {
@@ -11412,6 +11515,10 @@ func (o *LoweringOwner) tsTypeFor(ctx lowerFileContext, typ types.Type) string {
 			return "string"
 		}
 		if typed.Info()&types.IsNumeric != 0 {
+			switch typed.Kind() {
+			case types.Int64, types.Uint64:
+				return "bigint"
+			}
 			return "number"
 		}
 		return "unknown"
@@ -11576,6 +11683,10 @@ func zeroValueExpr(typ types.Type) string {
 			return "\"\""
 		}
 		if typed.Info()&types.IsNumeric != 0 {
+			switch typed.Kind() {
+			case types.Int64, types.Uint64:
+				return "0n"
+			}
 			return "0"
 		}
 		return "undefined"
@@ -11895,12 +12006,28 @@ func isChannelType(typ types.Type) bool {
 	return ok
 }
 
-func isComplexType(typ types.Type) bool {
+// basicKind reports whether typ's underlying type is a basic type of the given
+// kind. It is nil-safe and returns false for a nil type.
+func basicKind(typ types.Type, kind types.BasicKind) bool {
 	if typ == nil {
 		return false
 	}
 	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Info()&types.IsComplex != 0
+	return ok && basic.Kind() == kind
+}
+
+// basicInfo reports whether typ's underlying type is a basic type whose info
+// flags include the given flag. It is nil-safe and returns false for a nil type.
+func basicInfo(typ types.Type, flag types.BasicInfo) bool {
+	if typ == nil {
+		return false
+	}
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	return ok && basic.Info()&flag != 0
+}
+
+func isComplexType(typ types.Type) bool {
+	return basicInfo(typ, types.IsComplex)
 }
 
 func isPointerType(typ types.Type) bool {
@@ -11912,19 +12039,11 @@ func isPointerType(typ types.Type) bool {
 }
 
 func isUnsafePointerType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.UnsafePointer
+	return basicKind(typ, types.UnsafePointer)
 }
 
 func isUintptrType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.Uintptr
+	return basicKind(typ, types.Uintptr)
 }
 
 func channelDirectionString(dir types.ChanDir) string {
@@ -11954,35 +12073,19 @@ func unwrapParenExpr(expr ast.Expr) ast.Expr {
 }
 
 func isStringType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Info()&types.IsString != 0
+	return basicInfo(typ, types.IsString)
 }
 
 func isNumericType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Info()&types.IsNumeric != 0
+	return basicInfo(typ, types.IsNumeric)
 }
 
 func isIntegerType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Info()&types.IsInteger != 0
+	return basicInfo(typ, types.IsInteger)
 }
 
 func isFloatType(typ types.Type) bool {
-	if typ == nil {
-		return false
-	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Info()&types.IsFloat != 0
+	return basicInfo(typ, types.IsFloat)
 }
 
 func unsignedIntegerBits(typ types.Type) (int, bool) {
@@ -12053,12 +12156,30 @@ func isFixedWideIntegerType(typ types.Type) bool {
 	}
 }
 
-func isFixedSignedWideIntegerType(typ types.Type) bool {
-	if typ == nil {
+// isBigIntBackedType reports whether typ lowers to a TypeScript bigint. Only the
+// fixed 64-bit Go integer types int64 and uint64 are represented as bigint to
+// preserve full-width precision and Go overflow semantics. The platform-width
+// uint and uintptr, plain int, and the narrower fixed-width integers stay number
+// so they remain usable as array indices; uint/uintptr arithmetic still routes
+// through the int64/uint64 runtime helpers and the result flows through
+// coerceWideHelperResult, which keeps values above 2^53 as a runtime bigint to
+// preserve full 64-bit width, matching design/SPEC_DIFFERENCES.md which maps
+// int64/uint64 to bigint and uint/uintptr to the number representation.
+func isBigIntBackedType(typ types.Type) bool {
+	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
+	if !ok {
 		return false
 	}
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.Int64
+	switch basic.Kind() {
+	case types.Int64, types.Uint64:
+		return true
+	default:
+		return false
+	}
+}
+
+func isFixedSignedWideIntegerType(typ types.Type) bool {
+	return basicKind(typ, types.Int64)
 }
 
 func isRuntimeWideIntegerType(typ types.Type) bool {
@@ -12080,13 +12201,11 @@ func isByteSliceType(typ types.Type) bool {
 }
 
 func isRuneType(typ types.Type) bool {
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.Int32
+	return basicKind(typ, types.Int32)
 }
 
 func isByteType(typ types.Type) bool {
-	basic, ok := types.Unalias(typ).Underlying().(*types.Basic)
-	return ok && basic.Kind() == types.Uint8
+	return basicKind(typ, types.Uint8)
 }
 
 func sliceTypeHint(typ types.Type) string {

@@ -32,8 +32,8 @@ class captureWriter {
 class syncReaderAt {
   constructor(private data: Uint8Array) {}
 
-  ReadAt(p: $.Bytes, off: number): [number, $.GoError] {
-    const n = $.copy(p, this.data.subarray(off))
+  ReadAt(p: $.Bytes, off: bigint): [number, $.GoError] {
+    const n = $.copy(p, this.data.subarray(Number(off)))
     return [n, n < $.len(p) ? (new Error('EOF') as $.GoError) : null]
   }
 }
@@ -42,7 +42,7 @@ describe('io override', () => {
   test('LimitedReader accepts generated struct-literal construction', async () => {
     const reader = new LimitedReader({
       R: new sliceReader($.stringToBytes('abcdef')),
-      N: 3,
+      N: 3n,
     })
     const buf = new Uint8Array(8)
 
@@ -154,10 +154,10 @@ describe('io override', () => {
   test('SectionReader awaits async ReaderAt', async () => {
     const reader = NewSectionReader(
       {
-        async ReadAt(p: $.Bytes, off: number): Promise<[number, $.GoError]> {
+        async ReadAt(p: $.Bytes, off: bigint): Promise<[number, $.GoError]> {
           await Promise.resolve()
           const data = $.stringToBytes('abcdef')
-          const n = $.copy(p, data.subarray(off))
+          const n = $.copy(p, data.subarray(Number(off)))
           return [n, n < $.len(p) ? (new Error('EOF') as $.GoError) : null]
         },
       } as any,

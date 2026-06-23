@@ -141,10 +141,10 @@ export class parser {
 		this._fields.numRunes.value = value
 	}
 
-	public get repeats(): number {
+	public get repeats(): bigint {
 		return this._fields.repeats.value
 	}
-	public set repeats(value: number) {
+	public set repeats(value: bigint) {
 		this._fields.repeats.value = value
 	}
 
@@ -155,10 +155,10 @@ export class parser {
 		this._fields.height.value = value
 	}
 
-	public get size(): globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null {
+	public get size(): globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null {
 		return this._fields.size.value
 	}
-	public set size(value: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null) {
+	public set size(value: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null) {
 		this._fields.size.value = value
 	}
 
@@ -171,12 +171,12 @@ export class parser {
 		tmpClass: $.VarRef<$.Slice<number>>
 		numRegexp: $.VarRef<number>
 		numRunes: $.VarRef<number>
-		repeats: $.VarRef<number>
+		repeats: $.VarRef<bigint>
 		height: $.VarRef<globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
-		size: $.VarRef<globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null>
+		size: $.VarRef<globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null>
 	}
 
-	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: number, height?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null}>) {
+	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: bigint, height?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null}>) {
 		this._fields = {
 			flags: $.varRef(init?.flags ?? (0 as unknown as Flags)),
 			stack: $.varRef(init?.stack ?? (null as unknown as $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>)),
@@ -186,9 +186,9 @@ export class parser {
 			tmpClass: $.varRef(init?.tmpClass ?? (null as unknown as $.Slice<number>)),
 			numRegexp: $.varRef(init?.numRegexp ?? (0 as unknown as number)),
 			numRunes: $.varRef(init?.numRunes ?? (0 as unknown as number)),
-			repeats: $.varRef(init?.repeats ?? (0 as unknown as number)),
+			repeats: $.varRef(init?.repeats ?? (0n as unknown as bigint)),
 			height: $.varRef(init?.height ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
-			size: $.varRef(init?.size ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null))
+			size: $.varRef(init?.size ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null))
 		}
 	}
 
@@ -280,43 +280,43 @@ export class parser {
 		return h
 	}
 
-	public calcSize(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, force: boolean): number {
+	public calcSize(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, force: boolean): bigint {
 		let p: parser | $.VarRef<parser> | null = this
 		if (!force) {
 			{
-				let __goscriptTuple0: any = $.mapGet<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number, number>($.pointerValue<parser>(p).size, re, 0)
-				let size = $.int(__goscriptTuple0[0])
+				let __goscriptTuple0: any = $.mapGet<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint, bigint>($.pointerValue<parser>(p).size, re, 0n)
+				let size = __goscriptTuple0[0]
 				let ok = __goscriptTuple0[1]
 				if (ok) {
-					return $.int(size)
+					return size
 				}
 			}
 		}
 
-		let size: number = 0
+		let size: bigint = 0n
 		switch ($.pointerValue<__goscript_regexp.Regexp>(re).Op) {
 			case 3:
 			{
-				size = $.int($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune)))
+				size = $.int64($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune))
 				break
 			}
 			case 13:
 			case 14:
 			{
-				size = $.int($.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)))
+				size = $.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
 				break
 			}
 			case 15:
 			case 16:
 			{
-				size = $.int($.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)))
+				size = $.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
 				break
 			}
 			case 18:
 			{
 				for (let __goscriptRangeTarget1 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 					let sub = __goscriptRangeTarget1![__rangeIndex]
-					size = $.int64Add(size, $.int(parser.prototype.calcSize.call(p, sub, false)))
+					size = $.int64Add(size, parser.prototype.calcSize.call(p, sub, false))
 				}
 				break
 			}
@@ -324,33 +324,33 @@ export class parser {
 			{
 				for (let __goscriptRangeTarget2 = $.pointerValue<__goscript_regexp.Regexp>(re).Sub, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 					let sub = __goscriptRangeTarget2![__rangeIndex]
-					size = $.int64Add(size, $.int(parser.prototype.calcSize.call(p, sub, false)))
+					size = $.int64Add(size, parser.prototype.calcSize.call(p, sub, false))
 				}
 				if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 1) {
-					size = $.int64Add(size, $.int($.int64Sub($.int($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1)))
+					size = $.int64Add(size, $.int64Sub($.int64($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)), 1))
 				}
 				break
 			}
 			case 17:
 			{
-				let sub = $.int(parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				let sub = parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)
 				if ($.pointerValue<__goscript_regexp.Regexp>(re).Max == -1) {
 					if ($.pointerValue<__goscript_regexp.Regexp>(re).Min == 0) {
-						size = $.int($.int64Add(2, sub))
+						size = $.int64Add(2, sub)
 					} else {
-						size = $.int($.int64Add(1, ($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub))))
+						size = $.int64Add(1, ($.int64Mul($.int64($.pointerValue<__goscript_regexp.Regexp>(re).Min), sub)))
 					}
 					break
 				}
 				// x{2,5} = xx(x(x(x)?)?)?
-				size = $.int($.int64Add(($.int64Mul($.int($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min)))
+				size = $.int64Add(($.int64Mul($.int64($.pointerValue<__goscript_regexp.Regexp>(re).Max), sub)), $.int64($.pointerValue<__goscript_regexp.Regexp>(re).Max - $.pointerValue<__goscript_regexp.Regexp>(re).Min))
 				break
 			}
 		}
 
-		size = $.int($.max($.int(1), $.int(size)))
-		$.mapSet($.pointerValue<parser>(p).size, re, $.int(size))
-		return $.int(size)
+		size = $.max(1n, size)
+		$.mapSet($.pointerValue<parser>(p).size, re, size)
+		return size
 	}
 
 	public checkHeight(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): void {
@@ -387,8 +387,8 @@ export class parser {
 			// Maintain the product of all the repeats we've seen
 			// and don't track if the total number of regexp nodes
 			// we've seen times the repeat product is in budget.
-			if ($.int($.pointerValue<parser>(p).repeats) == $.int(0)) {
-				$.pointerValue<parser>(p).repeats = $.int(1)
+			if ($.pointerValue<parser>(p).repeats == 0n) {
+				$.pointerValue<parser>(p).repeats = 1n
 			}
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(17, 8)) {
 				let n = $.pointerValue<__goscript_regexp.Regexp>(re).Max
@@ -398,20 +398,20 @@ export class parser {
 				if (n <= 0) {
 					n = 1
 				}
-				if ($.int(n) > ($.int64Div(3355443, $.pointerValue<parser>(p).repeats))) {
-					$.pointerValue<parser>(p).repeats = $.int(3355443)
+				if ($.int64(n) > ($.int64Div(3355443, $.pointerValue<parser>(p).repeats))) {
+					$.pointerValue<parser>(p).repeats = 3355443n
 				} else {
-					$.pointerValue<parser>(p).repeats = $.int64Mul($.pointerValue<parser>(p).repeats, $.int($.int(n)))
+					$.pointerValue<parser>(p).repeats = $.int64Mul($.pointerValue<parser>(p).repeats, $.int64(n))
 				}
 			}
-			if ($.int($.pointerValue<parser>(p).numRegexp) < ($.int64Div(3355443, $.pointerValue<parser>(p).repeats))) {
+			if ($.int64($.pointerValue<parser>(p).numRegexp) < ($.int64Div(3355443, $.pointerValue<parser>(p).repeats))) {
 				return
 			}
 
 			// We need to start tracking size.
 			// Make the map and belatedly populate it
 			// with info about everything we've constructed so far.
-			$.pointerValue<parser>(p).size = $.makeMap<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number>()
+			$.pointerValue<parser>(p).size = $.makeMap<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint>()
 			for (let __goscriptRangeTarget4 = $.pointerValue<parser>(p).stack, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
 				let re = __goscriptRangeTarget4![__rangeIndex]
 				parser.prototype.checkSize.call(p, re)

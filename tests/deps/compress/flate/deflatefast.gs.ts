@@ -210,10 +210,10 @@ export class deflateFast {
 					// at s+1. At least on GOARCH=amd64, these three hash calculations
 					// are faster as one load64 call (with some shifts) instead of
 					// three load32 calls.
-					let x = $.uint(load64(src, $.int(s - 1, 32)), 64)
+					let x = load64(src, $.int(s - 1, 32))
 					let prevHash = $.uint(hash($.uint($.uint(x, 32), 32)), 32)
 					$.pointerValue<deflateFast>(e).table[prevHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int(($.pointerValue<deflateFast>(e).cur + s) - 1, 32), val: $.uint($.uint(x, 32), 32)}))
-					x = $.uint64Shr(x, $.uint(8, 64))
+					x = $.uint64Shr(x, 8n)
 					let currHash = $.uint(hash($.uint($.uint(x, 32), 32)), 32)
 					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[currHash & 16383]))
 					$.pointerValue<deflateFast>(e).table[currHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int($.pointerValue<deflateFast>(e).cur + s, 32), val: $.uint($.uint(x, 32), 32)}))
@@ -360,9 +360,9 @@ export function load32(b: $.Slice<number>, i: number): number {
 	return $.uint((($.uint(b![0], 32) | ($.uint(b![1], 32) << 8)) | ($.uint(b![2], 32) << 16)) | ($.uint(b![3], 32) << 24), 32)
 }
 
-export function load64(b: $.Slice<number>, i: number): number {
+export function load64(b: $.Slice<number>, i: number): bigint {
 	b = $.goSlice(b, i, i + 8, $.len(b))
-	return $.uint($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or($.uint(b![0], 64), ($.uint64Shl($.uint(b![1], 64), 8)))), ($.uint64Shl($.uint(b![2], 64), 16)))), ($.uint64Shl($.uint(b![3], 64), 24)))), ($.uint64Mul($.uint(b![4], 64), (2 ** 32))))), ($.uint64Mul($.uint(b![5], 64), (2 ** 40))))), ($.uint64Mul($.uint(b![6], 64), (2 ** 48))))), ($.uint64Mul($.uint(b![7], 64), (2 ** 56)))), 64)
+	return $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or($.uint64(b![0]), ($.uint64Shl($.uint64(b![1]), 8)))), ($.uint64Shl($.uint64(b![2]), 16)))), ($.uint64Shl($.uint64(b![3]), 24)))), ($.uint64Mul($.uint64(b![4]), (2 ** 32))))), ($.uint64Mul($.uint64(b![5]), (2 ** 40))))), ($.uint64Mul($.uint64(b![6]), (2 ** 48))))), ($.uint64Mul($.uint64(b![7]), (2 ** 56))))
 }
 
 export function hash(u: number): number {

@@ -201,8 +201,8 @@ class embedFileInfo {
     return this.name
   }
 
-  Size(): number {
-    return this.size
+  Size(): bigint {
+    return BigInt(this.size)
   }
 
   Sys(): null {

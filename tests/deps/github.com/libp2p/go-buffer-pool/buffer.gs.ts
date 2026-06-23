@@ -128,9 +128,9 @@ export class Buffer {
 		return [$.uint(c, 8), null]
 	}
 
-	public async ReadFrom(r: io.Reader | null): globalThis.Promise<[number, $.GoError]> {
+	public async ReadFrom(r: io.Reader | null): globalThis.Promise<[bigint, $.GoError]> {
 		let b: Buffer | $.VarRef<Buffer> | null = this
-		let n = $.int($.int(0))
+		let n = 0n
 		while (true) {
 			let wOff = await Buffer.prototype.grow.call(b, 512)
 			// Use *entire* buffer.
@@ -138,7 +138,7 @@ export class Buffer {
 
 			let [read, err] = await $.pointerValue<Exclude<io.Reader, null>>(r).Read($.goSlice($.pointerValue<Buffer>(b).buf, wOff, undefined))
 			$.pointerValue<Buffer>(b).buf = $.goSlice($.pointerValue<Buffer>(b).buf, undefined, wOff + read)
-			n = $.int64Add(n, $.int($.int(read)))
+			n = $.int64Add(n, $.int64(read))
 			{
 				let __goscriptSwitch0 = err
 				switch (true) {
@@ -153,7 +153,7 @@ export class Buffer {
 					default:
 					{
 						await Buffer.prototype.shrink.call(b)
-						return [$.int(n), err]
+						return [n, err]
 						break
 					}
 				}
@@ -204,7 +204,7 @@ export class Buffer {
 		return [$.copy($.goSlice($.pointerValue<Buffer>(b).buf, wOff, undefined), buf), null]
 	}
 
-	public async WriteTo(w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
+	public async WriteTo(w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
 		let b: Buffer | $.VarRef<Buffer> | null = this
 		if ($.pointerValue<Buffer>(b).rOff < $.len($.pointerValue<Buffer>(b).buf)) {
 			let [n, err] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write($.goSlice($.pointerValue<Buffer>(b).buf, $.pointerValue<Buffer>(b).rOff, undefined))
@@ -213,9 +213,9 @@ export class Buffer {
 				$.panic("invalid write count")
 			}
 			await Buffer.prototype.shrink.call(b)
-			return [$.int($.int(n)), err]
+			return [$.int64(n), err]
 		}
-		return [$.int(0), null]
+		return [0n, null]
 	}
 
 	public async getBuf(n: number): globalThis.Promise<$.Slice<number>> {

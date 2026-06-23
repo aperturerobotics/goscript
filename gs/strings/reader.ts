@@ -161,30 +161,30 @@ export class Reader {
     return null
   }
 
-  // Seek implements the [io.Seeker] interface.
-  public Seek(offset: number, whence: number): [number, $.GoError] {
+  // Seek implements the [io.Seeker] interface. offset is a Go int64 (bigint);
+  // the internal read index stays a number for string slicing.
+  public Seek(offset: bigint, whence: number): [bigint, $.GoError] {
     const r = this
     r!.prevRune = -1
     let abs: number
     switch (whence) {
       case io.SeekStart:
-        abs = offset
+        abs = Number(offset)
         break
       case io.SeekCurrent:
-        abs = r!.i + offset
+        abs = r!.i + Number(offset)
         break
       case io.SeekEnd:
-        abs = ($.len(r!.s) as number) + offset
+        abs = ($.len(r!.s) as number) + Number(offset)
         break
       default:
-        return [0, $.newError('strings.Reader.Seek: invalid whence')]
-        break
+        return [0n, $.newError('strings.Reader.Seek: invalid whence')]
     }
     if (abs < 0) {
-      return [0, $.newError('strings.Reader.Seek: negative position')]
+      return [0n, $.newError('strings.Reader.Seek: negative position')]
     }
     r!.i = abs
-    return [abs, null]
+    return [BigInt(abs), null]
   }
 
   // WriteTo implements the [io.WriterTo] interface.

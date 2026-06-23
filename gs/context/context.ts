@@ -209,7 +209,7 @@ class timerContext extends cancelContext {
   }
 
   startTimer(): void {
-    const duration = this.deadline.Sub(time.Now()) / 1000000
+    const duration = Number(this.deadline.Sub(time.Now())) / 1000000
 
     if (duration <= 0) {
       // Already expired
@@ -341,7 +341,7 @@ export function WithDeadlineCause(
 // WithTimeout returns WithDeadline(parent, Date.now() + timeout)
 export function WithTimeout(
   parent: Context,
-  timeout: number,
+  timeout: time.Duration,
 ): [ContextNonNil, CancelFunc] {
   return WithDeadline(parent, time.Now().Add(timeout))
 }
@@ -349,7 +349,7 @@ export function WithTimeout(
 // WithTimeoutCause is like WithTimeout but also sets the cause
 export function WithTimeoutCause(
   parent: Context,
-  timeout: number,
+  timeout: time.Duration,
   cause: $.GoError,
 ): [ContextNonNil, CancelFunc] {
   return WithDeadlineCause(parent, time.Now().Add(timeout), cause)

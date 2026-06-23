@@ -90,17 +90,25 @@ export function bitSizeError(fn: string, str: string, bitSize: number): NumError
 
 export let IntSize: number = 64;
 
-// lower(c) is a lower-case letter if and only if
-// c is either that lower-case letter or the equivalent upper-case letter.
-function lower(c: number): number {
-	return (c | (120 - 88));
+// digitValue decodes the value of a single base-36 digit, returning 99 (an
+// invalid sentinel above any legal base) for non-alphanumeric runes so the
+// caller rejects them with a syntax error.
+function digitValue(c: string): number {
+	if (c >= '0' && c <= '9') {
+		return c.charCodeAt(0) - 48;
+	}
+	const lc = c.toLowerCase();
+	if (lc >= 'a' && lc <= 'z') {
+		return lc.charCodeAt(0) - 97 + 10;
+	}
+	return 99;
 }
 
 // ParseUint is like ParseInt but for unsigned numbers.
-// A sign prefix is not permitted.
-export function ParseUint(s: string, base: number, bitSize: number): [number, $.GoError] {
+// A sign prefix is not permitted. It returns the uint64 value as a bigint.
+export function ParseUint(s: string, base: number, bitSize: number): [bigint, $.GoError] {
 	if (s === "") {
-		return [0, syntaxError("ParseUint", s)];
+		return [0n, syntaxError("ParseUint", s)];
 	}
 
 	const base0 = base === 0;
@@ -108,7 +116,7 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 
 	// Handle base validation
 	if (base < 0 || base === 1 || base > 36) {
-		return [0, baseError("ParseUint", s0, base)];
+		return [0n, baseError("ParseUint", s0, base)];
 	}
 
 	// Handle base inference
@@ -141,97 +149,83 @@ export function ParseUint(s: string, base: number, bitSize: number): [number, $.
 	if (bitSize === 0) {
 		bitSize = 64;
 	} else if (bitSize < 0 || bitSize > 64) {
-		return [0, bitSizeError("ParseUint", s0, bitSize)];
+		return [0n, bitSizeError("ParseUint", s0, bitSize)];
 	}
 
 	// Check for underscores only if base0 (auto-detected base)
 	if (base0 && s.includes('_')) {
 		if (!underscoreOK(s)) {
-			return [0, syntaxError("ParseUint", s0)];
+			return [0n, syntaxError("ParseUint", s0)];
 		}
 		s = s.replace(/_/g, '');
 	}
 
-	// Use JavaScript's parseInt
-	const result = parseInt(s, base);
-	
-	if (isNaN(result) || !isFinite(result)) {
-		return [0, syntaxError("ParseUint", s0)];
+	if (s === "") {
+		return [0n, syntaxError("ParseUint", s0)];
 	}
 
-	if (result < 0) {
-		return [0, syntaxError("ParseUint", s0)];
+	const baseBig = BigInt(base);
+	const maxVal = (1n << BigInt(bitSize)) - 1n;
+	let n = 0n;
+	for (const ch of s) {
+		const d = digitValue(ch);
+		if (d >= base) {
+			return [0n, syntaxError("ParseUint", s0)];
+		}
+		n = n * baseBig + BigInt(d);
+		if (n > maxVal) {
+			return [maxVal, rangeError("ParseUint", s0)];
+		}
 	}
 
-	// Check range for the specified bit size
-	// Note: JavaScript bitwise operators only work on 32-bit integers,
-	// so we use Math.pow() for larger bit sizes
-	let maxVal: number;
-	if (bitSize >= 53) {
-		// For 53+ bits, use MAX_SAFE_INTEGER as JavaScript can't represent larger integers accurately
-		maxVal = Number.MAX_SAFE_INTEGER;
-	} else {
-		maxVal = Math.pow(2, bitSize) - 1;
-	}
-	if (result > maxVal) {
-		return [0, rangeError("ParseUint", s0)];
-	}
-
-	return [result, null];
+	return [n, null];
 }
 
 // ParseInt interprets a string s in the given base (0, 2 to 36) and
-// bit size (0 to 64) and returns the corresponding value i.
-export function ParseInt(s: string, base: number, bitSize: number): [number, $.GoError] {
+// bit size (0 to 64) and returns the corresponding value i as a bigint.
+export function ParseInt(s: string, base: number, bitSize: number): [bigint, $.GoError] {
 	if (s === "") {
-		return [0, syntaxError("ParseInt", s)];
+		return [0n, syntaxError("ParseInt", s)];
 	}
 
+	const s0 = s;
 	let neg = false;
 	if (s[0] === '+' || s[0] === '-') {
 		neg = s[0] === '-';
 		s = s.slice(1);
 		if (s.length < 1) {
-			return [0, syntaxError("ParseInt", s)];
+			return [0n, syntaxError("ParseInt", s0)];
 		}
 	}
 
 	// Convert to unsigned first
 	const [un, err] = ParseUint(s, base, bitSize);
-	if (err !== null) {
+	if (err !== null && (err as NumError).Err !== ErrRange) {
 		const numErr = err as NumError;
 		numErr.Func = "ParseInt";
-		return [0, err];
+		numErr.Num = s0;
+		return [0n, numErr];
 	}
 
 	if (bitSize === 0) {
 		bitSize = 64;
 	}
 
-	// Note: JavaScript bitwise operators only work on 32-bit integers,
-	// so we use Math.pow() for larger bit sizes
-	let cutoff: number;
-	if (bitSize >= 53) {
-		// For 53+ bits, use MAX_SAFE_INTEGER as JavaScript can't represent larger integers accurately
-		cutoff = Number.MAX_SAFE_INTEGER;
-	} else {
-		cutoff = Math.pow(2, bitSize - 1);
-	}
+	const cutoff = 1n << BigInt(bitSize - 1);
 	if (!neg && un >= cutoff) {
-		return [0, rangeError("ParseInt", s)];
+		return [cutoff - 1n, rangeError("ParseInt", s0)];
 	}
 	if (neg && un > cutoff) {
-		return [0, rangeError("ParseInt", s)];
+		return [-cutoff, rangeError("ParseInt", s0)];
 	}
 
-	const result = neg ? -un : un;
-	return [result, null];
+	return [neg ? -un : un, null];
 }
 
 // Atoi is equivalent to ParseInt(s, 10, 0), converted to type int.
 export function Atoi(s: string): [number, $.GoError] {
 	const [i64, err] = ParseInt(s, 10, 0);
-	return [i64, err];
+	return [Number(i64), err];
 }
 
 // underscoreOK reports whether the underscores in s are allowed.

@@ -29,22 +29,22 @@ export function closureArrayAddress(): number {
 }
 
 export async function main(): globalThis.Promise<void> {
-	let buckets: number[][] = Array.from({ length: 2 }, () => Array.from({ length: 3 }, () => 0))
-	let cache: $.VarRef<number[]> | null = $.indexRef(buckets, 1)
+	let buckets: bigint[][] = Array.from({ length: 2 }, () => Array.from({ length: 3 }, () => 0n))
+	let cache: $.VarRef<bigint[]> | null = $.indexRef(buckets, 1)
 
-	$.println("len:", $.len($.pointerValue<number[]>(cache)))
+	$.println("len:", $.len($.pointerValue<bigint[]>(cache)))
 
-	$.pointerValue<number[]>(cache)[0] = $.uint(5, 64)
-	$.pointerValue<number[]>(cache)[1] = $.uint(7, 64)
-	$.println("index:", $.uint($.pointerValue<number[]>(cache)[0], 64), $.uint($.pointerValue<number[]>(cache)[1], 64))
+	$.pointerValue<bigint[]>(cache)[0] = 5n
+	$.pointerValue<bigint[]>(cache)[1] = 7n
+	$.println("index:", $.pointerValue<bigint[]>(cache)[0], $.pointerValue<bigint[]>(cache)[1])
 
-	for (let __goscriptRangeTarget2 = $.pointerValue<number[]>(cache), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
+	for (let __goscriptRangeTarget2 = $.pointerValue<bigint[]>(cache), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let x = __goscriptRangeTarget2![i]
-		$.println("range:", i, $.uint(x, 64))
+		$.println("range:", i, x)
 	}
 
-	let view: $.Slice<number> = $.goSlice($.pointerValue<number[]>(cache), undefined, undefined)
-	$.println("slice:", $.len(view), $.uint(view![2], 64))
+	let view: $.Slice<bigint> = $.goSlice($.pointerValue<bigint[]>(cache), undefined, undefined)
+	$.println("slice:", $.len(view), view![2])
 
 	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
 	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))

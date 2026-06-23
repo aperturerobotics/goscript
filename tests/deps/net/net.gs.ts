@@ -962,7 +962,7 @@ export class noReadFrom {
 		return $.markAsStructValue(cloned)
 	}
 
-	public ReadFrom(_p0: io.Reader | null): [number, $.GoError] {
+	public ReadFrom(_p0: io.Reader | null): [bigint, $.GoError] {
 		$.panic("can't happen")
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -1137,7 +1137,7 @@ export class noWriteTo {
 		return $.markAsStructValue(cloned)
 	}
 
-	public WriteTo(_p0: io.Writer | null): [number, $.GoError] {
+	public WriteTo(_p0: io.Writer | null): [bigint, $.GoError] {
 		$.panic("can't happen")
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -1357,7 +1357,7 @@ export function mapErr(err: $.GoError): $.GoError {
 	throw new globalThis.Error("goscript: unreachable return")
 }
 
-export let aLongTimeAgo: time.Time = $.markAsStructValue($.cloneStructValue(time.Unix($.int(1), $.int(0))))
+export let aLongTimeAgo: time.Time = $.markAsStructValue($.cloneStructValue(time.Unix(1n, 0n)))
 
 export function __goscript_set_aLongTimeAgo(__goscriptValue: time.Time): void {
 	aLongTimeAgo = __goscriptValue
@@ -1475,22 +1475,18 @@ export function __goscript_set_ErrClosed(__goscriptValue: $.GoError): void {
 	ErrClosed = __goscriptValue
 }
 
-export async function genericReadFrom(c: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, r: io.Reader | null): globalThis.Promise<[number, $.GoError]> {
-	let n: number = 0
+export async function genericReadFrom(c: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, r: io.Reader | null): globalThis.Promise<[bigint, $.GoError]> {
+	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	// Use wrapper to hide existing r.ReadFrom from io.Copy.
-	const __goscriptReturn0 = await io.Copy($.interfaceValue<io.Writer | null>($.markAsStructValue(new tcpConnWithoutReadFrom({TCPConn: c})), "net.tcpConnWithoutReadFrom"), $.pointerValueOrNil(r)!)
-	return [$.int(__goscriptReturn0[0]), __goscriptReturn0[1]]
-	throw new globalThis.Error("goscript: unreachable return")
+	return await io.Copy($.interfaceValue<io.Writer | null>($.markAsStructValue(new tcpConnWithoutReadFrom({TCPConn: c})), "net.tcpConnWithoutReadFrom"), $.pointerValueOrNil(r)!)
 }
 
-export async function genericWriteTo(c: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
-	let n: number = 0
+export async function genericWriteTo(c: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
+	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	// Use wrapper to hide existing w.WriteTo from io.Copy.
-	const __goscriptReturn1 = await io.Copy($.pointerValueOrNil(w)!, $.interfaceValue<io.Reader | null>($.markAsStructValue(new tcpConnWithoutWriteTo({TCPConn: c})), "net.tcpConnWithoutWriteTo"))
-	return [$.int(__goscriptReturn1[0]), __goscriptReturn1[1]]
-	throw new globalThis.Error("goscript: unreachable return")
+	return await io.Copy($.pointerValueOrNil(w)!, $.interfaceValue<io.Reader | null>($.markAsStructValue(new tcpConnWithoutWriteTo({TCPConn: c})), "net.tcpConnWithoutWriteTo"))
 }
 
 export let threadLimit: $.Channel<{}> | null = null as $.Channel<{}> | null
@@ -1540,7 +1536,7 @@ export async function releaseThread(): globalThis.Promise<void> {
 }
 
 export type buffersWriter = {
-	writeBuffers(_p0: $.VarRef<Buffers> | null): [number, $.GoError]
+	writeBuffers(_p0: $.VarRef<Buffers> | null): [bigint, $.GoError]
 }
 
 $.registerInterfaceType(
@@ -1549,27 +1545,26 @@ $.registerInterfaceType(
 	[{ name: "writeBuffers", args: [{ name: "_p0", type: { kind: $.TypeKind.Pointer, elemType: "net.Buffers" } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "int64" } }, { name: "_r1", type: "error" }] }]
 );
 
-export async function Buffers_WriteTo(v: $.VarRef<Buffers> | null, w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
-	let n: number = 0
+export async function Buffers_WriteTo(v: $.VarRef<Buffers> | null, w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
+	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	{
 		let [wv, ok] = $.typeAssertTuple<buffersWriter | null>(w, "net.buffersWriter")
 		if (ok) {
-			const __goscriptReturn2 = await $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
-			return [$.int(__goscriptReturn2[0]), __goscriptReturn2[1]]
+			return await $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
 		}
 	}
 	for (let __goscriptRangeTarget0 = $.pointerValue<Buffers>(v), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let b = __goscriptRangeTarget0![__rangeIndex]
 		let [nb, __goscriptShadow4] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write(b)
-		n = $.int64Add(n, $.int($.int(nb)))
+		n = $.int64Add(n, $.int64(nb))
 		if (__goscriptShadow4 != null) {
-			Buffers_consume(v, $.int(n))
-			return [$.int(n), __goscriptShadow4]
+			Buffers_consume(v, n)
+			return [n, __goscriptShadow4]
 		}
 	}
-	Buffers_consume(v, $.int(n))
-	return [$.int(n), null]
+	Buffers_consume(v, n)
+	return [n, null]
 }
 
 export function Buffers_Read(v: $.VarRef<Buffers> | null, p: $.Slice<number>): [number, $.GoError] {
@@ -1577,7 +1572,7 @@ export function Buffers_Read(v: $.VarRef<Buffers> | null, p: $.Slice<number>): [
 	let err: $.GoError = null as $.GoError
 	while (($.len(p) > 0) && ($.len(($.pointerValue<Buffers>(v) as Buffers)) > 0)) {
 		let n0 = $.copy(p, ($.pointerValue<Buffers>(v))![0])
-		Buffers_consume(v, $.int($.int(n0)))
+		Buffers_consume(v, $.int64(n0))
 		p = $.goSlice(p, n0, undefined)
 		n = n + (n0)
 	}
@@ -1587,14 +1582,14 @@ export function Buffers_Read(v: $.VarRef<Buffers> | null, p: $.Slice<number>): [
 	return [n, err]
 }
 
-export function Buffers_consume(v: $.VarRef<Buffers> | null, n: number): void {
+export function Buffers_consume(v: $.VarRef<Buffers> | null, n: bigint): void {
 	while ($.len(($.pointerValue<Buffers>(v) as Buffers)) > 0) {
-		let ln0 = $.int($.int($.len(($.pointerValue<Buffers>(v))![0])))
+		let ln0 = $.int64($.len(($.pointerValue<Buffers>(v))![0]))
 		if (ln0 > n) {
-			($.pointerValue<Buffers>(v))![0] = $.goSlice(($.pointerValue<Buffers>(v))![0], n, undefined)
+			($.pointerValue<Buffers>(v))![0] = $.goSlice(($.pointerValue<Buffers>(v))![0], Number(n), undefined)
 			return
 		}
-		n = $.int64Sub(n, $.int(ln0));
+		n = $.int64Sub(n, ln0);
 		($.pointerValue<Buffers>(v))![0] = null
 		v!.value = ($.goSlice(($.pointerValue<Buffers>(v)), 1, undefined) as Buffers)
 	}

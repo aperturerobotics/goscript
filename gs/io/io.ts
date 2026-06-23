@@ -59,7 +59,7 @@ export interface Closer {
 
 // Seeker is the interface that wraps the basic Seek method
 export interface Seeker {
-  Seek(offset: number, whence: number): [number, $.GoError]
+  Seek(offset: bigint, whence: number): [bigint, $.GoError]
 }
 
 // Combined interfaces
@@ -222,12 +222,12 @@ export function Pipe(): [PipeReader, PipeWriter] {
 
 // ReaderAt is the interface that wraps the basic ReadAt method
 export interface ReaderAt {
-  ReadAt(p: $.Bytes, off: number): [number, $.GoError]
+  ReadAt(p: $.Bytes, off: bigint): [number, $.GoError]
 }
 
 // WriterAt is the interface that wraps the basic WriteAt method
 export interface WriterAt {
-  WriteAt(p: $.Bytes, off: number): [number, $.GoError]
+  WriteAt(p: $.Bytes, off: bigint): [number, $.GoError]
 }
 
 // ByteReader is the interface that wraps the ReadByte method
@@ -262,12 +262,12 @@ export interface StringWriter {
 
 // WriterTo is the interface that wraps the WriteTo method
 export interface WriterTo {
-  WriteTo(w: Writer): [number, $.GoError]
+  WriteTo(w: Writer): [bigint, $.GoError]
 }
 
 // ReaderFrom is the interface that wraps the ReadFrom method
 export interface ReaderFrom {
-  ReadFrom(r: Reader): [number, $.GoError]
+  ReadFrom(r: Reader): [bigint, $.GoError]
 }
 
 // Discard is a Writer on which all Write calls succeed without doing anything
@@ -297,25 +297,25 @@ export async function WriteString(
 // LimitedReader reads from R but limits the amount of data returned to just N bytes
 export class LimitedReader implements Reader {
   public R: Reader | null
-  public N: number
+  public N: bigint
 
   constructor(
-    r?: Reader | { R?: Reader | null; N?: number } | null,
-    n?: number,
+    r?: Reader | { R?: Reader | null; N?: bigint } | null,
+    n?: bigint,
   ) {
     if (r != null && typeof (r as { Read?: unknown }).Read !== 'function') {
-      const init = r as { R?: Reader | null; N?: number }
+      const init = r as { R?: Reader | null; N?: bigint }
       this.R = init.R ?? null
-      this.N = init.N ?? 0
+      this.N = init.N ?? 0n
       return
     }
     this.R = (r as Reader | null | undefined) ?? null
-    this.N = n ?? 0
+    this.N = n ?? 0n
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
     return (async (): Promise<[number, $.GoError]> => {
-      if (this.N <= 0) {
+      if (this.N <= 0n) {
         return [0, EOF]
       }
       if (this.R == null) {
@@ -323,19 +323,19 @@ export class LimitedReader implements Reader {
       }
 
       let readBuf = p
-      if ($.len(p) > this.N) {
-        readBuf = $.goSlice(p, 0, this.N)
+      if ($.len(p) > Number(this.N)) {
+        readBuf = $.goSlice(p, 0, Number(this.N))
       }
 
       const [n, err] = await (this.R.Read(readBuf) as any)
-      this.N -= n
+      this.N -= BigInt(n)
       return [n, err]
     })() as any
   }
 }
 
 // LimitReader returns a Reader that reads from r but stops with EOF after n bytes
-export function LimitReader(r: Reader, n: number): Reader {
+export function LimitReader(r: Reader, n: bigint): Reader {
   return new LimitedReader(r, n)
 }
 
@@ -346,11 +346,11 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
   private off: number
   private limit: number
 
-  constructor(r: ReaderAt, off: number, n: number) {
+  constructor(r: ReaderAt, off: bigint, n: bigint) {
     this.r = r
-    this.base = off
-    this.off = off
-    this.limit = off + n
+    this.base = Number(off)
+    this.off = Number(off)
+    this.limit = Number(off) + Number(n)
   }
 
   Read(p: $.Bytes): [number, $.GoError] {
@@ -363,7 +363,7 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
       p = $.goSlice(p, 0, max)
     }
 
-    const res = this.r.ReadAt(p, this.off) as any
+    const res = this.r.ReadAt(p, BigInt(this.off)) as any
     if (res instanceof Promise) {
       return res.then(([n, err]: [number, $.GoError]) => {
         this.off += n
@@ -376,39 +376,41 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
     return [n, err]
   }
 
-  Seek(offset: number, whence: number): [number, $.GoError] {
+  Seek(offset: bigint, whence: number): [bigint, $.GoError] {
+    const offNum = Number(offset)
     let abs: number
     switch (whence) {
       case SeekStart:
-        abs = this.base + offset
+        abs = this.base + offNum
         break
       case SeekCurrent:
-        abs = this.off + offset
+        abs = this.off + offNum
         break
       case SeekEnd:
-        abs = this.limit + offset
+        abs = this.limit + offNum
         break
       default:
-        return [0, newError('io.SectionReader.Seek: invalid whence')]
+        return [0n, newError('io.SectionReader.Seek: invalid whence')]
     }
 
     if (abs < this.base) {
-      return [0, newError('io.SectionReader.Seek: negative position')]
+      return [0n, newError('io.SectionReader.Seek: negative position')]
     }
 
     this.off = abs
-    return [abs - this.base, null]
+    return [BigInt(abs - this.base), null]
   }
 
-  ReadAt(p: $.Bytes, off: number): [number, $.GoError] {
-    if (off < 0 || off >= this.limit - this.base) {
+  ReadAt(p: $.Bytes, off: bigint): [number, $.GoError] {
+    let offNum = Number(off)
+    if (offNum < 0 || offNum >= this.limit - this.base) {
       return [0, EOF]
     }
 
-    off += this.base
-    if (off + $.len(p) > this.limit) {
-      p = $.goSlice(p, 0, this.limit - off)
-      const res = this.r.ReadAt(p, off) as any
+    offNum += this.base
+    if (offNum + $.len(p) > this.limit) {
+      p = $.goSlice(p, 0, this.limit - offNum)
+      const res = this.r.ReadAt(p, BigInt(offNum)) as any
       if (res instanceof Promise) {
         return res.then(([n, err]: [number, $.GoError]) => {
           if (err === null) {
@@ -424,19 +426,19 @@ export class SectionReader implements Reader, Seeker, ReaderAt {
       return [n, err]
     }
 
-    return this.r.ReadAt(p, off)
+    return this.r.ReadAt(p, BigInt(offNum))
   }
 
-  Size(): number {
-    return this.limit - this.base
+  Size(): bigint {
+    return BigInt(this.limit - this.base)
   }
 }
 
 // NewSectionReader returns a SectionReader that reads from r starting at offset off and stops with EOF after n bytes
 export function NewSectionReader(
   r: ReaderAt,
-  off: number,
-  n: number,
+  off: bigint,
+  n: bigint,
 ): SectionReader {
   return new SectionReader(r, off, n)
 }
@@ -447,49 +449,51 @@ export class OffsetWriter implements Writer, WriterAt {
   private base: number
   private off: number
 
-  constructor(w: WriterAt, off: number) {
+  constructor(w: WriterAt, off: bigint) {
     this.w = w
-    this.base = off
+    this.base = Number(off)
     this.off = 0
   }
 
   Write(p: $.Bytes): [number, $.GoError] {
-    const [n, err] = this.w.WriteAt(p, this.base + this.off)
+    const [n, err] = this.w.WriteAt(p, BigInt(this.base + this.off))
     this.off += n
     return [n, err]
   }
 
-  WriteAt(p: $.Bytes, off: number): [number, $.GoError] {
-    if (off < 0) {
+  WriteAt(p: $.Bytes, off: bigint): [number, $.GoError] {
+    const offNum = Number(off)
+    if (offNum < 0) {
       return [0, newError('io.OffsetWriter.WriteAt: negative offset')]
     }
-    return this.w.WriteAt(p, this.base + off)
+    return this.w.WriteAt(p, BigInt(this.base + offNum))
   }
 
-  Seek(offset: number, whence: number): [number, $.GoError] {
+  Seek(offset: bigint, whence: number): [bigint, $.GoError] {
+    const offNum = Number(offset)
     let abs: number
     switch (whence) {
       case SeekStart:
-        abs = offset
+        abs = offNum
         break
       case SeekCurrent:
-        abs = this.off + offset
+        abs = this.off + offNum
         break
       default:
-        return [0, newError('io.OffsetWriter.Seek: invalid whence')]
+        return [0n, newError('io.OffsetWriter.Seek: invalid whence')]
     }
 
     if (abs < 0) {
-      return [0, newError('io.OffsetWriter.Seek: negative position')]
+      return [0n, newError('io.OffsetWriter.Seek: negative position')]
     }
 
     this.off = abs
-    return [abs, null]
+    return [BigInt(abs), null]
   }
 }
 
 // NewOffsetWriter returns an OffsetWriter that writes to w starting at offset off
-export function NewOffsetWriter(w: WriterAt, off: number): OffsetWriter {
+export function NewOffsetWriter(w: WriterAt, off: bigint): OffsetWriter {
   return new OffsetWriter(w, off)
 }
 
@@ -497,7 +501,7 @@ export function NewOffsetWriter(w: WriterAt, off: number): OffsetWriter {
 export async function Copy(
   dst: WriterLike,
   src: ReaderLike,
-): Promise<[number, $.GoError]> {
+): Promise<[bigint, $.GoError]> {
   return await CopyBuffer(dst, src, null)
 }
 
@@ -506,11 +510,11 @@ export async function CopyBuffer(
   dst: WriterLike,
   src: ReaderLike,
   buf: $.Bytes | null,
-): Promise<[number, $.GoError]> {
+): Promise<[bigint, $.GoError]> {
   dst = unwrapWriter(dst)
   src = unwrapReader(src)
   if (dst === null || src === null) {
-    return [0, newError('io: copy with nil reader or writer')]
+    return [0n, newError('io: copy with nil reader or writer')]
   }
 
   // If src implements WriterTo, use it
@@ -527,7 +531,7 @@ export async function CopyBuffer(
     buf = $.makeSlice<number>(32 * 1024, undefined, 'byte') // 32KB default buffer
   }
 
-  let written = 0
+  let written = 0n
   while (true) {
     const [nr, er] = await (src.Read(buf) as any)
     if (nr > 0) {
@@ -538,7 +542,7 @@ export async function CopyBuffer(
         }
         return [written, ew]
       }
-      written += nw
+      written += BigInt(nw)
       if (ew !== null) {
         return [written, ew]
       }
@@ -580,8 +584,8 @@ function unwrapWriter(dst: WriterLike): Writer | null {
 export async function CopyN(
   dst: Writer,
   src: Reader,
-  n: number,
-): Promise<[number, $.GoError]> {
+  n: bigint,
+): Promise<[bigint, $.GoError]> {
   const [written, err] = await Copy(dst, LimitReader(src, n))
   if (written === n) {
     return [written, null]

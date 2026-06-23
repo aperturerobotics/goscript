@@ -32,10 +32,10 @@ export class huffmanBitWriter {
 	// Data waiting to be written is bytes[0:nbytes]
 	// and then the low nbits of bits.  Data is always written
 	// sequentially into the bytes array.
-	public get bits(): number {
+	public get bits(): bigint {
 		return this._fields.bits.value
 	}
-	public set bits(value: number) {
+	public set bits(value: bigint) {
 		this._fields.bits.value = value
 	}
 
@@ -118,7 +118,7 @@ export class huffmanBitWriter {
 
 	public _fields: {
 		writer: $.VarRef<io.Writer | null>
-		bits: $.VarRef<number>
+		bits: $.VarRef<bigint>
 		nbits: $.VarRef<number>
 		bytes: $.VarRef<Uint8Array>
 		codegenFreq: $.VarRef<number[]>
@@ -132,10 +132,10 @@ export class huffmanBitWriter {
 		err: $.VarRef<$.GoError>
 	}
 
-	constructor(init?: Partial<{writer?: io.Writer | null, bits?: number, nbits?: number, bytes?: Uint8Array, codegenFreq?: number[], nbytes?: number, literalFreq?: $.Slice<number>, offsetFreq?: $.Slice<number>, codegen?: $.Slice<number>, literalEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, offsetEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, codegenEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, err?: $.GoError}>) {
+	constructor(init?: Partial<{writer?: io.Writer | null, bits?: bigint, nbits?: number, bytes?: Uint8Array, codegenFreq?: number[], nbytes?: number, literalFreq?: $.Slice<number>, offsetFreq?: $.Slice<number>, codegen?: $.Slice<number>, literalEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, offsetEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, codegenEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, err?: $.GoError}>) {
 		this._fields = {
 			writer: $.varRef(init?.writer ?? (null as unknown as io.Writer | null)),
-			bits: $.varRef(init?.bits ?? (0 as unknown as number)),
+			bits: $.varRef(init?.bits ?? (0n as unknown as bigint)),
 			nbits: $.varRef(init?.nbits ?? (0 as unknown as number)),
 			bytes: $.varRef(init?.bytes !== undefined ? $.cloneArrayValue(init.bytes) : new Uint8Array(248)),
 			codegenFreq: $.varRef(init?.codegenFreq !== undefined ? $.cloneArrayValue(init.codegenFreq) : Array.from({ length: 19 }, () => 0)),
@@ -198,15 +198,15 @@ export class huffmanBitWriter {
 		let n = $.pointerValue<huffmanBitWriter>(w).nbytes
 		while ($.pointerValue<huffmanBitWriter>(w).nbits != 0) {
 			$.pointerValue<huffmanBitWriter>(w).bytes[n] = $.uint($.uint($.pointerValue<huffmanBitWriter>(w).bits, 8), 8)
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, $.uint(8, 64))
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, 8n)
 			if ($.pointerValue<huffmanBitWriter>(w).nbits > 8) {
-				$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 8)
+				$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 8), 64)
 			} else {
 				$.pointerValue<huffmanBitWriter>(w).nbits = 0
 			}
 			n++
 		}
-		$.pointerValue<huffmanBitWriter>(w).bits = $.uint(0, 64)
+		$.pointerValue<huffmanBitWriter>(w).bits = 0n
 		await huffmanBitWriter.prototype.write.call(w, $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, undefined, n))
 		$.pointerValue<huffmanBitWriter>(w).nbytes = 0
 	}
@@ -340,7 +340,7 @@ export class huffmanBitWriter {
 	public reset(writer: io.Writer | null): void {
 		let w: huffmanBitWriter | $.VarRef<huffmanBitWriter> | null = this
 		$.pointerValue<huffmanBitWriter>(w).writer = writer
-		let __goscriptAssign0_0: number = $.uint(0, 64)
+		let __goscriptAssign0_0: bigint = 0n
 		let __goscriptAssign0_1: number = 0
 		let __goscriptAssign0_2: number = 0
 		let __goscriptAssign0_3: $.GoError = null
@@ -375,12 +375,12 @@ export class huffmanBitWriter {
 		if ($.pointerValue<huffmanBitWriter>(w).err != null) {
 			return
 		}
-		$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint($.uint64Shl($.uint(b, 64), $.pointerValue<huffmanBitWriter>(w).nbits), 64))
-		$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, nb)
+		$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint64Shl($.uint64(b), $.pointerValue<huffmanBitWriter>(w).nbits))
+		$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, nb), 64)
 		if ($.pointerValue<huffmanBitWriter>(w).nbits >= 48) {
-			let bits = $.uint($.pointerValue<huffmanBitWriter>(w).bits, 64)
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, $.uint(48, 64))
-			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48)
+			let bits = $.pointerValue<huffmanBitWriter>(w).bits
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, 48n)
+			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48), 64)
 			let n = $.pointerValue<huffmanBitWriter>(w).nbytes
 			let bytes: $.Slice<number> = $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, n, n + 6)
 			bytes![0] = $.uint($.uint(bits, 8), 8)
@@ -549,15 +549,15 @@ export class huffmanBitWriter {
 			let t = __goscriptRangeTarget3![__rangeIndex]
 			// Bitwriting inlined, ~30% speedup
 			let c = $.markAsStructValue($.cloneStructValue(encoding![t]))
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint($.uint64Shl($.uint(c.code, 64), $.pointerValue<huffmanBitWriter>(w).nbits), 64))
-			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, $.uint(c.len, 64))
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint64Shl($.uint64(c.code), $.pointerValue<huffmanBitWriter>(w).nbits))
+			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, $.uint(c.len, 64)), 64)
 			if ($.pointerValue<huffmanBitWriter>(w).nbits < 48) {
 				continue
 			}
 			// Store 6 bytes
-			let bits = $.uint($.pointerValue<huffmanBitWriter>(w).bits, 64)
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, $.uint(48, 64))
-			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48)
+			let bits = $.pointerValue<huffmanBitWriter>(w).bits
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, 48n)
+			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48), 64)
 			let bytes: $.Slice<number> = $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, n, n + 6)
 			bytes![0] = $.uint($.uint(bits, 8), 8)
 			bytes![1] = $.uint($.uint($.uint64Shr(bits, 8), 8), 8)
@@ -585,14 +585,14 @@ export class huffmanBitWriter {
 			return
 		}
 		let n = $.pointerValue<huffmanBitWriter>(w).nbytes
-		if (($.uint64And($.pointerValue<huffmanBitWriter>(w).nbits, 7)) != 0) {
+		if (($.uint($.uint64And($.pointerValue<huffmanBitWriter>(w).nbits, 7), 64)) != 0) {
 			$.pointerValue<huffmanBitWriter>(w).err = $.namedValueInterfaceValue<$.GoError>("writeBytes with unfinished bits", "flate.InternalError", {"Error": __goscript_inflate.InternalError_Error}, { kind: $.TypeKind.Basic, name: "string", typeName: "flate.InternalError" })
 			return
 		}
 		while ($.pointerValue<huffmanBitWriter>(w).nbits != 0) {
 			$.pointerValue<huffmanBitWriter>(w).bytes[n] = $.uint($.uint($.pointerValue<huffmanBitWriter>(w).bits, 8), 8)
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, $.uint(8, 64))
-			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 8)
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, 8n)
+			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 8), 64)
 			n++
 		}
 		if (n != 0) {
@@ -607,12 +607,12 @@ export class huffmanBitWriter {
 		if ($.pointerValue<huffmanBitWriter>(w).err != null) {
 			return
 		}
-		$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint($.uint64Shl($.uint(c.code, 64), $.pointerValue<huffmanBitWriter>(w).nbits), 64))
-		$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, $.uint(c.len, 64))
+		$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint64Shl($.uint64(c.code), $.pointerValue<huffmanBitWriter>(w).nbits))
+		$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, $.uint(c.len, 64)), 64)
 		if ($.pointerValue<huffmanBitWriter>(w).nbits >= 48) {
-			let bits = $.uint($.pointerValue<huffmanBitWriter>(w).bits, 64)
-			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, $.uint(48, 64))
-			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48)
+			let bits = $.pointerValue<huffmanBitWriter>(w).bits
+			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Shr($.pointerValue<huffmanBitWriter>(w).bits, 48n)
+			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Sub($.pointerValue<huffmanBitWriter>(w).nbits, 48), 64)
 			let n = $.pointerValue<huffmanBitWriter>(w).nbytes
 			let bytes: $.Slice<number> = $.goSlice($.pointerValue<huffmanBitWriter>(w).bytes, n, n + 6)
 			bytes![0] = $.uint($.uint(bits, 8), 8)

@@ -178,7 +178,7 @@ export class dnsConfig {
 			servers: $.varRef(init?.servers ?? (null as unknown as $.Slice<string>)),
 			search: $.varRef(init?.search ?? (null as unknown as $.Slice<string>)),
 			ndots: $.varRef(init?.ndots ?? (0 as unknown as number)),
-			timeout: $.varRef(init?.timeout ?? (0 as unknown as time.Duration)),
+			timeout: $.varRef(init?.timeout ?? (0n as unknown as time.Duration)),
 			attempts: $.varRef(init?.attempts ?? (0 as unknown as number)),
 			rotate: $.varRef(init?.rotate ?? (false as unknown as boolean)),
 			unknownOpt: $.varRef(init?.unknownOpt ?? (false as unknown as boolean)),

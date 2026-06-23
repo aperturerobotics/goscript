@@ -301,7 +301,7 @@ export class Inst {
 		let lo = 0
 		let hi = Math.trunc($.len(rune) / 2)
 		while (lo < hi) {
-			let m = $.int($.uint64Shr($.uint(lo + hi, 64), 1))
+			let m = $.int($.uint($.uint64Shr($.uint(lo + hi, 64), 1), 64))
 			{
 				let c = $.int(rune![2 * m], 32)
 				if (c <= r) {
@@ -470,7 +470,7 @@ export function dumpProg(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 }
 
 export function u32(i: number): string {
-	return strconv.FormatUint($.uint($.uint(i, 64), 64), 10)
+	return strconv.FormatUint($.uint64(i), 10)
 }
 
 export function dumpInst(b: strings.Builder | $.VarRef<strings.Builder> | null, i: Inst | $.VarRef<Inst> | null): void {

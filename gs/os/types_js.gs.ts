@@ -163,7 +163,7 @@ class hostFileInfo {
 
 	constructor(init?: Partial<{modTime?: time.Time, mode?: fs.FileMode, name?: string, size?: number, sys?: HostStatLike | null}>) {
 		this.name = init?.name ?? ""
-		this.modTime = init?.modTime ?? time.Unix(0, 0)
+		this.modTime = init?.modTime ?? time.Unix(0n, 0n)
 		this.mode = init?.mode ?? 0
 		this.size = init?.size ?? 0
 		this.sys = init?.sys ?? null
@@ -185,8 +185,8 @@ class hostFileInfo {
 		return this.name
 	}
 
-	public Size(): number {
-		return this.size
+	public Size(): bigint {
+		return BigInt(this.size)
 	}
 
 	public Sys(): HostStatLike | null {
@@ -212,10 +212,10 @@ export function createFileInfo(name: string, stat: HostStatLike): fs.FileInfo {
 	}
 
 	return new hostFileInfo({
-		modTime: time.UnixMilli(mtimeMs),
+		modTime: time.UnixMilli(BigInt(Math.trunc(mtimeMs))),
 		mode,
 		name: normalizedName,
-		size: stat.size ?? 0,
+		size: Math.trunc(stat.size ?? 0),
 		sys: stat,
 	})
 }
@@ -589,15 +589,15 @@ export class File {
 		}
 	}
 
-	public Seek(offset: number, whence: number): [number, $.GoError] {
+	public Seek(offset: bigint, whence: number): [bigint, $.GoError] {
 		const handle = this.file?.handle
 		if (!handle || typeof handle.seekSync !== "function") {
-			return [0, ErrUnimplemented]
+			return [0n, ErrUnimplemented]
 		}
 		try {
-			return [handle.seekSync(offset, whence), null]
+			return [BigInt(handle.seekSync(Number(offset), whence)), null]
 		} catch (err) {
-			return [0, newHostError(err)]
+			return [0n, newHostError(err)]
 		}
 	}
 

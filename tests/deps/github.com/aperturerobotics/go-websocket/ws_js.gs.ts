@@ -336,8 +336,8 @@ export class Conn {
 		if (err != null) {
 			return [0, null, fmt.Errorf("failed to read: %w", (err as any))]
 		}
-		let readLimit = $.int($.pointerValue<Conn>(c).msgReadLimit.Load())
-		if ((readLimit >= 0) && ($.int($.len(p)) > readLimit)) {
+		let readLimit = $.pointerValue<Conn>(c).msgReadLimit.Load()
+		if ((readLimit >= 0) && ($.int64($.len(p)) > readLimit)) {
 			let reason = fmt.Errorf("read limited at %d bytes", $.namedValueInterfaceValue<any>($.pointerValue<Conn>(c).msgReadLimit.Load(), "int64", {}, { kind: $.TypeKind.Basic, name: "int64" }))
 			await Conn.prototype.Close.call(c, 1009, $.pointerValue<Exclude<$.GoError, null>>(reason).Error())
 			return [0, null, fmt.Errorf("%w: %v", (__goscript_errors.ErrMessageTooBig as any), (reason as any))]
@@ -357,9 +357,9 @@ export class Conn {
 		return [typ, $.interfaceValue<io.Reader | null>(bytes.NewReader(p), "*bytes.Reader"), null]
 	}
 
-	public SetReadLimit(n: number): void {
+	public SetReadLimit(n: bigint): void {
 		const c: Conn | $.VarRef<Conn> | null = this
-		$.pointerValue<Conn>(c).msgReadLimit.Store($.int(n))
+		$.pointerValue<Conn>(c).msgReadLimit.Store(n)
 	}
 
 	public Subprotocol(): string {
@@ -438,7 +438,7 @@ export class Conn {
 		$.pointerValue<Conn>(c).closed = $.makeChannel<{}>(0, {}, "both")
 		$.pointerValue<Conn>(c).readSignal = $.makeChannel<{}>(1, {}, "both")
 
-		$.pointerValue<Conn>(c).msgReadLimit.Store($.int(32768))
+		$.pointerValue<Conn>(c).msgReadLimit.Store(32768n)
 
 		$.pointerValue<Conn>(c).releaseOnClose = await $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).OnClose($.functionValue(async (e: wsjs.CloseEvent): globalThis.Promise<void> => {
 			let err = $.markAsStructValue(new CloseError({Code: e.Code, Reason: e.Reason}))

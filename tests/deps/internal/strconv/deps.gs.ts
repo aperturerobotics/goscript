@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 import * as unsafe from "@goscript/unsafe/index.js"
 import "@goscript/unsafe/index.js"
 
-export function float64frombits(__goscriptParam0: number): number {
-	let b: $.VarRef<number> = $.varRef(__goscriptParam0)
+export function float64frombits(__goscriptParam0: bigint): number {
+	let b: $.VarRef<bigint> = $.varRef(__goscriptParam0)
 	return $.unsafePointerRef<number>((b as any)).value
 }
 
@@ -16,9 +16,9 @@ export function float32frombits(__goscriptParam1: number): number {
 	return $.unsafePointerRef<number>((b as any)).value
 }
 
-export function float64bits(__goscriptParam2: number): number {
+export function float64bits(__goscriptParam2: number): bigint {
 	let f: $.VarRef<number> = $.varRef(__goscriptParam2)
-	return $.uint($.unsafePointerRef<number>((f as any)).value, 64)
+	return $.unsafePointerRef<bigint>((f as any)).value
 }
 
 export function float32bits(__goscriptParam3: number): number {
@@ -27,13 +27,13 @@ export function float32bits(__goscriptParam3: number): number {
 }
 
 export function inf(sign: number): number {
-	let v: number = 0
+	let v: bigint = 0n
 	if (sign >= 0) {
-		v = $.uint("9218868437227405312", 64)
+		v = 9218868437227405312n
 	} else {
-		v = $.uint("18442240474082181120", 64)
+		v = 18442240474082181120n
 	}
-	return float64frombits($.uint(v, 64))
+	return float64frombits(v)
 }
 
 export function isNaN(f: number): boolean {
@@ -42,5 +42,5 @@ export function isNaN(f: number): boolean {
 }
 
 export function nan(): number {
-	return float64frombits($.uint("9221120237041090561", 64))
+	return float64frombits(9221120237041090561n)
 }

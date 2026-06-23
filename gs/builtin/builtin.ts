@@ -1,7 +1,7 @@
 import type { Slice, SliceProxy } from './slice.js'
 import { writeHostStdoutText } from './hostio.js'
 import { formatPrintedArgs } from './print.js'
-import { isSliceProxy } from './slice.js'
+import { isSliceProxy, runeToString } from './slice.js'
 import { isVarRef, type VarRef } from './varRef.js'
 
 /**
@@ -362,8 +362,12 @@ function unwrapGoValue<T>(value: T): T {
 export type Bytes = Uint8Array | Slice<number>
 type ByteData = Uint8Array | number[] | SliceProxy<number>
 
-const maxSafeBigInt = BigInt(Number.MAX_SAFE_INTEGER)
 const maxUint64BigInt = 0xffffffffffffffffn
+
+// maxSafeUintBigInt is the largest unsigned value JS number represents exactly.
+// uint/uintptr are typed number but carry a runtime bigint above this bound so
+// full 64-bit width (e.g. ^uint(0)) survives; see uint().
+const maxSafeUintBigInt = BigInt(Number.MAX_SAFE_INTEGER)
 
 // int converts a value to a Go int type, handling proper signed integer conversion
 // This ensures that values like 2147483648 (2^31) are properly handled according to Go semantics
@@ -412,8 +416,11 @@ export function uint(value: number | bigint | string, bits = 64): number {
   }
   if (typeof value === 'bigint') {
     const normalized = BigInt.asUintN(Math.min(bits, 64), value)
-    if (bits >= 64) {
-      return uint64Result(normalized)
+    // Above 2^53 the value cannot round-trip through number, so keep the bigint
+    // (typed number) to preserve full 64-bit width; uint arithmetic routes
+    // through the int64*/uint64* helpers, which accept number | bigint.
+    if (bits >= 64 && normalized > maxSafeUintBigInt) {
+      return normalized as unknown as number
     }
     return Number(normalized)
   }
@@ -434,8 +441,10 @@ export function uint(value: number | bigint | string, bits = 64): number {
     if (truncated >= 0 && truncated <= Number.MAX_SAFE_INTEGER) {
       return truncated
     }
+    // Out of safe range: normalize through bigint and keep full width.
+    return uint(BigInt(truncated), 64)
   }
-  const modulo = bits >= 64 ? 2 ** 64 : 2 ** bits
+  const modulo = 2 ** bits
   let truncated = Math.trunc(value)
   truncated %= modulo
   if (truncated < 0) {
@@ -444,31 +453,50 @@ export function uint(value: number | bigint | string, bits = 64): number {
   return truncated
 }
 
+// int64 converts a value to a Go int64, preserving the full 64-bit range as a
+// bigint with two's-complement wraparound. int64 and uint64 are the Go types
+// GoScript represents as TypeScript bigint; narrower ints stay number.
+export function int64(value: number | bigint | string): bigint {
+  if (typeof value === 'string') {
+    value = BigInt(value)
+  }
+  return int64Result(int64Value(value))
+}
+
+// uint64 converts a value to a Go uint64, preserving the full 64-bit range as a
+// bigint with modular wraparound.
+export function uint64(value: number | bigint | string): bigint {
+  if (typeof value === 'string') {
+    value = BigInt(value)
+  }
+  return uint64Result(uint64Value(value))
+}
+
 export function uint64Shl(
   value: number | bigint,
   shift: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(value) << BigInt(Math.trunc(Number(shift))))
 }
 
 export function uint64Shr(
   value: number | bigint,
   shift: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(value) >> BigInt(Math.trunc(Number(shift))))
 }
 
 export function int64Shl(
   value: number | bigint,
   shift: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(value) << BigInt(Math.trunc(Number(shift))))
 }
 
 export function int64Shr(
   value: number | bigint,
   shift: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(value) >> BigInt(Math.trunc(Number(shift))))
 }
 
@@ -491,21 +519,21 @@ export function uintShr(
 export function uint64Mul(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) * uint64Value(right))
 }
 
 export function int64Mul(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(left) * int64Value(right))
 }
 
 export function uint64Div(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   const divisor = uint64Value(right)
   if (divisor === 0n) {
     throw new Error('runtime error: integer divide by zero')
@@ -516,7 +544,7 @@ export function uint64Div(
 export function int64Div(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   const divisor = int64Value(right)
   if (divisor === 0n) {
     throw new Error('runtime error: integer divide by zero')
@@ -527,7 +555,7 @@ export function int64Div(
 export function uint64Mod(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   const divisor = uint64Value(right)
   if (divisor === 0n) {
     throw new Error('runtime error: integer divide by zero')
@@ -538,7 +566,7 @@ export function uint64Mod(
 export function int64Mod(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   const divisor = int64Value(right)
   if (divisor === 0n) {
     throw new Error('runtime error: integer divide by zero')
@@ -549,67 +577,67 @@ export function int64Mod(
 export function uint64Add(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) + uint64Value(right))
 }
 
 export function int64Add(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(left) + int64Value(right))
 }
 
 export function uint64Sub(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) - uint64Value(right))
 }
 
 export function int64Sub(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(left) - int64Value(right))
 }
 
 export function uint64And(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) & uint64Value(right))
 }
 
 export function int64And(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(left) & int64Value(right))
 }
 
 export function uint64Or(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) | uint64Value(right))
 }
 
-export function int64Or(left: number | bigint, right: number | bigint): number {
+export function int64Or(left: number | bigint, right: number | bigint): bigint {
   return int64Result(int64Value(left) | int64Value(right))
 }
 
 export function uint64Xor(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return uint64Result(uint64Value(left) ^ uint64Value(right))
 }
 
 export function int64Xor(
   left: number | bigint,
   right: number | bigint,
-): number {
+): bigint {
   return int64Result(int64Value(left) ^ int64Value(right))
 }
 
@@ -629,12 +657,11 @@ function int64Value(value: number | bigint): bigint {
   return BigInt.asIntN(64, BigInt(Math.trunc(value)))
 }
 
-function int64Result(value: bigint): number {
-  const normalized =
-    value >= -0x8000000000000000n && value <= 0x7fffffffffffffffn ?
-      value
-    : BigInt.asIntN(64, value)
-  return Number(normalized)
+function int64Result(value: bigint): bigint {
+  if (value >= -0x8000000000000000n && value <= 0x7fffffffffffffffn) {
+    return value
+  }
+  return BigInt.asIntN(64, value)
 }
 
 function uint64Value(value: number | bigint): bigint {
@@ -650,13 +677,11 @@ function uint64Value(value: number | bigint): bigint {
   return BigInt.asUintN(64, BigInt(Math.trunc(value)))
 }
 
-function uint64Result(value: bigint): number {
-  const normalized =
-    value >= 0n && value <= maxUint64BigInt ? value : BigInt.asUintN(64, value)
-  if (normalized <= maxSafeBigInt) {
-    return Number(normalized)
+function uint64Result(value: bigint): bigint {
+  if (value >= 0n && value <= maxUint64BigInt) {
+    return value
   }
-  return normalized as unknown as number
+  return BigInt.asUintN(64, value)
 }
 
 /**
@@ -972,13 +997,21 @@ export function bytesCount(bytes: Bytes | null, sep: Bytes | null): number {
   return count
 }
 
-// Math functions needed by various packages
-export function min(a: number, b: number): number {
-  return Math.min(a, b)
+// Math functions needed by various packages. Generic over number and bigint so
+// the Go builtins min/max work for int64/uint64 operands as well; number keeps
+// Math.min/Math.max NaN semantics.
+export function min<T extends number | bigint>(a: T, b: T): T {
+  if (typeof a === 'bigint') {
+    return a < (b as bigint) ? a : b
+  }
+  return Math.min(a as number, b as number) as T
 }
 
-export function max(a: number, b: number): number {
-  return Math.max(a, b)
+export function max<T extends number | bigint>(a: T, b: T): T {
+  if (typeof a === 'bigint') {
+    return a > (b as bigint) ? a : b
+  }
+  return Math.max(a as number, b as number) as T
 }
 
 /**
@@ -994,8 +1027,7 @@ export function runeOrStringToString(runeOrString: number | string): string {
   if (typeof runeOrString === 'string') {
     return runeOrString
   }
-  // For numbers, use String.fromCharCode to convert the rune to a string
-  return String.fromCharCode(runeOrString)
+  return runeToString(runeOrString)
 }
 
 // Panic recovery function (simplified implementation)

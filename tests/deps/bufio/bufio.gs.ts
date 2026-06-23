@@ -446,16 +446,16 @@ export class Reader {
 		return null
 	}
 
-	public async WriteTo(w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
+	public async WriteTo(w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
 		let b: Reader | $.VarRef<Reader> | null = this
-		let n: number = 0
+		let n: bigint = 0n
 		let err: $.GoError = null as $.GoError
 		$.pointerValue<Reader>(b).lastByte = -1
 		$.pointerValue<Reader>(b).lastRuneSize = -1
 
 		if ($.pointerValue<Reader>(b).r < $.pointerValue<Reader>(b).w) {
 			let __goscriptTuple6: any = await Reader.prototype.writeBuf.call(b, w)
-			n = $.int(__goscriptTuple6[0])
+			n = __goscriptTuple6[0]
 			err = __goscriptTuple6[1]
 			if (err != null) {
 				return [n, err]
@@ -465,25 +465,21 @@ export class Reader {
 		{
 			let [r, ok] = $.typeAssertTuple<io.WriterTo | null>($.pointerValue<Reader>(b).rd, "io.WriterTo")
 			if (ok) {
-				let __goscriptTuple7: any = await $.pointerValue<Exclude<io.WriterTo, null>>(r).WriteTo($.pointerValueOrNil(w)!)
-				let m = $.int(__goscriptTuple7[0])
-				let __goscriptShadow0 = __goscriptTuple7[1]
-				n = $.int64Add(n, $.int(m))
-				return [$.int(n), __goscriptShadow0]
+				let [m, __goscriptShadow0] = await $.pointerValue<Exclude<io.WriterTo, null>>(r).WriteTo($.pointerValueOrNil(w)!)
+				n = $.int64Add(n, m)
+				return [n, __goscriptShadow0]
 			}
 		}
 
 		let __goscriptShadow1 = w
 		{
-			let __goscriptTuple8: any = $.typeAssertTuple<io.ReaderFrom | null>(__goscriptShadow1, "io.ReaderFrom")
-			let __goscriptShadow2 = __goscriptTuple8[0]
-			let ok = __goscriptTuple8[1]
+			let __goscriptTuple7: any = $.typeAssertTuple<io.ReaderFrom | null>(__goscriptShadow1, "io.ReaderFrom")
+			let __goscriptShadow2 = __goscriptTuple7[0]
+			let ok = __goscriptTuple7[1]
 			if (ok) {
-				let __goscriptTuple9: any = await $.pointerValue<Exclude<io.ReaderFrom, null>>(__goscriptShadow2).ReadFrom($.pointerValueOrNil($.pointerValue<Reader>(b).rd)!)
-				let m = $.int(__goscriptTuple9[0])
-				let __goscriptShadow3 = __goscriptTuple9[1]
-				n = $.int64Add(n, $.int(m))
-				return [$.int(n), __goscriptShadow3]
+				let [m, __goscriptShadow3] = await $.pointerValue<Exclude<io.ReaderFrom, null>>(__goscriptShadow2).ReadFrom($.pointerValueOrNil($.pointerValue<Reader>(b).rd)!)
+				n = $.int64Add(n, m)
+				return [n, __goscriptShadow3]
 			}
 		}
 
@@ -493,12 +489,10 @@ export class Reader {
 
 		while ($.pointerValue<Reader>(b).r < $.pointerValue<Reader>(b).w) {
 			// b.r < b.w => buffer is not empty
-			let __goscriptTuple10: any = await Reader.prototype.writeBuf.call(b, w)
-			let m = $.int(__goscriptTuple10[0])
-			let __goscriptShadow4 = __goscriptTuple10[1]
-			n = $.int64Add(n, $.int(m))
+			let [m, __goscriptShadow4] = await Reader.prototype.writeBuf.call(b, w)
+			n = $.int64Add(n, m)
 			if (__goscriptShadow4 != null) {
-				return [$.int(n), __goscriptShadow4]
+				return [n, __goscriptShadow4]
 			}
 			await Reader.prototype.fill.call(b)
 		}
@@ -507,7 +501,7 @@ export class Reader {
 			$.pointerValue<Reader>(b).err = null
 		}
 
-		return [$.int(n), Reader.prototype.readErr.call(b)]
+		return [n, Reader.prototype.readErr.call(b)]
 	}
 
 	public async collectFragments(delim: number): globalThis.Promise<[$.Slice<$.Slice<number>>, $.Slice<number>, number, $.GoError]> {
@@ -520,9 +514,9 @@ export class Reader {
 		// Use ReadSlice to look for delim, accumulating full buffers.
 		while (true) {
 			let e: $.GoError = null as $.GoError
-			let __goscriptTuple11: any = await Reader.prototype.ReadSlice.call(b, $.uint(delim, 8))
-			frag = __goscriptTuple11[0]
-			e = __goscriptTuple11[1]
+			let __goscriptTuple8: any = await Reader.prototype.ReadSlice.call(b, $.uint(delim, 8))
+			frag = __goscriptTuple8[0]
+			e = __goscriptTuple8[1]
 			if (e == null) {
 				break
 			}
@@ -584,14 +578,14 @@ export class Reader {
 		$.assignStruct($.pointerValue<Reader>(b), $.markAsStructValue(new Reader({buf: buf, rd: r, lastByte: -1, lastRuneSize: -1})))
 	}
 
-	public async writeBuf(w: io.Writer | null): globalThis.Promise<[number, $.GoError]> {
+	public async writeBuf(w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
 		let b: Reader | $.VarRef<Reader> | null = this
 		let [n, err] = await $.pointerValue<Exclude<io.Writer, null>>(w).Write($.goSlice($.pointerValue<Reader>(b).buf, $.pointerValue<Reader>(b).r, $.pointerValue<Reader>(b).w))
 		if (n < 0) {
 			$.panic((errNegativeWrite as any))
 		}
 		$.pointerValue<Reader>(b).r = $.pointerValue<Reader>(b).r + (n)
-		return [$.int($.int(n)), err]
+		return [$.int64(n), err]
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -682,9 +676,9 @@ export class Writer {
 		if ($.pointerValue<Writer>(b).n == 0) {
 			return null
 		}
-		let __goscriptTuple13: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(b).wr).Write($.goSlice($.pointerValue<Writer>(b).buf, 0, $.pointerValue<Writer>(b).n))
-		let n = __goscriptTuple13[0]
-		let err = __goscriptTuple13[1]
+		let __goscriptTuple10: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(b).wr).Write($.goSlice($.pointerValue<Writer>(b).buf, 0, $.pointerValue<Writer>(b).n))
+		let n = __goscriptTuple10[0]
+		let err = __goscriptTuple10[1]
 		if ((n < $.pointerValue<Writer>(b).n) && (err == null)) {
 			err = io.ErrShortWrite
 		}
@@ -700,12 +694,12 @@ export class Writer {
 		return null
 	}
 
-	public async ReadFrom(r: io.Reader | null): globalThis.Promise<[number, $.GoError]> {
+	public async ReadFrom(r: io.Reader | null): globalThis.Promise<[bigint, $.GoError]> {
 		let b: Writer | $.VarRef<Writer> | null = this
-		let n: number = 0
+		let n: bigint = 0n
 		let err: $.GoError = null as $.GoError
 		if ($.pointerValue<Writer>(b).err != null) {
-			return [$.int(0), $.pointerValue<Writer>(b).err]
+			return [0n, $.pointerValue<Writer>(b).err]
 		}
 		let [readerFrom, readerFromOK] = $.typeAssertTuple<io.ReaderFrom | null>($.pointerValue<Writer>(b).wr, "io.ReaderFrom")
 		let m: number = 0
@@ -714,33 +708,31 @@ export class Writer {
 				{
 					let err1 = await Writer.prototype.Flush.call(b)
 					if (err1 != null) {
-						return [$.int(n), err1]
+						return [n, err1]
 					}
 				}
 			}
 			if (readerFromOK && (Writer.prototype.Buffered.call(b) == 0)) {
-				let __goscriptTuple14: any = await $.pointerValue<Exclude<io.ReaderFrom, null>>(readerFrom).ReadFrom($.pointerValueOrNil(r)!)
-				let nn = $.int(__goscriptTuple14[0])
-				let __goscriptShadow5 = __goscriptTuple14[1]
+				let [nn, __goscriptShadow5] = await $.pointerValue<Exclude<io.ReaderFrom, null>>(readerFrom).ReadFrom($.pointerValueOrNil(r)!)
 				$.pointerValue<Writer>(b).err = __goscriptShadow5
-				n = $.int64Add(n, $.int(nn))
-				return [$.int(n), __goscriptShadow5]
+				n = $.int64Add(n, nn)
+				return [n, __goscriptShadow5]
 			}
 			let nr = 0
 			while (nr < 100) {
-				let __goscriptTuple15: any = await $.pointerValue<Exclude<io.Reader, null>>(r).Read($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined))
-				m = __goscriptTuple15[0]
-				err = __goscriptTuple15[1]
+				let __goscriptTuple11: any = await $.pointerValue<Exclude<io.Reader, null>>(r).Read($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined))
+				m = __goscriptTuple11[0]
+				err = __goscriptTuple11[1]
 				if ((m != 0) || (err != null)) {
 					break
 				}
 				nr++
 			}
 			if (nr == 100) {
-				return [$.int(n), io.ErrNoProgress]
+				return [n, io.ErrNoProgress]
 			}
 			$.pointerValue<Writer>(b).n = $.pointerValue<Writer>(b).n + (m)
-			n = $.int64Add(n, $.int($.int(m)))
+			n = $.int64Add(n, $.int64(m))
 			if (err != null) {
 				break
 			}
@@ -753,7 +745,7 @@ export class Writer {
 				err = null
 			}
 		}
-		return [$.int(n), err]
+		return [n, err]
 	}
 
 	public Reset(w: io.Writer | null): void {
@@ -786,9 +778,9 @@ export class Writer {
 			if (Writer.prototype.Buffered.call(b) == 0) {
 				// Large write, empty buffer.
 				// Write directly from p to avoid copy.
-				let __goscriptTuple16: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(b).wr).Write(p)
-				n = __goscriptTuple16[0]
-				$.pointerValue<Writer>(b).err = __goscriptTuple16[1]
+				let __goscriptTuple12: any = await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(b).wr).Write(p)
+				n = __goscriptTuple12[0]
+				$.pointerValue<Writer>(b).err = __goscriptTuple12[1]
 			} else {
 				n = $.copy($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined), p)
 				$.pointerValue<Writer>(b).n = $.pointerValue<Writer>(b).n + (n)
@@ -863,17 +855,17 @@ export class Writer {
 			let n: number = 0
 			if (((Writer.prototype.Buffered.call(b) == 0) && (sw == null)) && tryStringWriter) {
 				// Check at most once whether b.wr is a StringWriter.
-				let __goscriptTuple17: any = $.typeAssertTuple<io.StringWriter | null>($.pointerValue<Writer>(b).wr, "io.StringWriter")
-				sw = __goscriptTuple17[0]
-				tryStringWriter = __goscriptTuple17[1]
+				let __goscriptTuple13: any = $.typeAssertTuple<io.StringWriter | null>($.pointerValue<Writer>(b).wr, "io.StringWriter")
+				sw = __goscriptTuple13[0]
+				tryStringWriter = __goscriptTuple13[1]
 			}
 			if ((Writer.prototype.Buffered.call(b) == 0) && tryStringWriter) {
 				// Large write, empty buffer, and the underlying writer supports
 				// WriteString: forward the write to the underlying StringWriter.
 				// This avoids an extra copy.
-				let __goscriptTuple18: any = await $.pointerValue<Exclude<io.StringWriter, null>>(sw).WriteString(s)
-				n = __goscriptTuple18[0]
-				$.pointerValue<Writer>(b).err = __goscriptTuple18[1]
+				let __goscriptTuple14: any = await $.pointerValue<Exclude<io.StringWriter, null>>(sw).WriteString(s)
+				n = __goscriptTuple14[0]
+				$.pointerValue<Writer>(b).err = __goscriptTuple14[1]
 			} else {
 				n = $.copy($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined), s)
 				$.pointerValue<Writer>(b).n = $.pointerValue<Writer>(b).n + (n)
@@ -1089,9 +1081,9 @@ export function __goscript_set_ErrNegativeCount(__goscriptValue: $.GoError): voi
 
 export function NewReaderSize(rd: io.Reader | null, size: number): Reader | $.VarRef<Reader> | null {
 	// Is it already a Reader?
-	let __goscriptTuple12: any = $.typeAssertTuple<Reader | $.VarRef<Reader> | null>(rd, { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" })
-	let b: Reader | $.VarRef<Reader> | null = __goscriptTuple12[0]
-	let ok = __goscriptTuple12[1]
+	let __goscriptTuple9: any = $.typeAssertTuple<Reader | $.VarRef<Reader> | null>(rd, { kind: $.TypeKind.Pointer, elemType: "bufio.Reader" })
+	let b: Reader | $.VarRef<Reader> | null = __goscriptTuple9[0]
+	let ok = __goscriptTuple9[1]
 	if (ok && ($.len($.pointerValue<Reader>(b).buf) >= size)) {
 		return b
 	}
@@ -1118,9 +1110,9 @@ export function __goscript_set_errNegativeWrite(__goscriptValue: $.GoError): voi
 
 export function NewWriterSize(w: io.Writer | null, size: number): Writer | $.VarRef<Writer> | null {
 	// Is it already a Writer?
-	let __goscriptTuple19: any = $.typeAssertTuple<Writer | $.VarRef<Writer> | null>(w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" })
-	let b: Writer | $.VarRef<Writer> | null = __goscriptTuple19[0]
-	let ok = __goscriptTuple19[1]
+	let __goscriptTuple15: any = $.typeAssertTuple<Writer | $.VarRef<Writer> | null>(w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" })
+	let b: Writer | $.VarRef<Writer> | null = __goscriptTuple15[0]
+	let ok = __goscriptTuple15[1]
 	if (ok && ($.len($.pointerValue<Writer>(b).buf) >= size)) {
 		return b
 	}

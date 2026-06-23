@@ -21,7 +21,7 @@ export async function main(): globalThis.Promise<void> {
 	let counter: number = 0
 	let wg: $.VarRef<sync.WaitGroup> = $.varRef($.markAsStructValue(new sync.WaitGroup()))
 
-	let [ctx, cancel] = context.WithTimeout($.pointerValueOrNil(context.Background())!, $.int64Mul(5, time.Second))
+	let [ctx, cancel] = context.WithTimeout($.pointerValueOrNil(context.Background())!, 5000000000n)
 	__defer.defer(async () => { await cancel!() })
 
 	// Number of goroutines to spawn
@@ -44,7 +44,7 @@ export async function main(): globalThis.Promise<void> {
 		// Critical section
 		// println("worker", id, "entered critical section") - non-deterministic, leave commented out
 		let current = counter
-		await time.Sleep($.int64Mul(100, time.Millisecond))
+		await time.Sleep(100000000n)
 		counter = current + 1
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [] } as $.FunctionTypeInfo))
 

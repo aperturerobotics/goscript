@@ -3,14 +3,14 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: number): void {
+export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: bigint): void {
 	while ($.len($.pointerValue<$.Slice<$.Slice<number>>>(v)) > 0) {
-		let ln0 = $.int($.int($.len(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0])))
+		let ln0 = $.int64($.len(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0]))
 		if (ln0 > n) {
-			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], n, undefined)
+			($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v))![0], Number(n), undefined)
 			return
 		}
-		n = $.int64Sub(n, $.int(ln0));
+		n = $.int64Sub(n, ln0);
 		($.pointerValue<$.Slice<$.Slice<number>>>(v))![0] = null
 		v!.value = $.goSlice(($.pointerValue<$.Slice<$.Slice<number>>>(v)), 1, undefined)
 	}
@@ -18,7 +18,7 @@ export function consume(v: $.VarRef<$.Slice<$.Slice<number>>> | null, n: number)
 
 export async function main(): globalThis.Promise<void> {
 	let values: $.VarRef<$.Slice<$.Slice<number>>> = $.varRef($.arrayToSlice<$.Slice<number>>([$.arrayToSlice<number>([$.uint(1, 8), $.uint(2, 8)]), $.arrayToSlice<number>([$.uint(3, 8)])]))
-	consume(values, $.int(2))
+	consume(values, 2n)
 	$.println($.len(values.value), values.value![0] == null)
 }
 
