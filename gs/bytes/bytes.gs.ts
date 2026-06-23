@@ -1121,38 +1121,40 @@ export function Replace(s: $.Bytes, old: $.Bytes, _new: $.Bytes, n: number): $.B
 		return new Uint8Array($.bytesToArray(s))
 	}
 	
-	// Handle empty old pattern - replace at beginning and after each UTF-8 sequence
+	// Handle empty old pattern - matches at the start and after each UTF-8
+	// sequence, yielding up to runeCount+1 insertions. After the insertion
+	// limit is reached the untouched remainder of s is appended, as in Go.
 	if (old === null || $.len(old) === 0) {
 		const result: number[] = []
 		const newBytes = _new === null ? [] : $.bytesToArray(_new)
-		
-		// Add replacement at beginning
-		if (n !== 0) {
-			result.push(...newBytes)
-			if (n > 0) n--
-		}
-		
-		// Add replacement after each UTF-8 sequence
-		for (let i = 0; i < $.len(s) && n !== 0; ) {
+
+		// Count runes to bound n the way Go's Count does for an empty pattern.
+		let runeCount = 0
+		for (let i = 0; i < $.len(s); ) {
 			const [, size] = utf8.DecodeRune($.goSlice(s, i, undefined))
-			if (size <= 0) {
-				result.push(s![i])
-				i++
-			} else {
-				// Add the rune bytes
-				for (let j = 0; j < size; j++) {
-					result.push(s![i + j])
-				}
-				i += size
-			}
-			
-			// Add replacement after this rune
-			if (n !== 0) {
-				result.push(...newBytes)
-				if (n > 0) n--
-			}
+			i += size > 0 ? size : 1
+			runeCount++
 		}
-		
+		const limit = n < 0 ? runeCount + 1 : Math.min(n, runeCount + 1)
+
+		let start = 0
+		for (let ins = 0; ins < limit; ins++) {
+			if (ins > 0) {
+				const [, size] = utf8.DecodeRune($.goSlice(s, start, undefined))
+				const wid = size > 0 ? size : 1
+				for (let j = 0; j < wid; j++) {
+					result.push(s![start + j])
+				}
+				start += wid
+			}
+			result.push(...newBytes)
+		}
+
+		// Append the untouched remainder after the last insertion.
+		for (let j = start; j < $.len(s); j++) {
+			result.push(s![j])
+		}
+
 		return new Uint8Array(result)
 	}
 	

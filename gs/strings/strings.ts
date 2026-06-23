@@ -505,24 +505,35 @@ export function Replace(
   newStr: string,
   n: number,
 ): string {
-  if (n <= 0 || old === '') {
+  if (n === 0 || old === newStr) {
     return s
   }
 
-  let result = s
-  let count = 0
-  let pos = 0
-
-  while (count < n) {
-    const index = result.indexOf(old, pos)
-    if (index === -1) break
-
-    result = result.slice(0, index) + newStr + result.slice(index + old.length)
-    pos = index + newStr.length
-    count++
+  if (old === '') {
+    // Empty old matches at the start and after each rune (code point),
+    // yielding up to runeCount+1 insertions; n < 0 means no limit.
+    const runes = globalThis.Array.from(s)
+    const limit = n < 0 ? runes.length + 1 : Math.min(n, runes.length + 1)
+    let result = newStr
+    let i = 0
+    for (; i < limit - 1; i++) {
+      result += runes[i] + newStr
+    }
+    return result + runes.slice(i).join('')
   }
 
-  return result
+  // Non-empty old: replace up to n occurrences; n < 0 means all.
+  let result = ''
+  let start = 0
+  let count = 0
+  while (n < 0 || count < n) {
+    const index = s.indexOf(old, start)
+    if (index === -1) break
+    result += s.slice(start, index) + newStr
+    start = index + old.length
+    count++
+  }
+  return result + s.slice(start)
 }
 
 // ReplaceAll returns a copy of the string s with all non-overlapping instances of old replaced by new.

@@ -319,7 +319,17 @@ describe('strings', () => {
       )
       expect(Replace('hello world hello', 'hello', 'hi', 2)).toBe('hi world hi')
       expect(Replace('hello world', 'xyz', 'abc', 1)).toBe('hello world')
-      expect(Replace('hello', '', 'x', 1)).toBe('hello')
+    })
+
+    it('matches Go for empty old, negative n, and remainder', () => {
+      // Empty old inserts at the start and after each rune, then appends the
+      // untouched remainder once the insertion limit is reached.
+      expect(Replace('abc', '', '-', 2)).toBe('-a-bc')
+      expect(Replace('abc', '', '-', -1)).toBe('-a-b-c-')
+      expect(Replace('hello', '', 'x', 1)).toBe('xhello')
+      // n < 0 replaces every occurrence, not none.
+      expect(Replace('aaa', 'a', 'b', -1)).toBe('bbb')
+      expect(Replace('a,b,c', ',', ';', -1)).toBe('a;b;c')
     })
   })
 
