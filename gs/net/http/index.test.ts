@@ -293,6 +293,19 @@ describe('net/http override', () => {
     expect(noBodyReq?.Body).toBe(NoBody)
   })
 
+  it('decodes escaped request paths like native net/http', () => {
+    const [req, reqErr] = NewRequestWithContext(
+      context.Background(),
+      MethodGet,
+      'https://example.invalid/files/what%20is%20this.mp4?inline=1',
+      null,
+    )
+
+    expect(reqErr).toBeNull()
+    expect(req?.URL?.Path).toBe('/files/what is this.mp4')
+    expect(req?.URL?.RawQuery).toBe('inline=1')
+  })
+
   it('applies cross-origin protection checks', () => {
     const protection = NewCrossOriginProtection()
     const [sameOrigin] = NewRequest(
@@ -1361,6 +1374,59 @@ describe('net/http override', () => {
     expect(writes).toEqual(['status:200'])
   })
 
+  it('serves files whose request paths contain escaped spaces', async () => {
+    const opened: string[] = []
+    const root = FS({
+      Open: (name) => {
+        opened.push(name)
+        const reader = bytes.NewReader($.stringToBytes('video'))
+        return name === 'what is this.mp4' ?
+            [
+              {
+                Close: () => null,
+                Read: (p: Uint8Array) => reader.Read(p),
+                Seek: (offset: number, whence: number) =>
+                  reader.Seek(offset, whence),
+                Readdir: () => [null, null] as [null, null],
+                Stat: () =>
+                  [
+                    {
+                      IsDir: () => false,
+                      ModTime: () => null as never,
+                      Mode: () => 0,
+                      Name: () => name,
+                      Size: () => 5,
+                      Sys: () => null,
+                    },
+                    null,
+                  ] as const,
+              },
+              null,
+            ]
+          : [null, new Error('missing')]
+      },
+    })
+    const writes: string[] = []
+    const writer: ResponseWriter = {
+      Header: () => new Header(),
+      Write: (p) => {
+        writes.push(Buffer.from(p ?? []).toString('utf8'))
+        return [p?.length ?? 0, null]
+      },
+      WriteHeader: (code) => writes.push(`status:${code}`),
+    }
+    const [req] = NewRequest(
+      MethodGet,
+      'http://example.invalid/what%20is%20this.mp4',
+      null,
+    )
+
+    await FileServer(root).ServeHTTP(writer, req)
+
+    expect(opened).toEqual(['what is this.mp4'])
+    expect(writes).toEqual(['status:200', 'video'])
+  })
+
   it('serves files from async file systems and file methods', async () => {
     const closeCalls: string[] = []
     const root = {
@@ -1601,7 +1667,9 @@ describe('net/http override', () => {
 
     expect(readSawHeader).toBe(true)
     expect(writes).toEqual(['status:200', 'streamed-body'])
-    expect(Header_Get(header, 'Content-Type')).toBe('text/javascript; charset=utf-8')
+    expect(Header_Get(header, 'Content-Type')).toBe(
+      'text/javascript; charset=utf-8',
+    )
   })
 
   it('awaits ServeContent writes before returning', async () => {

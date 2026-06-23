@@ -420,10 +420,11 @@ function parseRequestURL(rawURL: string): [RequestURL | null, $.GoError] {
       return [null, errors.New(`parse "${rawURL}": invalid URL escape`)]
     }
     const parsed = new URL(rawURL, 'http://goscript.invalid')
+    const path = decodeURIComponent(parsed.pathname)
     const hasHost = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(rawURL)
     return [
       new RequestURL(
-        parsed.pathname,
+        path,
         parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search,
         hasHost ? parsed.protocol.replace(/:$/, '') : '',
         hasHost ? parsed.host : '',
