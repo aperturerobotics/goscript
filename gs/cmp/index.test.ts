@@ -43,4 +43,13 @@ describe('cmp.Or', () => {
     expect(Or(0, 0, -1, 1)).toBe(-1)
     expect(Or(0, 0)).toBe(0)
   })
+
+  it('returns the first non-zero value for any comparable type', () => {
+    expect(Or('', 'default')).toBe('default')
+    expect(Or('first', 'second')).toBe('first')
+    expect(Or(false, true)).toBe(true)
+    expect(Or(0n, 5n)).toBe(5n)
+    expect(Or('', '')).toBe('')
+    expect(Or(false, false)).toBe(false)
+  })
 })

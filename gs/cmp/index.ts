@@ -30,10 +30,36 @@ export function Less<T extends Ordered>(a: T, b: T): boolean {
 }
 
 // Or returns the first non-zero result from the comparison functions,
-// or zero if all comparisons return zero
-export function Or(...comparisons: number[]): number {
-  for (const cmp of comparisons) {
-    if (cmp !== 0) return cmp
+// isZeroValue reports whether v equals the zero value for its comparable kind,
+// matching Go's `val != zero` test in cmp.Or. Scalars compare against their
+// typed zero; pointers, interfaces, maps, slices, channels, and funcs are zero
+// only when nil.
+function isZeroValue(v: unknown): boolean {
+  switch (typeof v) {
+    case 'number':
+      return v === 0
+    case 'bigint':
+      return v === 0n
+    case 'string':
+      return v === ''
+    case 'boolean':
+      return v === false
+    case 'undefined':
+      return true
+    default:
+      return v === null
   }
-  return 0
+}
+
+// Or returns the first of its arguments that is not equal to that comparable
+// type's zero value, or the zero value if every argument is zero, as in Go's
+// cmp.Or. The earlier number-only implementation treated the empty string,
+// false, and 0n as non-zero.
+export function Or<T>(...vals: T[]): T {
+  for (const v of vals) {
+    if (!isZeroValue(v)) {
+      return v
+    }
+  }
+  return vals.length > 0 ? vals[vals.length - 1] : (undefined as T)
 }
