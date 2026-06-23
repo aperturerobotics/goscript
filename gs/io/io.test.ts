@@ -1,10 +1,12 @@
 import * as $ from '@goscript/builtin/index.js'
 import {
+  EOF,
   LimitedReader,
   MultiWriter,
   NewSectionReader,
   NopCloser,
   Pipe,
+  ReadAll,
   TeeReader,
 } from './index.js'
 import { describe, expect, test } from 'vitest'
@@ -186,5 +188,45 @@ describe('io override', () => {
     expect(readErr).toBeNull()
     expect(readBytes).toBe(5)
     expect(Buffer.from(buf).toString('utf8')).toBe('later')
+  })
+
+  test('ReadAll returns the bytes already read with a non-EOF error', async () => {
+    const boom = new Error('boom') as $.GoError
+    let called = false
+    const reader = {
+      Read(p: $.Bytes): [number, $.GoError] {
+        if (called) {
+          return [0, EOF]
+        }
+        called = true
+        const data = $.stringToBytes('hello')
+        p!.set(data, 0)
+        return [$.len(data), boom]
+      },
+    }
+
+    const [data, err] = await ReadAll(reader)
+    expect(err).toBe(boom)
+    expect($.bytesToString(data)).toBe('hello')
+  })
+
+  test('ReadAll reports EOF as a nil error', async () => {
+    const data = $.stringToBytes('world')
+    let offset = 0
+    const reader = {
+      Read(p: $.Bytes): [number, $.GoError] {
+        if (offset >= $.len(data)) {
+          return [0, EOF]
+        }
+        const n = Math.min($.len(p), $.len(data) - offset)
+        p!.set((data as Uint8Array).subarray(offset, offset + n), 0)
+        offset += n
+        return [n, null]
+      },
+    }
+
+    const [out, err] = await ReadAll(reader)
+    expect(err).toBeNull()
+    expect($.bytesToString(out)).toBe('world')
   })
 })

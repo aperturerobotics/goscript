@@ -640,6 +640,7 @@ export async function ReadAll(r: Reader): Promise<[$.Bytes, $.GoError]> {
   const chunks: $.Bytes[] = []
   let totalLength = 0
   const buf = $.makeSlice<number>(512, undefined, 'byte')
+  let readErr: $.GoError = null
 
   while (true) {
     const [n, err] = await (r.Read(buf) as any)
@@ -650,30 +651,25 @@ export async function ReadAll(r: Reader): Promise<[$.Bytes, $.GoError]> {
       totalLength += n
     }
     if (err !== null) {
-      if (err === EOF) {
-        break
+      // EOF is the normal terminator and is reported as a nil error. Any other
+      // error is returned together with the bytes already read, matching Go.
+      if (err !== EOF) {
+        readErr = err
       }
-      return [$.makeSlice<number>(0, undefined, 'byte'), err]
+      break
     }
   }
 
-  // Combine all chunks
+  // Combine all chunks.
   const result = $.makeSlice<number>(totalLength, undefined, 'byte')
   let offset = 0
   for (const chunk of chunks) {
-    if (chunk instanceof Uint8Array) {
-      // Handle Uint8Array chunks
-      const resultSlice = $.goSlice(result, offset, offset + chunk.length)
-      $.copy(resultSlice, chunk)
-    } else {
-      // Handle Slice<number> chunks
-      const resultSlice = $.goSlice(result, offset, offset + $.len(chunk))
-      $.copy(resultSlice, chunk)
-    }
+    const resultSlice = $.goSlice(result, offset, offset + $.len(chunk))
+    $.copy(resultSlice, chunk)
     offset += $.len(chunk)
   }
 
-  return [result, null]
+  return [result, readErr]
 }
 
 // NopCloser returns a ReadCloser with a no-op Close method wrapping the provided Reader r
