@@ -37,7 +37,10 @@ import {
   Sunday,
   May,
   Time,
+  Tick,
   UTC,
+  UnixMicro,
+  UnixMilli,
 } from './time.js'
 import type { Month } from './time.js'
 
@@ -113,6 +116,12 @@ describe('time constants and timers', () => {
 
     expect(value.Unix()).toBeGreaterThan(0)
   })
+
+  it('delivers Tick values on C', async () => {
+    const value = await Tick(0).receive()
+
+    expect(value.Unix()).toBeGreaterThan(0)
+  })
 })
 
 describe('time.Time.In', () => {
@@ -134,6 +143,16 @@ describe('time.Time.In', () => {
 })
 
 describe('time.Time calendar and binary helpers', () => {
+  it('round-trips Unix millisecond and microsecond constructors', () => {
+    const millis = UnixMilli(1234567890123n)
+    const micros = UnixMicro(1234567890123456n)
+
+    expect(millis.UnixMilli()).toBe(1234567890123n)
+    expect(millis.Unix()).toBe(1234567890n)
+    expect(micros.UnixMicro()).toBe(1234567890123456n)
+    expect(micros.Unix()).toBe(1234567890n)
+  })
+
   it('appends formatted text to byte slices', () => {
     const t = Date(2025, May, 15, 1, 10, 42, 0, UTC)
     const out = t.AppendFormat($.stringToBytes('ts='), RFC3339)

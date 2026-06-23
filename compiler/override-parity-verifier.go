@@ -90,7 +90,13 @@ func (v *OverrideParityVerifier) Verify(
 			})
 			continue
 		}
-		diagnostics = append(diagnostics, verifyOverrideParityPackage(node.PkgPath, pkg.Types, ledger, exports)...)
+		diagnostics = append(diagnostics, verifyOverrideParityPackage(
+			node.PkgPath,
+			pkg.Types,
+			ledger,
+			exports,
+			facts.behaviorTestSymbols(node.PkgPath),
+		)...)
 	}
 	diagnostics = append(diagnostics, verifyBlockedOverrideUses(graph, facts)...)
 	return diagnostics
@@ -154,12 +160,14 @@ func verifyOverrideParityPackage(
 	goPkg *types.Package,
 	ledger overrideParityLedger,
 	tsExports map[string]typeScriptExport,
+	behaviorTests map[string]bool,
 ) []Diagnostic {
 	goExports := exportedPackageSymbols(goPkg)
 	goExportSet := make(map[string]bool, len(goExports))
 	var diagnostics []Diagnostic
 	for _, symbol := range goExports {
 		goExportSet[symbol.name] = true
+		obj := goPkg.Scope().Lookup(symbol.name)
 		entry, ok := ledger.Symbols[symbol.name]
 		if ledger.Strict && !ok {
 			diagnostics = append(diagnostics, Diagnostic{
@@ -179,6 +187,14 @@ func verifyOverrideParityPackage(
 				Code:     "goscript/overrides:parity-missing-export",
 				Message:  "override parity ledger requires a TypeScript export that is missing",
 				Detail:   pkgPath + "." + symbol.name + " is classified as " + string(entry.Status),
+			})
+		}
+		if entry.Status == overrideParityStatusReal && isPackageLevelFunc(obj) && !behaviorTests[symbol.name] {
+			diagnostics = append(diagnostics, Diagnostic{
+				Severity: DiagnosticSeverityError,
+				Code:     "goscript/overrides:parity-missing-behavior-test",
+				Message:  "real override function is missing a locatable behavior test",
+				Detail:   pkgPath + "." + symbol.name,
 			})
 		}
 		if entry.Status.forbidsExport() && tsExports[symbol.name].present() {
@@ -201,6 +217,11 @@ func verifyOverrideParityPackage(
 		}
 	}
 	return diagnostics
+}
+
+func isPackageLevelFunc(obj types.Object) bool {
+	_, ok := obj.(*types.Func)
+	return ok
 }
 
 func (symbol goPackageExport) satisfiedBy(export typeScriptExport) bool {

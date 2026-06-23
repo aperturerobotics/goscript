@@ -1123,6 +1123,7 @@ func compileParityFixture(
 	})
 	overrideDir := filepath.Join(t.TempDir(), "gs")
 	writeFixtureFile(t, overrideDir, "example.test/parity/lib/index.ts", index)
+	writeFixtureFile(t, overrideDir, "example.test/parity/lib/index.test.ts", "import { Present } from './index.js'\nPresent()\n")
 	writeFixtureFile(t, overrideDir, "example.test/parity/lib/parity.json", parityFixtureJSON(t, symbols))
 
 	comp, err := NewCompiler(&Config{

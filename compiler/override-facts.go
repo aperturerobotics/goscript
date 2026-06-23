@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
 	"io/fs"
 	"maps"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -17,16 +21,19 @@ import (
 	gs "github.com/s4wave/goscript"
 )
 
+var overrideBehaviorTestIdentifierPattern = regexp.MustCompile(`\b[A-Za-z_][A-Za-z0-9_]*\b`)
+
 // OverrideFacts is the immutable compiler-visible view of GoScript overrides.
 type OverrideFacts struct {
 	packages map[string]overridePackageFacts
 }
 
 type overridePackageFacts struct {
-	metadata     OverrideMetadata
-	parity       overrideParityLedger
-	copyPackage  overrideCopyPackage
-	dependencies []string
+	metadata            OverrideMetadata
+	parity              overrideParityLedger
+	behaviorTestSymbols map[string]bool
+	copyPackage         overrideCopyPackage
+	dependencies        []string
 }
 
 type overridePackageRoot struct {
@@ -59,6 +66,14 @@ func (f *OverrideFacts) parityLedger(pkgPath string) overrideParityLedger {
 	}
 	pkg := f.packages[pkgPath]
 	return cloneOverrideParityLedger(pkg.parity)
+}
+
+func (f *OverrideFacts) behaviorTestSymbols(pkgPath string) map[string]bool {
+	if f == nil {
+		return nil
+	}
+	pkg := f.packages[pkgPath]
+	return cloneBoolMap(pkg.behaviorTestSymbols)
 }
 
 // IsMethodAsync returns true when override metadata marks a method async.
@@ -122,6 +137,7 @@ func buildOverrideFacts(ctx context.Context, overrideDirs []string) (*OverrideFa
 	slices.Sort(paths)
 
 	facts := &OverrideFacts{packages: make(map[string]overridePackageFacts, len(paths))}
+	goldenBehaviorTests := loadGoldenBehaviorTests()
 	for _, pkgPath := range paths {
 		if err := ctx.Err(); err != nil {
 			return facts, []Diagnostic{contextCanceledDiagnostic(err)}
@@ -141,11 +157,18 @@ func buildOverrideFacts(ctx context.Context, overrideDirs []string) (*OverrideFa
 		if diagnosticsHaveErrors(packageDiagnostics) {
 			continue
 		}
+		behaviorTests, err := loadOverrideBehaviorTests(roots[pkgPath], roots)
+		if err != nil {
+			diagnostics = append(diagnostics, overrideError("read override behavior tests", pkgPath, err))
+			continue
+		}
+		maps.Copy(behaviorTests, goldenBehaviorTests[pkgPath])
 		facts.packages[pkgPath] = overridePackageFacts{
-			metadata:     cloneOverrideMetadata(metadata),
-			parity:       cloneOverrideParityLedger(parity),
-			copyPackage:  copyPackage,
-			dependencies: dependencies,
+			metadata:            cloneOverrideMetadata(metadata),
+			parity:              cloneOverrideParityLedger(parity),
+			behaviorTestSymbols: behaviorTests,
+			copyPackage:         copyPackage,
+			dependencies:        dependencies,
 		}
 	}
 	if diagnosticsHaveErrors(diagnostics) {
@@ -334,6 +357,133 @@ func loadOverrideCopyPackage(
 	}
 	slices.Sort(dependencies)
 	return copyPackage, dependencies, nil
+}
+
+func loadOverrideBehaviorTests(
+	root overridePackageRoot,
+	roots map[string]overridePackageRoot,
+) (map[string]bool, error) {
+	symbols := make(map[string]bool)
+	err := fs.WalkDir(root.fsys, root.dir, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			nestedPkg := strings.TrimPrefix(filePath, root.dir+"/")
+			if root.dir == "." {
+				nestedPkg = filePath
+			} else if nestedPkg != filePath {
+				nestedPkg = path.Join(root.pkgPath, nestedPkg)
+			}
+			if _, ok := roots[nestedPkg]; nestedPkg != root.pkgPath && ok {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(filePath, ".test.ts") {
+			return nil
+		}
+		data, readErr := fs.ReadFile(root.fsys, filePath)
+		if readErr != nil {
+			return readErr
+		}
+		for _, match := range overrideBehaviorTestIdentifierPattern.FindAllString(string(data), -1) {
+			symbols[match] = true
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return symbols, nil
+}
+
+func loadGoldenBehaviorTests() map[string]map[string]bool {
+	testsDir, ok := findGoldenTestsDir()
+	if !ok {
+		return nil
+	}
+	result := make(map[string]map[string]bool)
+	_ = filepath.WalkDir(testsDir, func(filePath string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || filepath.Ext(filePath) != ".go" {
+			return nil
+		}
+		file, parseErr := parser.ParseFile(token.NewFileSet(), filePath, nil, parser.SkipObjectResolution)
+		if parseErr != nil {
+			return nil
+		}
+		importAliases := make(map[string]string)
+		dotImports := make(map[string]bool)
+		for _, spec := range file.Imports {
+			if spec.Path == nil {
+				continue
+			}
+			pkgPath := strings.Trim(spec.Path.Value, `"`)
+			if spec.Name != nil {
+				switch spec.Name.Name {
+				case ".":
+					dotImports[pkgPath] = true
+				case "_":
+				default:
+					importAliases[spec.Name.Name] = pkgPath
+				}
+				continue
+			}
+			importAliases[path.Base(pkgPath)] = pkgPath
+		}
+		if len(importAliases) == 0 && len(dotImports) == 0 {
+			return nil
+		}
+		ast.Inspect(file, func(node ast.Node) bool {
+			switch expr := node.(type) {
+			case *ast.SelectorExpr:
+				ident, ok := expr.X.(*ast.Ident)
+				if !ok {
+					return true
+				}
+				pkgPath, ok := importAliases[ident.Name]
+				if !ok {
+					return true
+				}
+				addBehaviorTestSymbol(result, pkgPath, expr.Sel.Name)
+			case *ast.Ident:
+				for pkgPath := range dotImports {
+					addBehaviorTestSymbol(result, pkgPath, expr.Name)
+				}
+			}
+			return true
+		})
+		return nil
+	})
+	return result
+}
+
+func findGoldenTestsDir() (string, bool) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", false
+	}
+	for {
+		candidate := filepath.Join(wd, "tests", "tests")
+		if info, statErr := os.Stat(candidate); statErr == nil && info.IsDir() {
+			return candidate, true
+		}
+		parent := filepath.Dir(wd)
+		if parent == wd {
+			return "", false
+		}
+		wd = parent
+	}
+}
+
+func addBehaviorTestSymbol(index map[string]map[string]bool, pkgPath, symbol string) {
+	if pkgPath == "" || symbol == "" {
+		return
+	}
+	if index[pkgPath] == nil {
+		index[pkgPath] = make(map[string]bool)
+	}
+	index[pkgPath][symbol] = true
 }
 
 func newOverrideMetadata() OverrideMetadata {

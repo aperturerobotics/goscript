@@ -35,6 +35,7 @@ import {
   ReverseBytes16,
   ReverseBytes32,
   ReverseBytes64,
+  RotateLeft,
   RotateLeft16,
   RotateLeft32,
   RotateLeft64,
@@ -86,6 +87,7 @@ describe('math/bits override', () => {
   })
 
   it('rotates right for negative counts', () => {
+    expect(RotateLeft(1n, -1)).toBe(0x8000000000000000n)
     expect(RotateLeft8(1, -1)).toBe(0x80)
     expect(RotateLeft16(1, -1)).toBe(0x8000)
     expect(RotateLeft32(1, -1)).toBe(0x80000000)

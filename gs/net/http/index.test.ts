@@ -27,6 +27,7 @@ import {
   Get,
   Handle,
   HandleFunc,
+  Head,
   Header,
   Header_Add,
   Header_Clone,
@@ -62,6 +63,7 @@ import {
   ParseSetCookie,
   ParseTime,
   PostForm,
+  Post,
   Protocols,
   ProxyFromEnvironment,
   ProxyURL,
@@ -79,7 +81,9 @@ import {
   ServeContent,
   ServeFile,
   ServeFileFS,
+  Serve,
   Server,
+  ServeTLS,
   StatusCreated,
   StatusForbidden,
   StatusFound,
@@ -720,6 +724,8 @@ describe('net/http override', () => {
     expect(controller.Hijack()[2]).toBe(ErrNotSupported)
     expect(controller.SetReadDeadline({} as any)).toBe(ErrNotSupported)
     expect(ListenAndServe(':0', null)).toBe(ErrNotSupported)
+    expect(Serve(null, null)).toBe(ErrNotSupported)
+    expect(ServeTLS(null, null, 'cert.pem', 'key.pem')).toBe(ErrNotSupported)
     expect(new Transport().Clone()).toBeInstanceOf(Transport)
   })
 
@@ -1172,6 +1178,42 @@ describe('net/http override', () => {
     const [resp, err] = await client.Do(varRef(req!))
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusOK)
+  })
+
+  it('routes package Head and Post helpers through DefaultClient', async () => {
+    const oldTransport = DefaultClient.Transport
+    const seen: string[] = []
+    DefaultClient.Transport = {
+      async RoundTrip(
+        got: Request | $.VarRef<Request> | null,
+      ): Promise<[Response | null, $.GoError]> {
+        const request = $.pointerValue<Request>(got)
+        seen.push(request.Method)
+        if (request.Method === MethodPost) {
+          expect(Header_Get(request.Header, 'Content-Type')).toBe('text/plain')
+          const [data, err] = await io.ReadAll(request.Body!)
+          expect(err).toBeNull()
+          expect($.bytesToString(data)).toBe('payload')
+        }
+        return [new Response({ StatusCode: StatusOK }), null]
+      },
+    }
+    try {
+      const [headResp, headErr] = await Head('https://example.invalid/head')
+      const [postResp, postErr] = await Post(
+        'https://example.invalid/post',
+        'text/plain',
+        strings.NewReader('payload'),
+      )
+
+      expect(headErr).toBeNull()
+      expect(headResp?.StatusCode).toBe(StatusOK)
+      expect(postErr).toBeNull()
+      expect(postResp?.StatusCode).toBe(StatusOK)
+      expect(seen).toEqual([MethodHead, MethodPost])
+    } finally {
+      DefaultClient.Transport = oldTransport
+    }
   })
 
   it('posts URL-encoded forms through clients and package helper', async () => {
