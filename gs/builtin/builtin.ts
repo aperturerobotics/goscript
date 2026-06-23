@@ -1,5 +1,6 @@
 import type { Slice, SliceProxy } from './slice.js'
 import { writeHostStdoutText } from './hostio.js'
+import { runtimePanic } from './panic.js'
 import { formatPrintedArgs } from './print.js'
 import { isSliceProxy, runeToString } from './slice.js'
 import { isVarRef, type VarRef } from './varRef.js'
@@ -19,43 +20,6 @@ export function print(...args: any[]): void {
 export function println(...args: any[]): void {
   const message = (args.length === 0 ? '' : formatPrintedArgs(args)) + '\n'
   writeHostStdoutText(message)
-}
-
-export class GoPanic extends Error {
-  constructor(public readonly value: unknown) {
-    super(`panic: ${formatPanicValue(value)}`)
-  }
-}
-
-/**
- * Implementation of Go's built-in panic function
- * @param args Arguments passed to panic
- */
-export function panic(...args: unknown[]): never {
-  const value = args.length === 1 ? args[0] : args
-  throw new GoPanic(value)
-}
-
-export function panicValue(value: unknown): unknown {
-  if (value instanceof GoPanic) {
-    return value.value
-  }
-  return value
-}
-
-function formatPanicValue(value: unknown): string {
-  if (value instanceof Error) {
-    return value.message
-  }
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    'Error' in value &&
-    typeof (value as { Error?: unknown }).Error === 'function'
-  ) {
-    return String((value as { Error(): string }).Error())
-  }
-  return String(value)
 }
 
 /**
@@ -143,7 +107,7 @@ export function assignStruct<T>(target: T, source: T): void {
  */
 export function pointerValue<T>(value: T | VarRef<T> | null | undefined): T {
   if (value === null || value === undefined) {
-    throw new Error(
+    runtimePanic(
       'runtime error: invalid memory address or nil pointer dereference',
     )
   }
@@ -508,7 +472,7 @@ export function uintShr(
   const width = Math.min(bits, 32)
   const amount = Math.trunc(Number(shift))
   if (amount < 0) {
-    throw new Error('runtime error: negative shift amount')
+    runtimePanic('runtime error: negative shift amount')
   }
   if (amount >= width) {
     return 0
@@ -536,7 +500,7 @@ export function uint64Div(
 ): bigint {
   const divisor = uint64Value(right)
   if (divisor === 0n) {
-    throw new Error('runtime error: integer divide by zero')
+    runtimePanic('runtime error: integer divide by zero')
   }
   return uint64Result(uint64Value(left) / divisor)
 }
@@ -547,7 +511,7 @@ export function int64Div(
 ): bigint {
   const divisor = int64Value(right)
   if (divisor === 0n) {
-    throw new Error('runtime error: integer divide by zero')
+    runtimePanic('runtime error: integer divide by zero')
   }
   return int64Result(int64Value(left) / divisor)
 }
@@ -558,7 +522,7 @@ export function uint64Mod(
 ): bigint {
   const divisor = uint64Value(right)
   if (divisor === 0n) {
-    throw new Error('runtime error: integer divide by zero')
+    runtimePanic('runtime error: integer divide by zero')
   }
   return uint64Result(uint64Value(left) % divisor)
 }
@@ -569,7 +533,7 @@ export function int64Mod(
 ): bigint {
   const divisor = int64Value(right)
   if (divisor === 0n) {
-    throw new Error('runtime error: integer divide by zero')
+    runtimePanic('runtime error: integer divide by zero')
   }
   return int64Result(int64Value(left) % divisor)
 }
@@ -1030,9 +994,3 @@ export function runeOrStringToString(runeOrString: number | string): string {
   return runeToString(runeOrString)
 }
 
-// Panic recovery function (simplified implementation)
-export function recover(): any {
-  // In a real implementation, this would interact with Go's panic/recover mechanism
-  // For now, return null to indicate no panic was recovered
-  return null
-}

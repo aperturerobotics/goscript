@@ -1,3 +1,5 @@
+import { runtimePanic } from './panic.js'
+
 export interface OwnedPointerHandle<T = unknown> {
   readonly __goOwnedPointer: true
   __goAddress: () => number
@@ -126,10 +128,10 @@ export function ownedPointerRef<T>(pointer: OwnedPointerHandle<T>): VarRef<T> {
   return pointer.__goRef()
 }
 
-/** Dereference a variable reference, throws on null → simulates Go panic. */
+/** Dereference a variable reference; a null ref raises a Go runtime panic. */
 export function unref<T>(b: VarRef<T>): T {
   if (b === null) {
-    throw new Error(
+    runtimePanic(
       'runtime error: invalid memory address or nil pointer dereference',
     )
   }

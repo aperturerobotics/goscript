@@ -1,4 +1,5 @@
 export * from './builtin.js'
+export * from './panic.js'
 export * from './slice.js'
 export * from './channel.js'
 export * from './map.js'
