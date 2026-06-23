@@ -262,6 +262,253 @@ $.registerInterfaceType('json.Unmarshaler', null, [
   },
 ])
 
+// RawJSON wraps a pre-serialized JSON fragment (from a Marshaler or RawMessage)
+// so the encoder can emit its exact token spelling instead of round-tripping it
+// through JSON.parse/stringify, which would normalize numbers like 1e+00 to 1.
+class RawJSON {
+  constructor(public raw: string) {}
+}
+
+// stripJSONWhitespace removes insignificant whitespace from a JSON document
+// while leaving string contents and every number/literal token byte-for-byte
+// intact, matching Go's json.Compact.
+function stripJSONWhitespace(text: string): string {
+  let out = ''
+  let inStr = false
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (inStr) {
+      out += c
+      if (c === '\\') {
+        out += text[++i] ?? ''
+      } else if (c === '"') {
+        inStr = false
+      }
+      continue
+    }
+    if (c === '"') {
+      inStr = true
+      out += c
+      continue
+    }
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
+      continue
+    }
+    out += c
+  }
+  return out
+}
+
+// indentJSON pretty-prints a compact JSON document, preserving every token
+// spelling, matching Go's json.Indent layout: a space after a colon, newlines
+// with prefix + indent*depth after structural characters, and empty {} / []
+// left inline.
+function indentJSON(compact: string, prefix: string, indent: string): string {
+  let out = ''
+  let depth = 0
+  let inStr = false
+  const newline = (d: number) => '\n' + prefix + indent.repeat(d)
+  for (let i = 0; i < compact.length; i++) {
+    const c = compact[i]
+    if (inStr) {
+      out += c
+      if (c === '\\') {
+        out += compact[++i] ?? ''
+      } else if (c === '"') {
+        inStr = false
+      }
+      continue
+    }
+    switch (c) {
+      case '"':
+        inStr = true
+        out += c
+        break
+      case '{':
+      case '[':
+        if (compact[i + 1] === '}' || compact[i + 1] === ']') {
+          out += c
+        } else {
+          depth++
+          out += c + newline(depth)
+        }
+        break
+      case '}':
+      case ']':
+        if (compact[i - 1] === '{' || compact[i - 1] === '[') {
+          out += c
+        } else {
+          depth--
+          out += newline(depth) + c
+        }
+        break
+      case ',':
+        out += c + newline(depth)
+        break
+      case ':':
+        out += ': '
+        break
+      default:
+        out += c
+    }
+  }
+  return out
+}
+
+// encodeJSON serializes a marshal-prepared value to compact JSON. RawJSON
+// fragments are emitted verbatim; all other values use plain token forms. The
+// caller applies HTML escaping and indentation afterward, matching Go's
+// Marshal-then-indent pipeline.
+function encodeJSON(v: unknown): string {
+  if (v instanceof RawJSON) {
+    return v.raw
+  }
+  if (v === null || v === undefined) {
+    return 'null'
+  }
+  const t = typeof v
+  if (t === 'boolean') {
+    return v ? 'true' : 'false'
+  }
+  if (t === 'number') {
+    return JSON.stringify(v)
+  }
+  if (t === 'bigint') {
+    return (v as bigint).toString()
+  }
+  if (t === 'string') {
+    return JSON.stringify(v)
+  }
+  if (Array.isArray(v)) {
+    return '[' + v.map(encodeJSON).join(',') + ']'
+  }
+  if (t === 'object') {
+    const parts: string[] = []
+    for (const [key, value] of Object.entries(v as Record<string, unknown>)) {
+      parts.push(JSON.stringify(key) + ':' + encodeJSON(value))
+    }
+    return '{' + parts.join(',') + '}'
+  }
+  return JSON.stringify(v)
+}
+
+// parseNumberPreserving parses JSON while keeping number tokens as their exact
+// source literal (json.Number), so values beyond float64 precision such as
+// 9007199254740993 survive Decoder.UseNumber unchanged.
+function parseNumberPreserving(text: string): unknown {
+  let i = 0
+  const skipWs = () => {
+    while (i < text.length && ' \t\n\r'.includes(text[i])) {
+      i++
+    }
+  }
+  const fail = (): never => {
+    throw new SyntaxError({
+      Offset: i,
+      Message: `invalid character at offset ${i}`,
+    })
+  }
+  const parseString = (): string => {
+    let raw = text[i++] // opening quote
+    while (i < text.length) {
+      const c = text[i++]
+      raw += c
+      if (c === '\\') {
+        raw += text[i++] ?? ''
+      } else if (c === '"') {
+        return JSON.parse(raw) as string
+      }
+    }
+    return fail()
+  }
+  const parseValue = (): unknown => {
+    skipWs()
+    const c = text[i]
+    if (c === '{') {
+      i++
+      const obj: Record<string, unknown> = {}
+      skipWs()
+      if (text[i] === '}') {
+        i++
+        return obj
+      }
+      for (;;) {
+        skipWs()
+        if (text[i] !== '"') {
+          return fail()
+        }
+        const key = parseString()
+        skipWs()
+        if (text[i++] !== ':') {
+          return fail()
+        }
+        obj[key] = parseValue()
+        skipWs()
+        const sep = text[i++]
+        if (sep === '}') {
+          return obj
+        }
+        if (sep !== ',') {
+          return fail()
+        }
+      }
+    }
+    if (c === '[') {
+      i++
+      const arr: unknown[] = []
+      skipWs()
+      if (text[i] === ']') {
+        i++
+        return arr
+      }
+      for (;;) {
+        arr.push(parseValue())
+        skipWs()
+        const sep = text[i++]
+        if (sep === ']') {
+          return arr
+        }
+        if (sep !== ',') {
+          return fail()
+        }
+      }
+    }
+    if (c === '"') {
+      return parseString()
+    }
+    if (text.startsWith('true', i)) {
+      i += 4
+      return true
+    }
+    if (text.startsWith('false', i)) {
+      i += 5
+      return false
+    }
+    if (text.startsWith('null', i)) {
+      i += 4
+      return null
+    }
+    // Number: capture the exact literal as a json.Number string.
+    const start = i
+    if (text[i] === '-') {
+      i++
+    }
+    while (i < text.length && '0123456789.eE+-'.includes(text[i])) {
+      i++
+    }
+    if (i === start) {
+      return fail()
+    }
+    return text.slice(start, i)
+  }
+  const value = parseValue()
+  skipWs()
+  if (i !== text.length) {
+    return fail()
+  }
+  return value
+}
+
 export function Marshal(v: unknown): [$.Slice<number>, $.GoError] {
   return marshalBytes(v, '', '', true)
 }
@@ -273,15 +520,12 @@ function marshalBytes(
   escapeHTML: boolean,
 ): [$.Slice<number>, $.GoError] {
   try {
-    let text = JSON.stringify(marshalValue(v), null, indent)
+    let text = encodeJSON(marshalValue(v))
     if (escapeHTML) {
       text = escapeHTMLString(text)
     }
-    if (prefix !== '') {
-      text = text
-        .split('\n')
-        .map((line, idx) => (idx === 0 ? line : prefix + line))
-        .join('\n')
+    if (indent !== '' || prefix !== '') {
+      text = indentJSON(text, prefix, indent)
     }
     return [$.stringToBytes(text), null]
   } catch (err) {
@@ -294,7 +538,9 @@ export function Compact(
   src: $.Slice<number>,
 ): $.GoError {
   try {
-    const text = JSON.stringify(JSON.parse($.bytesToString(src)))
+    const source = $.bytesToString(src)
+    JSON.parse(source) // validate; Go's Compact rejects malformed input
+    const text = stripJSONWhitespace(source)
     const [, err] = $.pointerValue<bytes.Buffer>(dst).Write(
       $.stringToBytes(text),
     )
@@ -334,16 +580,14 @@ export function Indent(
   indent: string,
 ): $.GoError {
   try {
-    const text = JSON.stringify(JSON.parse($.bytesToString(src)), null, indent)
-    const prefixed =
-      prefix === '' ? text : (
-        text
-          .split('\n')
-          .map((line, idx) => (idx === 0 ? line : prefix + line))
-          .join('\n')
-      )
+    const source = $.bytesToString(src)
+    JSON.parse(source) // validate; Go's Indent rejects malformed input
+    const compact = stripJSONWhitespace(source)
+    // Go's Indent copies trailing whitespace after the value verbatim.
+    const trailing = source.slice(source.trimEnd().length)
+    const text = indentJSON(compact, prefix, indent) + trailing
     const [, err] = $.pointerValue<bytes.Buffer>(dst).Write(
-      $.stringToBytes(prefixed),
+      $.stringToBytes(text),
     )
     return err
   } catch (err) {
@@ -506,11 +750,13 @@ function marshalValue(v: unknown): unknown {
     if (err !== null) {
       throw new MarshalerError({ Err: err })
     }
+    const raw = $.bytesToString(data)
     try {
-      return JSON.parse($.bytesToString(data))
+      JSON.parse(raw) // validate; preserve exact token spelling below
     } catch (parseErr) {
       throw new MarshalerError({ Err: goError(parseErr) })
     }
+    return new RawJSON(stripJSONWhitespace(raw))
   }
   if ($.isVarRef(v)) {
     return marshalValue(v.value)
@@ -565,11 +811,16 @@ function marshalFieldValue(value: unknown, fieldType: unknown): unknown {
     if (target === null || target === undefined) {
       return null
     }
+    const raw = $.bytesToString(target as $.Slice<number>)
+    if (raw === '') {
+      return null
+    }
     try {
-      return JSON.parse($.bytesToString(target as $.Slice<number>))
+      JSON.parse(raw) // validate; preserve exact token spelling below
     } catch (err) {
       throw new MarshalerError({ Err: goError(err) })
     }
+    return new RawJSON(stripJSONWhitespace(raw))
   }
   return marshalValue(value)
 }
@@ -611,9 +862,10 @@ function validUnmarshalTarget(value: unknown): boolean {
 function parseJSON(data: $.Slice<number>, opts: decodeOptions): unknown {
   const text = $.bytesToString(data)
   if (opts.useNumber) {
-    return JSON.parse(text, (_key, value) =>
-      typeof value === 'number' ? String(value) : value,
-    )
+    // Preserve the exact source literal as json.Number so values beyond
+    // float64 precision survive (a JSON.parse reviver only sees the already
+    // rounded number).
+    return parseNumberPreserving(text)
   }
   return JSON.parse(text)
 }

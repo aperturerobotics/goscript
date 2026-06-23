@@ -401,6 +401,69 @@ describe('encoding/json override', () => {
     expect(escaped.String()).toBe('"\\u003ctag\\u003e\\u0026"')
   })
 
+  it('preserves number and string literal spelling through Compact and Indent', () => {
+    const compact = new bytes.Buffer()
+    expect(
+      Compact(
+        compact,
+        $.stringToBytes('{"n": 1e+00, "big": 9007199254740993, "s": "abc"}'),
+      ),
+    ).toBeNull()
+    expect(compact.String()).toBe(
+      '{"n":1e+00,"big":9007199254740993,"s":"abc"}',
+    )
+
+    const compact2 = new bytes.Buffer()
+    expect(Compact(compact2, $.stringToBytes('{"n":1e+00}'))).toBeNull()
+    expect(compact2.String()).toBe('{"n":1e+00}')
+
+    const indented = new bytes.Buffer()
+    expect(
+      Indent(indented, $.stringToBytes('{"a":1,"b":[2,3],"e":{}}'), '', '  '),
+    ).toBeNull()
+    expect(indented.String()).toBe(
+      '{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ],\n  "e": {}\n}',
+    )
+
+    // Go's Indent copies trailing whitespace after the value verbatim.
+    const trailing = new bytes.Buffer()
+    expect(
+      Indent(trailing, $.stringToBytes('{"a":1}\n'), '', '  '),
+    ).toBeNull()
+    expect(trailing.String()).toBe('{\n  "a": 1\n}\n')
+  })
+
+  it('keeps exact source literals for UseNumber beyond float64 precision', () => {
+    const reader = bytes.NewBufferString('{"big":9007199254740993,"f":1e+00}')!
+    const decoder = NewDecoder(reader)
+    decoder.UseNumber()
+    const target = $.varRef<Map<string, unknown> | null>(null)
+
+    expect(decoder.Decode(target)).toBeNull()
+    expect(target.value?.get('big')).toBe('9007199254740993')
+    expect(target.value?.get('f')).toBe('1e+00')
+  })
+
+  it('marshals a RawMessage field without normalizing its token spelling', () => {
+    class RawHolder {
+      public _fields = {
+        R: $.varRef($.stringToBytes('1e+00')),
+      }
+
+      static __typeInfo = $.registerStructType(
+        'test.RawHolder',
+        new RawHolder(),
+        [],
+        RawHolder,
+        [{ name: 'R', key: 'R', type: 'json.RawMessage', tag: 'json:"r"' }],
+      )
+    }
+
+    const [data, err] = Marshal(new RawHolder())
+    expect(err).toBeNull()
+    expect($.bytesToString(data)).toBe('{"r":1e+00}')
+  })
+
   it('decodes from readers and exposes raw message and number helpers', () => {
     const reader = bytes.NewBufferString('{"name":"Dana","age":28}')!
     const decoder = NewDecoder(reader)
