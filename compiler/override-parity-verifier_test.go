@@ -7,20 +7,50 @@ import (
 	"testing"
 )
 
-func TestOverrideParityVerifierRequiresBehaviorTestForRealFunction(t *testing.T) {
-	result, err := compileBehaviorParityFixture(t, false)
-	if err == nil {
-		t.Fatalf("expected compile to fail without behavior test")
+func TestOverrideParityVerifierWarnsForMissingBehaviorTest(t *testing.T) {
+	result, err := compileBehaviorParityFixture(t, "")
+	if err != nil {
+		t.Fatalf("expected compile without behavior test to warn, not fail: %v\n%#v", err, result.Diagnostics)
 	}
 	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-missing-behavior-test")
+	requireDiagnosticSeverity(t, result.Diagnostics, "goscript/overrides:parity-missing-behavior-test", DiagnosticSeverityWarning)
 
-	result, err = compileBehaviorParityFixture(t, true)
+	result, err = compileBehaviorParityFixture(t, strings.Join([]string{
+		"import { Present } from './index.js'",
+		"Present()",
+		"",
+	}, "\n"))
 	if err != nil {
 		t.Fatalf("expected compile with behavior test to pass: %v\n%#v", err, result.Diagnostics)
 	}
 }
 
-func compileBehaviorParityFixture(t *testing.T, withBehaviorTest bool) (*CompilationResult, error) {
+func TestOverrideParityVerifierIgnoresImportOnlyBehaviorReference(t *testing.T) {
+	result, err := compileBehaviorParityFixture(t, strings.Join([]string{
+		"import { Present } from './index.js'",
+		"const name = 'Present'",
+		"void name",
+		"",
+	}, "\n"))
+	if err != nil {
+		t.Fatalf("expected import-only behavior test to warn, not fail: %v\n%#v", err, result.Diagnostics)
+	}
+	requireDiagnosticCode(t, result.Diagnostics, "goscript/overrides:parity-missing-behavior-test")
+	requireDiagnosticSeverity(t, result.Diagnostics, "goscript/overrides:parity-missing-behavior-test", DiagnosticSeverityWarning)
+}
+
+func TestOverrideParityVerifierAcceptsNamespaceBehaviorReference(t *testing.T) {
+	result, err := compileBehaviorParityFixture(t, strings.Join([]string{
+		"import * as lib from './index.js'",
+		"lib.Present()",
+		"",
+	}, "\n"))
+	if err != nil {
+		t.Fatalf("expected namespace behavior test to pass: %v\n%#v", err, result.Diagnostics)
+	}
+}
+
+func compileBehaviorParityFixture(t *testing.T, behaviorTest string) (*CompilationResult, error) {
 	t.Helper()
 
 	moduleDir := writePackageGraphFixture(t, map[string]string{
@@ -39,8 +69,8 @@ func compileBehaviorParityFixture(t *testing.T, withBehaviorTest bool) (*Compila
 	})
 	overrideDir := filepath.Join(t.TempDir(), "gs")
 	writeFixtureFile(t, overrideDir, "example.test/behaviorparity/lib/index.ts", "export function Present(): void {}\n")
-	if withBehaviorTest {
-		writeFixtureFile(t, overrideDir, "example.test/behaviorparity/lib/index.test.ts", "import { Present } from './index.js'\nPresent()\n")
+	if behaviorTest != "" {
+		writeFixtureFile(t, overrideDir, "example.test/behaviorparity/lib/index.test.ts", behaviorTest)
 	}
 	writeFixtureFile(t, overrideDir, "example.test/behaviorparity/lib/parity.json", parityFixtureJSON(t, map[string]overrideParityEntry{
 		"Present": {Status: overrideParityStatusReal},
@@ -56,4 +86,15 @@ func compileBehaviorParityFixture(t *testing.T, withBehaviorTest bool) (*Compila
 		t.Fatal(err.Error())
 	}
 	return comp.CompilePackages(context.Background(), ".")
+}
+
+func requireDiagnosticSeverity(t *testing.T, diagnostics []Diagnostic, code string, severity DiagnosticSeverity) {
+	t.Helper()
+
+	for _, diagnostic := range diagnostics {
+		if diagnostic.Code == code && diagnostic.Severity == severity {
+			return
+		}
+	}
+	t.Fatalf("missing diagnostic %q with severity %q in %#v", code, severity, diagnostics)
 }

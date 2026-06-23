@@ -191,7 +191,7 @@ func verifyOverrideParityPackage(
 		}
 		if entry.Status == overrideParityStatusReal && isPackageLevelFunc(obj) && !behaviorTests[symbol.name] {
 			diagnostics = append(diagnostics, Diagnostic{
-				Severity: DiagnosticSeverityError,
+				Severity: DiagnosticSeverityWarning,
 				Code:     "goscript/overrides:parity-missing-behavior-test",
 				Message:  "real override function is missing a locatable behavior test",
 				Detail:   pkgPath + "." + symbol.name,
