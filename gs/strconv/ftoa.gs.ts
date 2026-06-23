@@ -1,12 +1,85 @@
 import * as $ from "@goscript/builtin/index.js";
 
+const hexConv = new DataView(new ArrayBuffer(8));
+
+// formatHexFloat renders a non-negative finite float in Go's hexadecimal
+// floating-point form: a normalized leading hex digit (1, or 0 for zero), an
+// optional hex fraction, and a binary exponent printed with sign and at least
+// two digits. prec < 0 emits the shortest exact fraction; prec >= 0 emits
+// exactly prec fraction digits with round-half-to-even and carry renormalization.
+// upper selects the 0X/P uppercase form.
+function formatHexFloat(f: number, prec: number, upper: boolean): string {
+	hexConv.setFloat64(0, f);
+	const hi = hexConv.getUint32(0);
+	const lo = hexConv.getUint32(4);
+	const biasedExp = (hi >>> 20) & 0x7ff;
+	let frac = (BigInt(hi & 0xfffff) << 32n) | BigInt(lo >>> 0);
+
+	const xPrefix = upper ? "0X" : "0x";
+	const pChar = upper ? "P" : "p";
+
+	const assemble = (intDigit: string, fracHex: string, exp: number): string => {
+		if (upper) {
+			fracHex = fracHex.toUpperCase();
+		}
+		const expAbs = Math.abs(exp);
+		const expStr = (exp < 0 ? "-" : "+") + String(expAbs).padStart(2, "0");
+		const mantissa = fracHex.length > 0 ? intDigit + "." + fracHex : intDigit;
+		return xPrefix + mantissa + pChar + expStr;
+	};
+
+	if (biasedExp === 0 && frac === 0n) {
+		const fracHex = prec > 0 ? "0".repeat(prec) : "";
+		return assemble("0", fracHex, 0);
+	}
+
+	// Normalize to a 52-bit fraction with an implicit leading 1.
+	let exp: number;
+	if (biasedExp === 0) {
+		// Subnormal: shift the leading set bit up to bit 52.
+		let k = 51;
+		while ((frac & (1n << BigInt(k))) === 0n) {
+			k--;
+		}
+		exp = k - 1074;
+		frac = (frac << BigInt(52 - k)) & ((1n << 52n) - 1n);
+	} else {
+		exp = biasedExp - 1023;
+	}
+
+	let fracHex: string;
+	if (prec < 0) {
+		fracHex = frac.toString(16).padStart(13, "0").replace(/0+$/, "");
+	} else if (prec >= 13) {
+		fracHex = frac.toString(16).padStart(13, "0").padEnd(prec, "0");
+	} else {
+		const keepBits = BigInt(prec * 4);
+		const droppedBits = 52n - keepBits;
+		let kept = frac >> droppedBits;
+		const remainder = frac & ((1n << droppedBits) - 1n);
+		const half = 1n << (droppedBits - 1n);
+		if (remainder > half || (remainder === half && (kept & 1n) === 1n)) {
+			kept += 1n;
+		}
+		if (kept >= 1n << keepBits) {
+			// Carry past the kept digits renormalizes: the integer digit would
+			// become 2, so bump the exponent and zero the fraction.
+			exp += 1;
+			kept = 0n;
+		}
+		fracHex = prec === 0 ? "" : kept.toString(16).padStart(prec, "0");
+	}
+
+	return assemble("1", fracHex, exp);
+}
+
 // FormatFloat converts the floating-point number f to a string,
 // according to the format fmt and precision prec. It rounds the
 // result assuming that the original was obtained from a floating-point
 // value of bitSize bits (32 for float32, 64 for float64).
 export function FormatFloat(f: number, fmt: number, prec: number, bitSize: number): string {
 	const fmtChar = String.fromCharCode(fmt);
-	
+
 	// Handle special cases
 	if (isNaN(f)) {
 		return "NaN";
@@ -17,12 +90,18 @@ export function FormatFloat(f: number, fmt: number, prec: number, bitSize: numbe
 	if (f === -Infinity) {
 		return "-Inf";
 	}
-	
+
 	// Convert to appropriate precision for float32
 	if (bitSize === 32) {
 		f = Math.fround(f);
 	}
-	
+
+	if (fmtChar === 'x' || fmtChar === 'X') {
+		hexConv.setFloat64(0, f);
+		const neg = (hexConv.getUint32(0) >>> 31) === 1;
+		return (neg ? "-" : "") + formatHexFloat(Math.abs(f), prec, fmtChar === 'X');
+	}
+
 	switch (fmtChar.toLowerCase()) {
 		case 'e':
 			// Exponential notation
@@ -30,25 +109,21 @@ export function FormatFloat(f: number, fmt: number, prec: number, bitSize: numbe
 				return f.toExponential();
 			}
 			return f.toExponential(prec);
-			
+
 		case 'f':
 			// Fixed-point notation
 			if (prec < 0) {
 				return f.toString();
 			}
 			return f.toFixed(prec);
-			
+
 		case 'g':
 			// Use the more compact of 'e' or 'f'
 			if (prec < 0) {
 				return f.toPrecision();
 			}
 			return f.toPrecision(prec + 1);
-			
-		case 'x':
-			// Hexadecimal notation (simplified)
-			return f.toString(16);
-			
+
 		default:
 			// Default to 'g' format
 			if (prec < 0) {
