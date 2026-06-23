@@ -327,10 +327,11 @@ export function Mul(x: Word64, y: Word64): [Word64, Word64] {
 }
 
 export function Mul32(x: number, y: number): [number, number] {
-  // For 32-bit multiplication, we can use JavaScript's number precision
-  const result = (x >>> 0) * (y >>> 0)
-  const hi = Math.floor(result / 0x100000000) >>> 0
-  const lo = result >>> 0
+  // The product of two uint32 needs 64 bits, beyond the 53-bit mantissa of a
+  // JS number, so multiply exactly via bigint before splitting hi/lo.
+  const product = BigInt(x >>> 0) * BigInt(y >>> 0)
+  const hi = Number((product >> 32n) & 0xffffffffn)
+  const lo = Number(product & 0xffffffffn)
   return [hi, lo]
 }
 
