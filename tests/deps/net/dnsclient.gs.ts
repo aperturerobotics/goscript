@@ -192,13 +192,13 @@ export function reverseaddr(addr: string): [string, $.GoError] {
 		return ["", $.interfaceValue<$.GoError>(new __goscript_net.DNSError({Err: "unrecognized address", Name: addr}), "*net.DNSError")]
 	}
 	if (__goscript_ip.IP_To4(ip) != null) {
-		return [((((((strconv.Itoa($.int(ip![15])) + ".") + strconv.Itoa($.int(ip![14]))) + ".") + strconv.Itoa($.int(ip![13]))) + ".") + strconv.Itoa($.int(ip![12]))) + ".in-addr.arpa.", null]
+		return [((((((strconv.Itoa($.int($.arrayIndex(ip!, 15))) + ".") + strconv.Itoa($.int($.arrayIndex(ip!, 14)))) + ".") + strconv.Itoa($.int($.arrayIndex(ip!, 13)))) + ".") + strconv.Itoa($.int($.arrayIndex(ip!, 12)))) + ".in-addr.arpa.", null]
 	}
 	// Must be IPv6
 	let buf: $.Slice<number> = $.makeSlice<number>(0, ($.len((ip as __goscript_ip.IP)) * 4) + 9, "byte")
 	// Add it, in reverse, to the buffer
 	for (let i = $.len((ip as __goscript_ip.IP)) - 1; i >= 0; i--) {
-		let v = $.uint(ip![i], 8)
+		let v = $.uint($.arrayIndex(ip!, i), 8)
 		buf = $.append(buf, $.uint($.indexStringOrBytes("0123456789abcdef", v & 0xF), 8), $.uint(46, 8), $.uint($.indexStringOrBytes("0123456789abcdef", $.uintShr(v, 4, 8)), 8), $.uint(46, 8))
 	}
 	// Append "ip6.arpa." and return (buf already has the final .)
@@ -211,8 +211,8 @@ export function equalASCIIName(x: dnsmessage.Name, y: dnsmessage.Name): boolean 
 		return false
 	}
 	for (let i = 0; i < $.int(x.Length); i++) {
-		let a = $.uint(x.Data[i], 8)
-		let b = $.uint(y.Data[i], 8)
+		let a = $.uint($.arrayIndex(x.Data, i), 8)
+		let b = $.uint($.arrayIndex(y.Data, i), 8)
 		if ((65 <= a) && (a <= 90)) {
 			a = a + ($.uint(0x20, 8))
 		}
@@ -316,18 +316,18 @@ export function byPriorityWeight_shuffleByWeight(addrs: byPriorityWeight): void 
 		let s = 0
 		let n = randIntn(sum)
 		for (let __goscriptRangeTarget1 = addrs, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
-			s = s + ($.int($.pointerValue<SRV>(addrs![i]).Weight))
+			s = s + ($.int($.pointerValue<SRV>($.arrayIndex(addrs!, i)).Weight))
 			if (s > n) {
 				if (i > 0) {
-					let __goscriptAssign0_0: SRV | $.VarRef<SRV> | null = addrs![i]
-					let __goscriptAssign0_1: SRV | $.VarRef<SRV> | null = addrs![0]
+					let __goscriptAssign0_0: SRV | $.VarRef<SRV> | null = $.arrayIndex(addrs!, i)
+					let __goscriptAssign0_1: SRV | $.VarRef<SRV> | null = $.arrayIndex(addrs!, 0)
 					addrs![0] = __goscriptAssign0_0
 					addrs![i] = __goscriptAssign0_1
 				}
 				break
 			}
 		}
-		sum = sum - ($.int($.pointerValue<SRV>(addrs![0]).Weight))
+		sum = sum - ($.int($.pointerValue<SRV>($.arrayIndex(addrs!, 0)).Weight))
 		addrs = ($.goSlice(addrs, 1, undefined) as byPriorityWeight)
 	}
 }
@@ -344,7 +344,7 @@ export async function byPriorityWeight_sort(addrs: byPriorityWeight): globalThis
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "net.SRV" }, { kind: $.TypeKind.Pointer, elemType: "net.SRV" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 	let i = 0
 	for (let j = 1; j < $.len((addrs as byPriorityWeight)); j++) {
-		if ($.uint($.pointerValue<SRV>(addrs![i]).Priority, 16) != $.uint($.pointerValue<SRV>(addrs![j]).Priority, 16)) {
+		if ($.uint($.pointerValue<SRV>($.arrayIndex(addrs!, i)).Priority, 16) != $.uint($.pointerValue<SRV>($.arrayIndex(addrs!, j)).Priority, 16)) {
 			byPriorityWeight_shuffleByWeight($.goSlice(addrs, i, j))
 			i = j
 		}
@@ -357,8 +357,8 @@ export type byPref = $.Slice<MX | $.VarRef<MX> | null>
 export async function byPref_sort(s: byPref): globalThis.Promise<void> {
 	for (let __goscriptRangeTarget2 = s, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let j = randIntn(i + 1)
-		let __goscriptAssign1_0: MX | $.VarRef<MX> | null = s![j]
-		let __goscriptAssign1_1: MX | $.VarRef<MX> | null = s![i]
+		let __goscriptAssign1_0: MX | $.VarRef<MX> | null = $.arrayIndex(s!, j)
+		let __goscriptAssign1_1: MX | $.VarRef<MX> | null = $.arrayIndex(s!, i)
 		s![i] = __goscriptAssign1_0
 		s![j] = __goscriptAssign1_1
 	}

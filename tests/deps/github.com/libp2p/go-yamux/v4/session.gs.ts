@@ -1318,7 +1318,7 @@ export class Session {
 				}
 
 				{
-					let __goscriptShadow4 = await __goscript_get_handlers()![mt]!(s, hdr)
+					let __goscriptShadow4 = await $.arrayIndex(__goscript_get_handlers()!, mt)!(s, hdr)
 					if (__goscriptShadow4 != null) {
 						const __goscriptReturn9: $.GoError = __goscriptShadow4
 						err = __goscriptReturn9

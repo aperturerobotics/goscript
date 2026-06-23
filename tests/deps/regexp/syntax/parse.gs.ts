@@ -215,7 +215,7 @@ export class parser {
 		// Scan down to find pseudo-operator (.
 		// There are no | above (.
 		let i = $.len($.pointerValue<parser>(p).stack)
-		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<parser>(p).stack![i - 1]).Op < 128)) {
+		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op < 128)) {
 			i--
 		}
 		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
@@ -224,7 +224,7 @@ export class parser {
 		// Make sure top class is clean.
 		// All the others already are (see swapVerticalBar).
 		if ($.len(subs) > 0) {
-			cleanAlt(subs![$.len(subs) - 1])
+			cleanAlt($.arrayIndex(subs!, $.len(subs) - 1))
 		}
 
 		// Empty alternate is special case
@@ -303,13 +303,13 @@ export class parser {
 			case 13:
 			case 14:
 			{
-				size = $.int64Add(2, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int64Add(2, parser.prototype.calcSize.call(p, $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0), false))
 				break
 			}
 			case 15:
 			case 16:
 			{
-				size = $.int64Add(1, parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false))
+				size = $.int64Add(1, parser.prototype.calcSize.call(p, $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0), false))
 				break
 			}
 			case 18:
@@ -333,7 +333,7 @@ export class parser {
 			}
 			case 17:
 			{
-				let sub = parser.prototype.calcSize.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0], false)
+				let sub = parser.prototype.calcSize.call(p, $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0), false)
 				if ($.pointerValue<__goscript_regexp.Regexp>(re).Max == -1) {
 					if ($.pointerValue<__goscript_regexp.Regexp>(re).Min == 0) {
 						size = $.int64Add(2, sub)
@@ -426,7 +426,7 @@ export class parser {
 	public collapse(subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, op: __goscript_regexp.Op): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
 		const p: parser | $.VarRef<parser> | null = this
 		if ($.len(subs) == 1) {
-			return subs![0]
+			return $.arrayIndex(subs!, 0)
 		}
 		let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.newRegexp.call(p, $.uint(op, 8))
 		$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub0, undefined, 0)
@@ -443,7 +443,7 @@ export class parser {
 			$.pointerValue<__goscript_regexp.Regexp>(re).Sub = parser.prototype.factor.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub)
 			if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) == 1) {
 				let old: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re
-				re = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]
+				re = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
 				parser.prototype.reuse.call(p, old)
 			}
 		}
@@ -456,7 +456,7 @@ export class parser {
 
 		// Scan down to find pseudo-operator | or (.
 		let i = $.len($.pointerValue<parser>(p).stack)
-		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<parser>(p).stack![i - 1]).Op < 128)) {
+		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op < 128)) {
 			i--
 		}
 		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
@@ -491,12 +491,12 @@ export class parser {
 			let istr: $.Slice<number> = null as $.Slice<number>
 			let iflags: Flags = 0
 			if (i < $.len(sub)) {
-				let __goscriptTuple1: any = parser.prototype.leadingString.call(p, sub![i])
+				let __goscriptTuple1: any = parser.prototype.leadingString.call(p, $.arrayIndex(sub!, i))
 				istr = __goscriptTuple1[0]
 				iflags = $.uint(__goscriptTuple1[1], 16)
 				if ($.uint(iflags, 16) == $.uint(strflags, 16)) {
 					let same = 0
-					while (((same < $.len(str)) && (same < $.len(istr))) && ($.int(str![same], 32) == $.int(istr![same], 32))) {
+					while (((same < $.len(str)) && (same < $.len(istr))) && ($.int($.arrayIndex(str!, same), 32) == $.int($.arrayIndex(istr!, same), 32))) {
 						same++
 					}
 					if (same > 0) {
@@ -517,7 +517,7 @@ export class parser {
 			} else {
 				if (i == (start + 1)) {
 					// Just one: don't bother factoring.
-					out = $.append(out, sub![start])
+					out = $.append(out, $.arrayIndex(sub!, start))
 				} else {
 					// Construct factored form: prefix(suffix1|suffix2|...)
 					let prefix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.newRegexp.call(p, $.uint(3, 8))
@@ -525,8 +525,8 @@ export class parser {
 					$.pointerValue<__goscript_regexp.Regexp>(prefix).Rune = $.appendSlice($.goSlice($.pointerValue<__goscript_regexp.Regexp>(prefix).Rune, undefined, 0), str)
 
 					for (let j = start; j < i; j++) {
-						sub![j] = parser.prototype.removeLeadingString.call(p, sub![j], $.len(str))
-						parser.prototype.checkLimits.call(p, sub![j])
+						sub![j] = parser.prototype.removeLeadingString.call(p, $.arrayIndex(sub!, j), $.len(str))
+						parser.prototype.checkLimits.call(p, $.arrayIndex(sub!, j))
 					}
 					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
 
@@ -562,8 +562,8 @@ export class parser {
 			// Invariant: sub[start:i] consists of regexps that all begin with ifirst.
 			let ifirst: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = null as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null
 			if (i < $.len(sub)) {
-				ifirst = parser.prototype.leadingRegexp.call(p, sub![i])
-				if (((first != null) && __goscript_regexp.Regexp.prototype.Equal.call(first, ifirst)) && (isCharClass(first) || ((($.uint($.pointerValue<__goscript_regexp.Regexp>(first).Op, 8) == $.uint(17, 8)) && ($.pointerValue<__goscript_regexp.Regexp>(first).Min == $.pointerValue<__goscript_regexp.Regexp>(first).Max)) && isCharClass($.pointerValue<__goscript_regexp.Regexp>(first).Sub![0])))) {
+				ifirst = parser.prototype.leadingRegexp.call(p, $.arrayIndex(sub!, i))
+				if (((first != null) && __goscript_regexp.Regexp.prototype.Equal.call(first, ifirst)) && (isCharClass(first) || ((($.uint($.pointerValue<__goscript_regexp.Regexp>(first).Op, 8) == $.uint(17, 8)) && ($.pointerValue<__goscript_regexp.Regexp>(first).Min == $.pointerValue<__goscript_regexp.Regexp>(first).Max)) && isCharClass($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(first).Sub!, 0))))) {
 					continue
 				}
 			}
@@ -576,14 +576,14 @@ export class parser {
 			} else {
 				if (i == (start + 1)) {
 					// Just one: don't bother factoring.
-					out = $.append(out, sub![start])
+					out = $.append(out, $.arrayIndex(sub!, start))
 				} else {
 					// Construct factored form: prefix(suffix1|suffix2|...)
 					let prefix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = first
 					for (let j = start; j < i; j++) {
 						let reuse = j != start
-						sub![j] = parser.prototype.removeLeadingRegexp.call(p, sub![j], reuse)
-						parser.prototype.checkLimits.call(p, sub![j])
+						sub![j] = parser.prototype.removeLeadingRegexp.call(p, $.arrayIndex(sub!, j), reuse)
+						parser.prototype.checkLimits.call(p, $.arrayIndex(sub!, j))
 					}
 					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
 
@@ -609,7 +609,7 @@ export class parser {
 			//
 			// Invariant: sub[start:i] consists of regexps that are either
 			// literal runes or character classes.
-			if ((i < $.len(sub)) && isCharClass(sub![i])) {
+			if ((i < $.len(sub)) && isCharClass($.arrayIndex(sub!, i))) {
 				continue
 			}
 
@@ -618,33 +618,33 @@ export class parser {
 			if (i == start) {
 			} else {
 				if (i == (start + 1)) {
-					out = $.append(out, sub![start])
+					out = $.append(out, $.arrayIndex(sub!, start))
 				} else {
 					// Make new char class.
 					// Start with most complex regexp in sub[start].
 					let max = start
 					for (let j = start + 1; j < i; j++) {
-						if (($.pointerValue<__goscript_regexp.Regexp>(sub![max]).Op < $.pointerValue<__goscript_regexp.Regexp>(sub![j]).Op) || (($.uint($.pointerValue<__goscript_regexp.Regexp>(sub![max]).Op, 8) == $.uint($.pointerValue<__goscript_regexp.Regexp>(sub![j]).Op, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(sub![max]).Rune) < $.len($.pointerValue<__goscript_regexp.Regexp>(sub![j]).Rune)))) {
+						if (($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op < $.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op) || (($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op, 8) == $.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Rune) < $.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Rune)))) {
 							max = j
 						}
 					}
-					let __goscriptAssign0_0: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = sub![max]
-					let __goscriptAssign0_1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = sub![start]
+					let __goscriptAssign0_0: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex(sub!, max)
+					let __goscriptAssign0_1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex(sub!, start)
 					sub![start] = __goscriptAssign0_0
 					sub![max] = __goscriptAssign0_1
 
 					for (let j = start + 1; j < i; j++) {
-						mergeCharClass(sub![start], sub![j])
-						parser.prototype.reuse.call(p, sub![j])
+						mergeCharClass($.arrayIndex(sub!, start), $.arrayIndex(sub!, j))
+						parser.prototype.reuse.call(p, $.arrayIndex(sub!, j))
 					}
-					cleanAlt(sub![start])
-					out = $.append(out, sub![start])
+					cleanAlt($.arrayIndex(sub!, start))
+					out = $.append(out, $.arrayIndex(sub!, start))
 				}
 			}
 
 			// ... and then emit sub[i].
 			if (i < $.len(sub)) {
-				out = $.append(out, sub![i])
+				out = $.append(out, $.arrayIndex(sub!, i))
 			}
 			start = i + 1
 		}
@@ -654,10 +654,10 @@ export class parser {
 		start = 0
 		out = $.goSlice(sub, undefined, 0)
 		for (let __goscriptRangeTarget6 = sub, i = 0; i < $.len(__goscriptRangeTarget6); i++) {
-			if ((((i + 1) < $.len(sub)) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub![i]).Op, 8) == $.uint(2, 8))) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub![i + 1]).Op, 8) == $.uint(2, 8))) {
+			if ((((i + 1) < $.len(sub)) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, i)).Op, 8) == $.uint(2, 8))) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, i + 1)).Op, 8) == $.uint(2, 8))) {
 				continue
 			}
-			out = $.append(out, sub![i])
+			out = $.append(out, $.arrayIndex(sub!, i))
 		}
 		sub = out
 
@@ -670,7 +670,7 @@ export class parser {
 			return null
 		}
 		if (($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(18, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 0)) {
-			let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]
+			let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8) == $.uint(2, 8)) {
 				return null
 			}
@@ -682,7 +682,7 @@ export class parser {
 	public leadingString(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): [$.Slice<number>, Flags] {
 		const p: parser | $.VarRef<parser> | null = this
 		if (($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(18, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 0)) {
-			re = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]
+			re = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
 		}
 		if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) != $.uint(3, 8)) {
 			return [null, $.uint(0, 16)]
@@ -709,8 +709,8 @@ export class parser {
 			return false
 		}
 
-		let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 1]
-		let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 2]
+		let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
+		let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 2)
 		if ((($.uint($.pointerValue<__goscript_regexp.Regexp>(re1).Op, 8) != $.uint(3, 8)) || ($.uint($.pointerValue<__goscript_regexp.Regexp>(re2).Op, 8) != $.uint(3, 8))) || ($.uint(($.pointerValue<__goscript_regexp.Regexp>(re1).Flags & 1), 16) != $.uint(($.pointerValue<__goscript_regexp.Regexp>(re2).Flags & 1), 16))) {
 			return false
 		}
@@ -735,7 +735,7 @@ export class parser {
 		let p: parser | $.VarRef<parser> | null = this
 		let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).free
 		if (re != null) {
-			$.pointerValue<parser>(p).free = $.pointerValue<__goscript_regexp.Regexp>(re).Sub0[0]
+			$.pointerValue<parser>(p).free = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub0, 0)
 			$.assignStruct($.pointerValue<__goscript_regexp.Regexp>(re), $.markAsStructValue(new __goscript_regexp.Regexp()))
 		} else {
 			re = new __goscript_regexp.Regexp()
@@ -1346,8 +1346,8 @@ export class parser {
 		if (n < 2) {
 			return $.interfaceValue<$.GoError>(new Error({Code: "unexpected )", Expr: $.pointerValue<parser>(p).wholeRegexp}), "*syntax.Error")
 		}
-		let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 1]
-		let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 2]
+		let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
+		let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 2)
 		$.pointerValue<parser>(p).stack = $.goSlice($.pointerValue<parser>(p).stack, undefined, n - 2)
 		if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re2).Op, 8) != $.uint(128, 8)) {
 			return $.interfaceValue<$.GoError>(new Error({Code: "unexpected )", Expr: $.pointerValue<parser>(p).wholeRegexp}), "*syntax.Error")
@@ -1476,18 +1476,18 @@ export class parser {
 	public push(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
 		let p: parser | $.VarRef<parser> | null = this
 		$.pointerValue<parser>(p).numRunes = $.pointerValue<parser>(p).numRunes + ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune))
-		if ((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2)) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32))) {
+		if ((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2)) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32))) {
 			// Single rune.
-			if (parser.prototype.maybeConcat.call(p, $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32), $.uint($.pointerValue<parser>(p).flags & ~(1), 16))) {
+			if (parser.prototype.maybeConcat.call(p, $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32), $.uint($.pointerValue<parser>(p).flags & ~(1), 16))) {
 				return null
 			}
 			$.pointerValue<__goscript_regexp.Regexp>(re).Op = $.uint(3, 8)
 			$.pointerValue<__goscript_regexp.Regexp>(re).Rune = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune, undefined, 1)
 			$.pointerValue<__goscript_regexp.Regexp>(re).Flags = $.uint($.pointerValue<parser>(p).flags & ~(1), 16)
 		} else {
-			if ((((((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 4)) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32))) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![2], 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![3], 32))) && ($.int(unicode.SimpleFold($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32)), 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![2], 32))) && ($.int(unicode.SimpleFold($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![2], 32)), 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32))) || ((((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2)) && ($.int(($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0] + 1), 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32))) && ($.int(unicode.SimpleFold($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32)), 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32))) && ($.int(unicode.SimpleFold($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32)), 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32)))) {
+			if ((((((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 4)) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 2), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 3), 32))) && ($.int(unicode.SimpleFold($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32)), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 2), 32))) && ($.int(unicode.SimpleFold($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 2), 32)), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32))) || ((((($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(4, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2)) && ($.int(($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0) + 1), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32))) && ($.int(unicode.SimpleFold($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32)), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32))) && ($.int(unicode.SimpleFold($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32)), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32)))) {
 				// Case-insensitive rune like [Aa] or [Δδ].
-				if (parser.prototype.maybeConcat.call(p, $.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32), $.uint($.pointerValue<parser>(p).flags | 1, 16))) {
+				if (parser.prototype.maybeConcat.call(p, $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32), $.uint($.pointerValue<parser>(p).flags | 1, 16))) {
 					return null
 				}
 
@@ -1510,7 +1510,7 @@ export class parser {
 		const p: parser | $.VarRef<parser> | null = this
 		if (($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(18, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 0)) {
 			if (reuse) {
-				parser.prototype.reuse.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0])
+				parser.prototype.reuse.call(p, $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0))
 			}
 			$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub, undefined, $.copy($.pointerValue<__goscript_regexp.Regexp>(re).Sub, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub, 1, undefined)))
 			switch ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub)) {
@@ -1523,7 +1523,7 @@ export class parser {
 				case 1:
 				{
 					let old: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re
-					re = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]
+					re = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
 					parser.prototype.reuse.call(p, old)
 					break
 				}
@@ -1541,7 +1541,7 @@ export class parser {
 		if (($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(18, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) > 0)) {
 			// Removing a leading string in a concatenation
 			// might simplify the concatenation.
-			let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0]
+			let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
 			sub = parser.prototype.removeLeadingString.call(p, sub, n)
 			$.pointerValue<__goscript_regexp.Regexp>(re).Sub![0] = sub
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8) == $.uint(2, 8)) {
@@ -1557,7 +1557,7 @@ export class parser {
 					case 2:
 					{
 						let old: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re
-						re = $.pointerValue<__goscript_regexp.Regexp>(re).Sub![1]
+						re = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 1)
 						parser.prototype.reuse.call(p, old)
 						break
 					}
@@ -1600,7 +1600,7 @@ export class parser {
 		if (n == 0) {
 			return ["", $.interfaceValue<$.GoError>(new Error({Code: "missing argument to repetition operator", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 		}
-		let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 1]
+		let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
 		if ($.pointerValue<__goscript_regexp.Regexp>(sub).Op >= 128) {
 			return ["", $.interfaceValue<$.GoError>(new Error({Code: "missing argument to repetition operator", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 		}
@@ -1635,9 +1635,9 @@ export class parser {
 		// If above and below vertical bar are literal or char class,
 		// can merge into a single char class.
 		let n = $.len($.pointerValue<parser>(p).stack)
-		if ((((n >= 3) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.pointerValue<parser>(p).stack![n - 2]).Op, 8) == $.uint(129, 8))) && isCharClass($.pointerValue<parser>(p).stack![n - 1])) && isCharClass($.pointerValue<parser>(p).stack![n - 3])) {
-			let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 1]
-			let re3: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 3]
+		if ((((n >= 3) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, n - 2)).Op, 8) == $.uint(129, 8))) && isCharClass($.arrayIndex($.pointerValue<parser>(p).stack!, n - 1))) && isCharClass($.arrayIndex($.pointerValue<parser>(p).stack!, n - 3))) {
+			let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
+			let re3: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 3)
 			// Make re3 the more complex of the two.
 			if ($.pointerValue<__goscript_regexp.Regexp>(re1).Op > $.pointerValue<__goscript_regexp.Regexp>(re3).Op) {
 				let __goscriptAssign5_0: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re3
@@ -1653,13 +1653,13 @@ export class parser {
 		}
 
 		if (n >= 2) {
-			let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 1]
-			let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.pointerValue<parser>(p).stack![n - 2]
+			let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
+			let re2: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 2)
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re2).Op, 8) == $.uint(129, 8)) {
 				if (n >= 3) {
 					// Now out of reach.
 					// Clean opportunistically.
-					cleanAlt($.pointerValue<parser>(p).stack![n - 3])
+					cleanAlt($.arrayIndex($.pointerValue<parser>(p).stack!, n - 3))
 				}
 				$.pointerValue<parser>(p).stack![n - 2] = re1
 				$.pointerValue<parser>(p).stack![n - 1] = re2
@@ -1759,7 +1759,7 @@ export class ranges {
 		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
 		i = i * (2)
 		j = j * (2)
-		return (p![i] < p![j]) || (($.int(p![i], 32) == $.int(p![j], 32)) && (p![i + 1] > p![j + 1]))
+		return ($.arrayIndex(p!, i) < $.arrayIndex(p!, j)) || (($.int($.arrayIndex(p!, i), 32) == $.int($.arrayIndex(p!, j), 32)) && ($.arrayIndex(p!, i + 1) > $.arrayIndex(p!, j + 1)))
 	}
 
 	public Swap(i: number, j: number): void {
@@ -1767,10 +1767,10 @@ export class ranges {
 		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
 		i = i * (2)
 		j = j * (2)
-		let __goscriptAssign6_0: number = $.int(p![j], 32)
-		let __goscriptAssign6_1: number = $.int(p![j + 1], 32)
-		let __goscriptAssign6_2: number = $.int(p![i], 32)
-		let __goscriptAssign6_3: number = $.int(p![i + 1], 32)
+		let __goscriptAssign6_0: number = $.int($.arrayIndex(p!, j), 32)
+		let __goscriptAssign6_1: number = $.int($.arrayIndex(p!, j + 1), 32)
+		let __goscriptAssign6_2: number = $.int($.arrayIndex(p!, i), 32)
+		let __goscriptAssign6_3: number = $.int($.arrayIndex(p!, i + 1), 32)
 		p![i] = __goscriptAssign6_0
 		p![i + 1] = __goscriptAssign6_1
 		p![j] = __goscriptAssign6_2
@@ -1908,12 +1908,12 @@ export function cleanAlt(re: __goscript_regexp.Regexp | $.VarRef<__goscript_rege
 		case 4:
 		{
 			$.pointerValue<__goscript_regexp.Regexp>(re).Rune = cleanClass($.pointerValue<__goscript_regexp.Regexp>(re)._fields.Rune)
-			if ((($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int(0, 32))) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32) == $.int(unicode.MaxRune, 32))) {
+			if ((($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int(0, 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32) == $.int(unicode.MaxRune, 32))) {
 				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = null
 				$.pointerValue<__goscript_regexp.Regexp>(re).Op = $.uint(6, 8)
 				return
 			}
-			if ((((($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 4) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int(0, 32))) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![1], 32) == $.int((10 - 1), 32))) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![2], 32) == $.int((10 + 1), 32))) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![3], 32) == $.int(unicode.MaxRune, 32))) {
+			if ((((($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 4) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int(0, 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32) == $.int((10 - 1), 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 2), 32) == $.int((10 + 1), 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 3), 32) == $.int(unicode.MaxRune, 32))) {
 				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = null
 				$.pointerValue<__goscript_regexp.Regexp>(re).Op = $.uint(5, 8)
 				return
@@ -2321,7 +2321,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 			__defer[Symbol.dispose]()
 			return [__goscriptReturn16[0], err]
 		}
-		const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [p.value.stack![0], null]
+		const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [$.arrayIndex(p.value.stack!, 0), null]
 		err = __goscriptReturn17[1]
 		__defer[Symbol.dispose]()
 		return [__goscriptReturn17[0], err]
@@ -2353,13 +2353,13 @@ export function matchRune(re: __goscript_regexp.Regexp | $.VarRef<__goscript_reg
 	switch ($.pointerValue<__goscript_regexp.Regexp>(re).Op) {
 		case 3:
 		{
-			return ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 1) && ($.int($.pointerValue<__goscript_regexp.Regexp>(re).Rune![0], 32) == $.int(r, 32))
+			return ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 1) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int(r, 32))
 			break
 		}
 		case 4:
 		{
 			for (let i = 0; i < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); i = i + (2)) {
-				if (($.pointerValue<__goscript_regexp.Regexp>(re).Rune![i] <= r) && (r <= $.pointerValue<__goscript_regexp.Regexp>(re).Rune![i + 1])) {
+				if (($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i) <= r) && (r <= $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i + 1))) {
 					return true
 				}
 			}
@@ -2396,7 +2396,7 @@ export function mergeCharClass(dst: __goscript_regexp.Regexp | $.VarRef<__goscri
 		case 4:
 		{
 			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(src).Op, 8) == $.uint(3, 8)) {
-				$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, $.int($.pointerValue<__goscript_regexp.Regexp>(src).Rune![0], 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16))
+				$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(src).Rune!, 0), 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16))
 			} else {
 				$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendClass($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, $.pointerValue<__goscript_regexp.Regexp>(src).Rune)
 			}
@@ -2404,12 +2404,12 @@ export function mergeCharClass(dst: __goscript_regexp.Regexp | $.VarRef<__goscri
 		}
 		case 3:
 		{
-			if (($.int($.pointerValue<__goscript_regexp.Regexp>(src).Rune![0], 32) == $.int($.pointerValue<__goscript_regexp.Regexp>(dst).Rune![0], 32)) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16) == $.uint($.pointerValue<__goscript_regexp.Regexp>(dst).Flags, 16))) {
+			if (($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(src).Rune!, 0), 32) == $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(dst).Rune!, 0), 32)) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16) == $.uint($.pointerValue<__goscript_regexp.Regexp>(dst).Flags, 16))) {
 				break
 			}
 			$.pointerValue<__goscript_regexp.Regexp>(dst).Op = $.uint(4, 8)
-			$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.goSlice($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, undefined, 0), $.int($.pointerValue<__goscript_regexp.Regexp>(dst).Rune![0], 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(dst).Flags, 16))
-			$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, $.int($.pointerValue<__goscript_regexp.Regexp>(src).Rune![0], 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16))
+			$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.goSlice($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, undefined, 0), $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(dst).Rune!, 0), 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(dst).Flags, 16))
+			$.pointerValue<__goscript_regexp.Regexp>(dst).Rune = appendLiteral($.pointerValue<__goscript_regexp.Regexp>(dst).Rune, $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(src).Rune!, 0), 32), $.uint($.pointerValue<__goscript_regexp.Regexp>(src).Flags, 16))
 			break
 		}
 	}
@@ -2562,11 +2562,11 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 	// Merge abutting, overlapping.
 	let w = 2
 	for (let i = 2; i < $.len(r); i = i + (2)) {
-		let lo = $.int(r![i], 32)
-		let hi = $.int(r![i + 1], 32)
-		if (lo <= (r![w - 1] + 1)) {
+		let lo = $.int($.arrayIndex(r!, i), 32)
+		let hi = $.int($.arrayIndex(r!, i + 1), 32)
+		if (lo <= ($.arrayIndex(r!, w - 1) + 1)) {
 			// merge with previous range
-			if (hi > r![w - 1]) {
+			if (hi > $.arrayIndex(r!, w - 1)) {
 				r![w - 1] = $.int(hi, 32)
 			}
 			continue
@@ -2582,8 +2582,8 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 
 export function inCharClass(r: number, _class: $.Slice<number>): boolean {
 	let [, ok] = sort.Find(Math.trunc($.len(_class) / 2), $.functionValue((i: number): number => {
-		let lo = $.int(_class![2 * i], 32)
-		let hi = $.int(_class![(2 * i) + 1], 32)
+		let lo = $.int($.arrayIndex(_class!, 2 * i), 32)
+		let hi = $.int($.arrayIndex(_class!, (2 * i) + 1), 32)
 		if (r > hi) {
 			return +1
 		}
@@ -2610,8 +2610,8 @@ export function appendRange(r: $.Slice<number>, lo: number, hi: number): $.Slice
 	let n = $.len(r)
 	for (let i = 2; i <= 4; i = i + (2)) {
 		if (n >= i) {
-			let rlo = $.int(r![n - i], 32)
-			let rhi = $.int(r![(n - i) + 1], 32)
+			let rlo = $.int($.arrayIndex(r!, n - i), 32)
+			let rhi = $.int($.arrayIndex(r!, (n - i) + 1), 32)
 			if ((lo <= (rhi + 1)) && (rlo <= (hi + 1))) {
 				if (lo < rlo) {
 					r![n - i] = $.int(lo, 32)
@@ -2662,14 +2662,14 @@ export function appendFoldedRange(r: $.Slice<number>, lo: number, hi: number): $
 
 export function appendClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
 	for (let i = 0; i < $.len(x); i = i + (2)) {
-		r = appendRange(r, $.int(x![i], 32), $.int(x![i + 1], 32))
+		r = appendRange(r, $.int($.arrayIndex(x!, i), 32), $.int($.arrayIndex(x!, i + 1), 32))
 	}
 	return r
 }
 
 export function appendFoldedClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
 	for (let i = 0; i < $.len(x); i = i + (2)) {
-		r = appendFoldedRange(r, $.int(x![i], 32), $.int(x![i + 1], 32))
+		r = appendFoldedRange(r, $.int($.arrayIndex(x!, i), 32), $.int($.arrayIndex(x!, i + 1), 32))
 	}
 	return r
 }
@@ -2677,8 +2677,8 @@ export function appendFoldedClass(r: $.Slice<number>, x: $.Slice<number>): $.Sli
 export function appendNegatedClass(r: $.Slice<number>, x: $.Slice<number>): $.Slice<number> {
 	let nextLo = $.int(0, 32)
 	for (let i = 0; i < $.len(x); i = i + (2)) {
-		let lo = $.int(x![i], 32)
-		let hi = $.int(x![i + 1], 32)
+		let lo = $.int($.arrayIndex(x!, i), 32)
+		let hi = $.int($.arrayIndex(x!, i + 1), 32)
 		if (nextLo <= (lo - 1)) {
 			r = appendRange(r, $.int(nextLo, 32), $.int(lo - 1, 32))
 		}
@@ -2770,8 +2770,8 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 	let nextLo = $.int(0, 32)
 	let w = 0
 	for (let i = 0; i < $.len(r); i = i + (2)) {
-		let lo = $.int(r![i], 32)
-		let hi = $.int(r![i + 1], 32)
+		let lo = $.int($.arrayIndex(r!, i), 32)
+		let hi = $.int($.arrayIndex(r!, i + 1), 32)
 		if (nextLo <= (lo - 1)) {
 			r![w] = $.int(nextLo, 32)
 			r![w + 1] = $.int(lo - 1, 32)

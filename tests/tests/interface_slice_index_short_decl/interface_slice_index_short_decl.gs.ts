@@ -104,8 +104,8 @@ export async function main(): globalThis.Promise<void> {
 				case $.typeAssert<Action>(__goscriptTypeSwitchValue, "main.Action").ok:
 					{
 						let shape: $.VarRef<Action> = $.varRef($.typeAssert<Action>(__goscriptTypeSwitchValue, "main.Action").value)
-						let fix: Fixed = (fixed![0] as Fixed)
-						let fv = fix![0]
+						let fix: Fixed = ($.arrayIndex(fixed!, 0) as Fixed)
+						let fv = $.arrayIndex(fix!, 0)
 						{
 							let v = $.mapGet<number, dep.Ref | null, dep.Ref | null>(shape.value.Filter, shape.value.Result, null)[0]
 							if (v != null) {
@@ -119,8 +119,8 @@ export async function main(): globalThis.Promise<void> {
 			}
 		}
 	}
-	let fix: Fixed = (fixed![0] as Fixed)
-	let fv = fix![0]
+	let fix: Fixed = ($.arrayIndex(fixed!, 0) as Fixed)
+	let fv = $.arrayIndex(fix!, 0)
 	if (await dep.ToKey(fv) != null) {
 		$.println("ok")
 	}

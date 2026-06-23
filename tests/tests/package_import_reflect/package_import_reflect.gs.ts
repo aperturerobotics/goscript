@@ -136,9 +136,9 @@ export async function main(): globalThis.Promise<void> {
 	// Test Swapper function
 	let testSlice: $.Slice<number> = $.arrayToSlice<number>([1, 2, 3, 4, 5])
 	let swapper: ((i: number, j: number) => void) | null = reflect.Swapper($.interfaceValue<any>(testSlice, "[]int"))
-	$.println("Before swap:", testSlice![0], testSlice![4])
+	$.println("Before swap:", $.arrayIndex(testSlice!, 0), $.arrayIndex(testSlice!, 4))
 	await swapper!(0, 4)
-	$.println("After swap:", testSlice![0], testSlice![4])
+	$.println("After swap:", $.arrayIndex(testSlice!, 0), $.arrayIndex(testSlice!, 4))
 
 	// Test Copy function
 	let src: $.Slice<number> = $.arrayToSlice<number>([10, 20, 30])
@@ -147,7 +147,7 @@ export async function main(): globalThis.Promise<void> {
 	let dstVal = $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>(dst, "[]int"))))
 	let copied = reflect.Copy($.markAsStructValue($.cloneStructValue(dstVal)), $.markAsStructValue($.cloneStructValue(srcVal)))
 	$.println("Copied elements:", copied)
-	$.println("Dst after copy:", dst![0], dst![1])
+	$.println("Dst after copy:", $.arrayIndex(dst!, 0), $.arrayIndex(dst!, 1))
 
 	// Test struct reflection
 	let person = $.markAsStructValue(new Person({Name: "Alice", Age: 30}))

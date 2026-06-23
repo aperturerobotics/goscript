@@ -285,14 +285,14 @@ export class Reader {
 				{
 					let [idx, ok] = $.mapGet<string, number, number>(files, name, 0)
 					if (ok) {
-						$.pointerValue<Reader>(r).fileList![idx].isDup = true
+						$.arrayIndex($.pointerValue<Reader>(r).fileList!, idx).isDup = true
 						continue
 					}
 				}
 				{
 					let [idx, ok] = $.mapGet<string, number, number>(knownDirs, name, 0)
 					if (ok) {
-						$.pointerValue<Reader>(r).fileList![idx].isDup = true
+						$.arrayIndex($.pointerValue<Reader>(r).fileList!, idx).isDup = true
 						continue
 					}
 				}
@@ -329,7 +329,7 @@ export class Reader {
 						{
 							let [idx, __goscriptShadow0] = $.mapGet<string, number, number>(files, dir, 0)
 							if (__goscriptShadow0) {
-								$.pointerValue<Reader>(r).fileList![idx].isDup = true
+								$.arrayIndex($.pointerValue<Reader>(r).fileList!, idx).isDup = true
 							} else {
 								let entry = $.markAsStructValue(new fileListEntry({name: dir, file: null, isDir: true}))
 								$.pointerValue<Reader>(r).fileList = $.append($.pointerValue<Reader>(r).fileList, entry)
@@ -362,7 +362,7 @@ export class Reader {
 			return strings.Compare(ielem, elem)
 		}, ({ kind: $.TypeKind.Function, params: ["zip.fileListEntry", { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 		if (i < $.len(files)) {
-			let fname = files![i].name
+			let fname = $.arrayIndex(files!, i).name
 			if (($.stringEqual(fname, name)) || ((($.len(fname) == ($.len(name) + 1)) && ($.uint($.indexStringOrBytes(fname, $.len(name)), 8) == $.uint(47, 8))) && ($.stringEqual($.sliceStringOrBytes(fname, undefined, $.len(name)), name)))) {
 				return $.indexRef(files!, i)
 			}
@@ -1049,12 +1049,12 @@ export class openDir {
 		}
 		let list: $.Slice<fs.DirEntry | null> = $.makeSlice<fs.DirEntry | null>(n)
 		for (let __goscriptRangeTarget3 = list, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
-			let [s, err] = $.pointerValue<openDir>(d).files![$.pointerValue<openDir>(d).offset + i].stat()
+			let [s, err] = $.arrayIndex($.pointerValue<openDir>(d).files!, $.pointerValue<openDir>(d).offset + i).stat()
 			if (err != null) {
 				return [null, err]
 			} else {
 				if (($.stringEqual(await $.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name(), ".")) || !fs.ValidPath(await $.pointerValue<Exclude<fileInfoDirEntry, null>>(s).Name())) {
-					return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField10 = fmt.Errorf("invalid file name: %v", $.pointerValue<openDir>(d).files![$.pointerValue<openDir>(d).offset + i].name); return new fs.PathError({Op: "readdir", Path: $.pointerValue<fileListEntry>($.pointerValue<openDir>(d).e).name, Err: __goscriptLiteralField10}) })(), "*fs.PathError")]
+					return [null, $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField10 = fmt.Errorf("invalid file name: %v", $.arrayIndex($.pointerValue<openDir>(d).files!, $.pointerValue<openDir>(d).offset + i).name); return new fs.PathError({Op: "readdir", Path: $.pointerValue<fileListEntry>($.pointerValue<openDir>(d).e).name, Err: __goscriptLiteralField10}) })(), "*fs.PathError")]
 				}
 			}
 			list![i] = (s as fs.DirEntry | null)
@@ -1536,9 +1536,9 @@ export async function readDirectory64End(r: io.ReaderAt | null, offset: bigint, 
 export function findSignatureInBlock(b: $.Slice<number>): number {
 	for (let i = $.len(b) - 22; i >= 0; i--) {
 		// defined from directoryEndSignature in struct.go
-		if (((($.uint(b![i], 8) == $.uint(80, 8)) && ($.uint(b![i + 1], 8) == $.uint(75, 8))) && ($.uint(b![i + 2], 8) == $.uint(0x05, 8))) && ($.uint(b![i + 3], 8) == $.uint(0x06, 8))) {
+		if (((($.uint($.arrayIndex(b!, i), 8) == $.uint(80, 8)) && ($.uint($.arrayIndex(b!, i + 1), 8) == $.uint(75, 8))) && ($.uint($.arrayIndex(b!, i + 2), 8) == $.uint(0x05, 8))) && ($.uint($.arrayIndex(b!, i + 3), 8) == $.uint(0x06, 8))) {
 			// n is length of comment
-			let n = $.int(b![(i + 22) - 2]) | ($.int(b![(i + 22) - 1]) << 8)
+			let n = $.int($.arrayIndex(b!, (i + 22) - 2)) | ($.int($.arrayIndex(b!, (i + 22) - 1)) << 8)
 			if (((n + 22) + i) > $.len(b)) {
 				// Truncated comment.
 				// Some parsers (such as Info-ZIP) ignore the truncated comment
@@ -1554,7 +1554,7 @@ export function findSignatureInBlock(b: $.Slice<number>): number {
 export type readBuf = $.Slice<number>
 
 export function readBuf_uint8(b: $.VarRef<readBuf> | null): number {
-	let v = $.uint(($.pointerValue<readBuf>(b))![0], 8)
+	let v = $.uint($.arrayIndex(($.pointerValue<readBuf>(b))!, 0), 8)
 	b!.value = ($.goSlice(($.pointerValue<readBuf>(b)), 1, undefined) as readBuf)
 	return $.uint(v, 8)
 }

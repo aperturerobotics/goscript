@@ -45,7 +45,7 @@ export function newQueue(__typeArgs: $.GenericTypeArgs | undefined, capacity: nu
 export async function main(): globalThis.Promise<void> {
 	let q: queue | $.VarRef<queue> | null = (newQueue({T: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}, 2) as queue | $.VarRef<queue> | null)
 	$.pointerValue<queue>(q).buf![0] = 7
-	$.println($.len($.pointerValue<queue>(q).buf), $.pointerValue<queue>(q).buf![0])
+	$.println($.len($.pointerValue<queue>(q).buf), $.arrayIndex($.pointerValue<queue>(q).buf!, 0))
 }
 
 if ($.isMainScript(import.meta)) {

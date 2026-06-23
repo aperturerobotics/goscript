@@ -1,0 +1,7 @@
+slice: runtime error: index out of range [5] with length 3
+array: runtime error: index out of range [7] with length 3
+negative: runtime error: index out of range [-1]
+string: runtime error: index out of range [9] with length 3
+string-negative: runtime error: index out of range [-1]
+bytes-negative: runtime error: index out of range [-1]
+done

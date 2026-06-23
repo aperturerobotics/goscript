@@ -60,7 +60,7 @@ export class BufferPool {
 		}
 		let idx = $.uint(nextLogBase2($.uint($.uint(length, 32), 32)), 32)
 		{
-			let ptr = await $.pointerValue<BufferPool>(p).pools[idx].Get()
+			let ptr = await $.arrayIndex($.pointerValue<BufferPool>(p).pools, idx).Get()
 			if (ptr != null) {
 				let bp: bufp | $.VarRef<bufp> | null = $.mustTypeAssert<bufp | $.VarRef<bufp> | null>(ptr, { kind: $.TypeKind.Pointer, elemType: "pool.bufp" })
 				let buf: $.Slice<number> = $.goSlice($.pointerValue<bufp>(bp).buf, undefined, $.uint(length, 32))
@@ -89,7 +89,7 @@ export class BufferPool {
 			}
 		}
 		$.pointerValue<bufp>(bp).buf = buf
-		$.pointerValue<BufferPool>(p).pools[idx].Put($.interfaceValue<any>(bp, "*pool.bufp"))
+		$.arrayIndex($.pointerValue<BufferPool>(p).pools, idx).Put($.interfaceValue<any>(bp, "*pool.bufp"))
 	}
 
 	static __typeInfo = $.registerStructType(

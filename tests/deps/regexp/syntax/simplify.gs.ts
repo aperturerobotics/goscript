@@ -22,7 +22,7 @@ export function simplify1(op: __goscript_regexp.Op, flags: __goscript_parse.Flag
 	if (($.uint(op, 8) == $.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8)) && ($.uint((flags & 32), 16) == $.uint(($.pointerValue<__goscript_regexp.Regexp>(sub).Flags & 32), 16))) {
 		return sub
 	}
-	if ((((re != null) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(op, 8))) && ($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) == $.uint((flags & 32), 16))) && (sub == $.pointerValue<__goscript_regexp.Regexp>(re).Sub![0])) {
+	if ((((re != null) && ($.uint($.pointerValue<__goscript_regexp.Regexp>(re).Op, 8) == $.uint(op, 8))) && ($.uint(($.pointerValue<__goscript_regexp.Regexp>(re).Flags & 32), 16) == $.uint((flags & 32), 16))) && (sub == $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0))) {
 		return re
 	}
 

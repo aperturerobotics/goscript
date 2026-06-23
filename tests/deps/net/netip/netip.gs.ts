@@ -760,12 +760,12 @@ export class Addr {
 
 	public v6(i: number): number {
 		const ip = this
-		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>((ip.addr.halves()[(Math.trunc(i / 8)) % 2])), ((7 - (i % 8)) * 8)), 8), 8)
+		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>(($.arrayIndex(ip.addr.halves(), (Math.trunc(i / 8)) % 2))), ((7 - (i % 8)) * 8)), 8), 8)
 	}
 
 	public v6u16(i: number): number {
 		const ip = this
-		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>((ip.addr.halves()[(Math.trunc(i / 4)) % 2])), ((3 - (i % 4)) * 16)), 16), 16)
+		return $.uint($.uint($.uint64Shr($.pointerValue<bigint>(($.arrayIndex(ip.addr.halves(), (Math.trunc(i / 4)) % 2))), ((3 - (i % 4)) * 16)), 16), 16)
 	}
 
 	public withoutZone(): Addr {
@@ -1361,7 +1361,7 @@ export class Prefix {
 		if (err != null) {
 			return err
 		}
-		$.assignStruct($.pointerValue<Prefix>(p), $.markAsStructValue($.cloneStructValue(PrefixFrom($.markAsStructValue($.cloneStructValue(addr.value)), $.int(b![$.len(b) - 1])))))
+		$.assignStruct($.pointerValue<Prefix>(p), $.markAsStructValue($.cloneStructValue(PrefixFrom($.markAsStructValue($.cloneStructValue(addr.value)), $.int($.arrayIndex(b!, $.len(b) - 1))))))
 		return null
 	}
 
@@ -1483,7 +1483,7 @@ export function IPv4Unspecified(): Addr {
 }
 
 export function AddrFrom4(addr: Uint8Array): Addr {
-	return $.markAsStructValue(new Addr({addr: $.markAsStructValue(new __goscript_uint128.uint128({hi: 0n, lo: $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(0xffff00000000, ($.uint64Shl($.uint64(addr[0]), 24)))), ($.uint64Shl($.uint64(addr[1]), 16)))), ($.uint64Shl($.uint64(addr[2]), 8)))), $.uint64(addr[3]))})), z: $.markAsStructValue($.cloneStructValue(z4))}))
+	return $.markAsStructValue(new Addr({addr: $.markAsStructValue(new __goscript_uint128.uint128({hi: 0n, lo: $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(0xffff00000000, ($.uint64Shl($.uint64($.arrayIndex(addr, 0)), 24)))), ($.uint64Shl($.uint64($.arrayIndex(addr, 1)), 16)))), ($.uint64Shl($.uint64($.arrayIndex(addr, 2)), 8)))), $.uint64($.arrayIndex(addr, 3)))})), z: $.markAsStructValue($.cloneStructValue(z4))}))
 }
 
 export function AddrFrom16(addr: Uint8Array): Addr {
@@ -1714,7 +1714,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 		}
 		let n = 16 - i
 		for (let j = i - 1; j >= ellipsis; j--) {
-			ip[j + n] = $.uint(ip[j], 8)
+			ip[j + n] = $.uint($.arrayIndex(ip, j), 8)
 		}
 		$.clear($.goSlice(ip, ellipsis, ellipsis + n))
 	} else {

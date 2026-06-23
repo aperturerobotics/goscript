@@ -1571,7 +1571,7 @@ export function Buffers_Read(v: $.VarRef<Buffers> | null, p: $.Slice<number>): [
 	let n: number = 0
 	let err: $.GoError = null as $.GoError
 	while (($.len(p) > 0) && ($.len(($.pointerValue<Buffers>(v) as Buffers)) > 0)) {
-		let n0 = $.copy(p, ($.pointerValue<Buffers>(v))![0])
+		let n0 = $.copy(p, $.arrayIndex(($.pointerValue<Buffers>(v))!, 0))
 		Buffers_consume(v, $.int64(n0))
 		p = $.goSlice(p, n0, undefined)
 		n = n + (n0)
@@ -1584,9 +1584,9 @@ export function Buffers_Read(v: $.VarRef<Buffers> | null, p: $.Slice<number>): [
 
 export function Buffers_consume(v: $.VarRef<Buffers> | null, n: bigint): void {
 	while ($.len(($.pointerValue<Buffers>(v) as Buffers)) > 0) {
-		let ln0 = $.int64($.len(($.pointerValue<Buffers>(v))![0]))
+		let ln0 = $.int64($.len($.arrayIndex(($.pointerValue<Buffers>(v))!, 0)))
 		if (ln0 > n) {
-			($.pointerValue<Buffers>(v))![0] = $.goSlice(($.pointerValue<Buffers>(v))![0], Number(n), undefined)
+			($.pointerValue<Buffers>(v))![0] = $.goSlice($.arrayIndex(($.pointerValue<Buffers>(v))!, 0), Number(n), undefined)
 			return
 		}
 		n = $.int64Sub(n, ln0);

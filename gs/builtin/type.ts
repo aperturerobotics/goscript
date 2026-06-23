@@ -285,6 +285,19 @@ export const registerInterfaceType = (
   return typeInfo
 }
 
+// The builtin error interface is predeclared in Go. Register it so a bare
+// "error" type assertion (x.(error)), which the compiler emits by the universe
+// type name, resolves to its method set instead of an unmatched basic type. Any
+// value with an Error() string method, including recovered runtime panics,
+// then satisfies it.
+registerInterfaceType('error', null, [
+  {
+    name: 'Error',
+    args: [],
+    returns: [{ type: { kind: TypeKind.Basic, name: 'string' } }],
+  },
+])
+
 /**
  * Gets a registered type by name from the type registry.
  * Returns undefined if the type is not registered.

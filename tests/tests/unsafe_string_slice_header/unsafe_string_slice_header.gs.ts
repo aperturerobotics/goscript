@@ -71,9 +71,9 @@ export function localStringBytes(s: string): $.Slice<number> {
 
 export async function main(): globalThis.Promise<void> {
 	let b: $.Slice<number> = stringBytes("abc")
-	$.println($.len(b), $.cap(b), $.uint(b![0], 8), $.uint(b![1], 8), $.uint(b![2], 8))
+	$.println($.len(b), $.cap(b), $.uint($.arrayIndex(b!, 0), 8), $.uint($.arrayIndex(b!, 1), 8), $.uint($.arrayIndex(b!, 2), 8))
 	let local: $.Slice<number> = localStringBytes("wxyz")
-	$.println($.len(local), $.cap(local), $.uint(local![0], 8), $.uint(local![3], 8))
+	$.println($.len(local), $.cap(local), $.uint($.arrayIndex(local!, 0), 8), $.uint($.arrayIndex(local!, 3), 8))
 }
 
 if ($.isMainScript(import.meta)) {

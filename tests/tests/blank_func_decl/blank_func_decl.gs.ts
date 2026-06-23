@@ -5,12 +5,12 @@ import * as $ from "@goscript/builtin/index.js"
 
 function __goscriptBlankFunc0(): void {
 	let x: {}[] = Array.from({ length: 1 }, () => ({}))
-	x[0]
+	$.arrayIndex(x, 0)
 }
 
 function __goscriptBlankFunc1(): void {
 	let x: {}[] = Array.from({ length: 1 }, () => ({}))
-	x[0]
+	$.arrayIndex(x, 0)
 }
 
 export async function main(): globalThis.Promise<void> {

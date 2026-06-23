@@ -642,7 +642,7 @@ export async function closeHeldStreams(streams: $.Slice<srpc.Stream | null>): gl
 				return false
 			}
 		}
-		if (($.len(srpc.RawMessage.prototype.GetData.call(resp)) != 1) || ($.uint(srpc.RawMessage.prototype.GetData.call(resp)![0], 8) != $.uint(1, 8))) {
+		if (($.len(srpc.RawMessage.prototype.GetData.call(resp)) != 1) || ($.uint($.arrayIndex(srpc.RawMessage.prototype.GetData.call(resp)!, 0), 8) != $.uint(1, 8))) {
 			$.println("hold response mismatch")
 			return false
 		}
@@ -732,7 +732,7 @@ export async function probeStream(ctx: context.Context | null, client: srpc.Clie
 	if ($.len(data) != 1) {
 		return [$.len(data), null]
 	}
-	return [$.int(data![0]), null]
+	return [$.int($.arrayIndex(data!, 0)), null]
 }
 
 export function newRoutedRpcStreamClient(ctx: context.Context | null, componentID: string, getter: rpcstream.RpcStreamGetter | null, waitAck: boolean, results: $.Channel<rpcStreamServerResult> | null): srpc.Client | null {
@@ -989,8 +989,8 @@ export async function exercisePushablePacketWriter(): globalThis.Promise<boolean
 			$.println("push arg count:", $.len(args))
 			return null
 		}
-		let data: $.Slice<number> = $.makeSlice<number>($.markAsStructValue($.cloneStructValue(args![0])).Length(), undefined, "byte")
-		js.CopyBytesToGo(data, $.markAsStructValue($.cloneStructValue(args![0])))
+		let data: $.Slice<number> = $.makeSlice<number>($.markAsStructValue($.cloneStructValue($.arrayIndex(args!, 0))).Length(), undefined, "byte")
+		js.CopyBytesToGo(data, $.markAsStructValue($.cloneStructValue($.arrayIndex(args!, 0))))
 		pushed = $.append(pushed, data)
 		return null
 	}, ({ kind: $.TypeKind.Function, params: ["js.Value", { kind: $.TypeKind.Slice, elemType: "js.Value" }], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo)))))
@@ -1042,7 +1042,7 @@ export async function exercisePushablePacketWriter(): globalThis.Promise<boolean
 		return null
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "srpc.Packet" }], results: ["error"] } as $.FunctionTypeInfo)))
 	{
-		let err = await startHandler!(pushed![0])
+		let err = await startHandler!($.arrayIndex(pushed!, 0))
 		if (err != null) {
 			$.println("pushable start decode error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			return false
@@ -1059,7 +1059,7 @@ export async function exercisePushablePacketWriter(): globalThis.Promise<boolean
 		return null
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "srpc.Packet" }], results: ["error"] } as $.FunctionTypeInfo)))
 	{
-		let err = await cancelHandler!(pushed![1])
+		let err = await cancelHandler!($.arrayIndex(pushed!, 1))
 		if (err != null) {
 			$.println("pushable cancel decode error:", $.pointerValue<Exclude<$.GoError, null>>(err).Error())
 			return false
@@ -1116,7 +1116,7 @@ export async function main(): globalThis.Promise<void> {
 		$.println("stream response length:", $.len(data))
 		return
 	}
-	$.println("stream bytes:", $.uint(data![0], 8))
+	$.println("stream bytes:", $.uint($.arrayIndex(data!, 0), 8))
 	let emptyResp: srpc.RawMessage | $.VarRef<srpc.RawMessage> | null = srpc.NewRawMessage(null, false)
 	{
 		let __goscriptShadow6 = await $.pointerValue<Exclude<srpc.Client, null>>(client).ExecCall(ctx, "svc", "empty", $.interfaceValue<srpc.Message>(srpc.NewRawMessage(null, false), "*srpc.RawMessage"), $.interfaceValue<srpc.Message>(emptyResp, "*srpc.RawMessage"))

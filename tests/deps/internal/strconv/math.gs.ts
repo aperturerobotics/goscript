@@ -84,7 +84,7 @@ export function pow10(e: number): [uint128, number, boolean] {
 	if ((e < -348) || (e > 347)) {
 		return [mant, exp, ok]
 	}
-	return [$.markAsStructValue($.cloneStructValue(__goscript_pow10tab.__goscript_get_pow10Tab()[e - -348])), 1 + mulLog2_10(e), true]
+	return [$.markAsStructValue($.cloneStructValue($.arrayIndex(__goscript_pow10tab.__goscript_get_pow10Tab(), e - -348))), 1 + mulLog2_10(e), true]
 }
 
 export function mulLog10_2(x: number): number {
@@ -105,7 +105,7 @@ export function bool2uint(b: boolean): number {
 }
 
 export function divisiblePow5(x: bigint, p: number): boolean {
-	return ((1 <= p) && (p <= 22)) && (($.uint64Mul(x, div5Tab[p - 1][0])) <= div5Tab[p - 1][1])
+	return ((1 <= p) && (p <= 22)) && (($.uint64Mul(x, $.arrayIndex($.arrayIndex(div5Tab, p - 1), 0))) <= $.arrayIndex($.arrayIndex(div5Tab, p - 1), 1))
 }
 
 export let div5Tab: bigint[][] = [[14757395258967641293n, 3689348814741910323n], [10330176681277348905n, 737869762948382064n], [2066035336255469781n, 147573952589676412n], [15170602326218735249n, 29514790517935282n], [6723469279985657373n, 5902958103587056n], [8723391485480952121n, 1180591620717411n], [16502073556063831717n, 236118324143482n], [14368461155438497313n, 47223664828696n], [10252389860571520109n, 9444732965739n], [5739826786856214345n, 1888946593147n], [1147965357371242869n, 377789318629n], [3918941886216158897n, 75557863725n], [11851834821468962749n, 15111572745n], [6059715779035702873n, 3022314549n], [8590640785290961221n, 604462909n], [16475523416025833537n, 120892581n], [14363151127430897677n, 24178516n], [13940676669711910505n, 4835703n], [2788135333942382101n, 967140n], [15315022325756117713n, 193428n], [10441702094635044189n, 38685n], [5777689233668919161n, 7737n]]
@@ -128,10 +128,10 @@ export function trimZeros(x: bigint): [bigint, number] {
 	// Assert that the multiplicative inverses are correct
 	// by checking that (div1eNm * 5^N) % 1<<64 == 1.
 	let assert: {}[] = Array.from({ length: 1 }, () => ({}))
-	assert[((5612680138843163012890625) % (18446744073709551616)) - 1]
-	assert[((9481626453886709530625) % (18446744073709551616)) - 1]
-	assert[((258254417031933722625) % (18446744073709551616)) - 1]
-	assert[((73786976294838206465) % (18446744073709551616)) - 1]
+	$.arrayIndex(assert, ((5612680138843163012890625) % (18446744073709551616)) - 1)
+	$.arrayIndex(assert, ((9481626453886709530625) % (18446744073709551616)) - 1)
+	$.arrayIndex(assert, ((258254417031933722625) % (18446744073709551616)) - 1)
+	$.arrayIndex(assert, ((73786976294838206465) % (18446744073709551616)) - 1)
 
 	// Cut 8 zeros, then 4, then 2, then 1.
 	let p = 0

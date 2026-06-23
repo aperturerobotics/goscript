@@ -55,7 +55,7 @@ export async function main(): globalThis.Promise<void> {
 	let p: parser = $.markAsStructValue(new parser())
 	// this Add method does not work:
 	errlist.ErrorList_Add(p._fields.errors, "error")
-	$.println(p.errors![0])
+	$.println($.arrayIndex(p.errors!, 0))
 
 	// but it does work for a struct type:
 	p.astruct.Set("astruct")

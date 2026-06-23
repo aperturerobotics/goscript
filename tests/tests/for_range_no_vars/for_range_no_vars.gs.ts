@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Looping over array (no vars):")
 	let arrCount = 0
 	for (let __goscriptRangeTarget1 = a, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
-		$.println(a[arrCount])
+		$.println($.arrayIndex(a, arrCount))
 		arrCount++
 	}
 	$.println(arrCount)

@@ -77,7 +77,7 @@ export async function main(): globalThis.Promise<void> {
 	// Test 6: T{} returns the instantiated array zero value.
 	let zeroPair = (ZeroArrayLiteral({T: { type: "main.Pair", zero: () => Array.from({ length: 2 }, () => 0) }}) as Pair)
 	$.println("ZeroArrayLiteral[Pair] len:", $.len(zeroPair))
-	$.println("ZeroArrayLiteral[Pair] zero:", (zeroPair[0] == 0) && (zeroPair[1] == 0))
+	$.println("ZeroArrayLiteral[Pair] zero:", ($.arrayIndex(zeroPair, 0) == 0) && ($.arrayIndex(zeroPair, 1) == 0))
 }
 
 if ($.isMainScript(import.meta)) {

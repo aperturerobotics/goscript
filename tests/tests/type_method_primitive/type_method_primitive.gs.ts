@@ -43,7 +43,7 @@ export function asDoubler(v: MyInt): Doubler | null {
 }
 
 export async function sumDoublers(vals: $.Slice<Doubler | null>): globalThis.Promise<number> {
-	return await $.pointerValue<Exclude<Doubler, null>>(vals![0]).Double() + await $.pointerValue<Exclude<Doubler, null>>(vals![1]).Double()
+	return await $.pointerValue<Exclude<Doubler, null>>($.arrayIndex(vals!, 0)).Double() + await $.pointerValue<Exclude<Doubler, null>>($.arrayIndex(vals!, 1)).Double()
 }
 
 export function assertDoubler(__typeArgs: $.GenericTypeArgs | undefined, v: Doubler | null): [any, boolean] {

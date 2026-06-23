@@ -102,9 +102,9 @@ export async function main(): globalThis.Promise<void> {
 	// Sort messages by priority for deterministic order
 	for (let __goscriptRangeTarget0 = allMessages, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		for (let j = i + 1; j < $.len(allMessages); j++) {
-			if (allMessages![i].priority > allMessages![j].priority) {
-				let __goscriptAssign0_0: Message = $.markAsStructValue($.cloneStructValue(allMessages![j]))
-				let __goscriptAssign0_1: Message = $.markAsStructValue($.cloneStructValue(allMessages![i]))
+			if ($.arrayIndex(allMessages!, i).priority > $.arrayIndex(allMessages!, j).priority) {
+				let __goscriptAssign0_0: Message = $.markAsStructValue($.cloneStructValue($.arrayIndex(allMessages!, j)))
+				let __goscriptAssign0_1: Message = $.markAsStructValue($.cloneStructValue($.arrayIndex(allMessages!, i)))
 				allMessages![i] = __goscriptAssign0_0
 				allMessages![j] = __goscriptAssign0_1
 			}

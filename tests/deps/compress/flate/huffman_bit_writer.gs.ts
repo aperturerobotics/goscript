@@ -175,10 +175,10 @@ export class huffmanBitWriter {
 		let size: number = 0
 		let numCodegens: number = 0
 		numCodegens = $.len($.pointerValue<huffmanBitWriter>(w).codegenFreq)
-		while ((numCodegens > 4) && ($.int($.pointerValue<huffmanBitWriter>(w).codegenFreq[codegenOrder![numCodegens - 1]], 32) == $.int(0, 32))) {
+		while ((numCodegens > 4) && ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegenFreq, $.arrayIndex(codegenOrder!, numCodegens - 1)), 32) == $.int(0, 32))) {
 			numCodegens--
 		}
-		let header = (((((((3 + 5) + 5) + 4) + (3 * numCodegens)) + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call($.pointerValue<huffmanBitWriter>(w).codegenEncoding, $.goSlice($.pointerValue<huffmanBitWriter>(w).codegenFreq, undefined, undefined))) + ($.int($.pointerValue<huffmanBitWriter>(w).codegenFreq[16]) * 2)) + ($.int($.pointerValue<huffmanBitWriter>(w).codegenFreq[17]) * 3)) + ($.int($.pointerValue<huffmanBitWriter>(w).codegenFreq[18]) * 7)
+		let header = (((((((3 + 5) + 5) + 4) + (3 * numCodegens)) + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call($.pointerValue<huffmanBitWriter>(w).codegenEncoding, $.goSlice($.pointerValue<huffmanBitWriter>(w).codegenFreq, undefined, undefined))) + ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegenFreq, 16)) * 2)) + ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegenFreq, 17)) * 3)) + ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegenFreq, 18)) * 7)
 		size = ((header + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(litEnc, $.pointerValue<huffmanBitWriter>(w).literalFreq)) + __goscript_huffman_code.huffmanEncoder.prototype.bitLength.call(offEnc, $.pointerValue<huffmanBitWriter>(w).offsetFreq)) + extraBits
 
 		return [size, numCodegens]
@@ -222,22 +222,22 @@ export class huffmanBitWriter {
 		// Copy the concatenated code sizes to codegen. Put a marker at the end.
 		let cgnl: $.Slice<number> = $.goSlice(codegen, undefined, numLiterals)
 		for (let __goscriptRangeTarget0 = cgnl, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
-			cgnl![i] = $.uint($.uint($.pointerValue<__goscript_huffman_code.huffmanEncoder>(litEnc).codes![i].len, 8), 8)
+			cgnl![i] = $.uint($.uint($.arrayIndex($.pointerValue<__goscript_huffman_code.huffmanEncoder>(litEnc).codes!, i).len, 8), 8)
 		}
 
 		cgnl = $.goSlice(codegen, numLiterals, numLiterals + numOffsets)
 		for (let __goscriptRangeTarget1 = cgnl, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
-			cgnl![i] = $.uint($.uint($.pointerValue<__goscript_huffman_code.huffmanEncoder>(offEnc).codes![i].len, 8), 8)
+			cgnl![i] = $.uint($.uint($.arrayIndex($.pointerValue<__goscript_huffman_code.huffmanEncoder>(offEnc).codes!, i).len, 8), 8)
 		}
 		codegen![numLiterals + numOffsets] = $.uint(255, 8)
 
-		let size = $.uint(codegen![0], 8)
+		let size = $.uint($.arrayIndex(codegen!, 0), 8)
 		let count = 1
 		let outIndex = 0
 		for (let inIndex = 1; $.uint(size, 8) != $.uint(255, 8); inIndex++) {
 			// INVARIANT: We have seen "count" copies of size that have not yet
 			// had output generated for them.
-			let nextSize = $.uint(codegen![inIndex], 8)
+			let nextSize = $.uint($.arrayIndex(codegen!, inIndex), 8)
 			if ($.uint(nextSize, 8) == $.uint(size, 8)) {
 				count++
 				continue
@@ -318,12 +318,12 @@ export class huffmanBitWriter {
 
 		// get the number of literals
 		numLiterals = $.len($.pointerValue<huffmanBitWriter>(w).literalFreq)
-		while ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![numLiterals - 1], 32) == $.int(0, 32)) {
+		while ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).literalFreq!, numLiterals - 1), 32) == $.int(0, 32)) {
 			numLiterals--
 		}
 		// get the number of offsets
 		numOffsets = $.len($.pointerValue<huffmanBitWriter>(w).offsetFreq)
-		while ((numOffsets > 0) && ($.int($.pointerValue<huffmanBitWriter>(w).offsetFreq![numOffsets - 1], 32) == $.int(0, 32))) {
+		while ((numOffsets > 0) && ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).offsetFreq!, numOffsets - 1), 32) == $.int(0, 32))) {
 			numOffsets--
 		}
 		if (numOffsets == 0) {
@@ -418,11 +418,11 @@ export class huffmanBitWriter {
 			// against stored encoding.
 			for (let lengthCode = 257 + 8; lengthCode < numLiterals; lengthCode++) {
 				// First eight length codes have extra size = 0.
-				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).literalFreq![lengthCode]) * $.int(lengthExtraBits![lengthCode - 257]))
+				extraBits = extraBits + ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).literalFreq!, lengthCode)) * $.int($.arrayIndex(lengthExtraBits!, lengthCode - 257)))
 			}
 			for (let offsetCode = 4; offsetCode < numOffsets; offsetCode++) {
 				// First four offset codes have extra size = 0.
-				extraBits = extraBits + ($.int($.pointerValue<huffmanBitWriter>(w).offsetFreq![offsetCode]) * $.int(offsetExtraBits![offsetCode]))
+				extraBits = extraBits + ($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).offsetFreq!, offsetCode)) * $.int($.arrayIndex(offsetExtraBits!, offsetCode)))
 			}
 		}
 
@@ -548,7 +548,7 @@ export class huffmanBitWriter {
 		for (let __goscriptRangeTarget3 = input, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget3); __rangeIndex++) {
 			let t = __goscriptRangeTarget3![__rangeIndex]
 			// Bitwriting inlined, ~30% speedup
-			let c = $.markAsStructValue($.cloneStructValue(encoding![t]))
+			let c = $.markAsStructValue($.cloneStructValue($.arrayIndex(encoding!, t)))
 			$.pointerValue<huffmanBitWriter>(w).bits = $.uint64Or($.pointerValue<huffmanBitWriter>(w).bits, $.uint64Shl($.uint64(c.code), $.pointerValue<huffmanBitWriter>(w).nbits))
 			$.pointerValue<huffmanBitWriter>(w).nbits = $.uint($.uint64Add($.pointerValue<huffmanBitWriter>(w).nbits, $.uint(c.len, 64)), 64)
 			if ($.pointerValue<huffmanBitWriter>(w).nbits < 48) {
@@ -576,7 +576,7 @@ export class huffmanBitWriter {
 			n = 0
 		}
 		$.pointerValue<huffmanBitWriter>(w).nbytes = n
-		await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(encoding![256])))
+		await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex(encoding!, 256))))
 	}
 
 	public async writeBytes(bytes: $.Slice<number>): globalThis.Promise<void> {
@@ -645,35 +645,35 @@ export class huffmanBitWriter {
 		await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int(numCodegens - 4, 32), 32), 4)
 
 		for (let i = 0; i < numCodegens; i++) {
-			let value = $.uint($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).codegenEncoding).codes![codegenOrder![i]].len, 64)
+			let value = $.uint($.arrayIndex($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).codegenEncoding).codes!, $.arrayIndex(codegenOrder!, i)).len, 64)
 			await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int(value, 32), 32), 3)
 		}
 
 		let i = 0
 		while (true) {
-			let codeWord: number = $.int($.pointerValue<huffmanBitWriter>(w).codegen![i])
+			let codeWord: number = $.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegen!, i))
 			i++
 			if (codeWord == 255) {
 				break
 			}
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).codegenEncoding).codes![$.uint(codeWord, 32)])))
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex($.pointerValue<__goscript_huffman_code.huffmanEncoder>($.pointerValue<huffmanBitWriter>(w).codegenEncoding).codes!, $.uint(codeWord, 32)))))
 
 			switch (codeWord) {
 				case 16:
 				{
-					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.pointerValue<huffmanBitWriter>(w).codegen![i], 32), 32), 2)
+					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegen!, i), 32), 32), 2)
 					i++
 					break
 				}
 				case 17:
 				{
-					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.pointerValue<huffmanBitWriter>(w).codegen![i], 32), 32), 3)
+					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegen!, i), 32), 32), 3)
 					i++
 					break
 				}
 				case 18:
 				{
-					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.pointerValue<huffmanBitWriter>(w).codegen![i], 32), 32), 7)
+					await huffmanBitWriter.prototype.writeBits.call(w, $.int($.int($.arrayIndex($.pointerValue<huffmanBitWriter>(w).codegen!, i), 32), 32), 7)
 					i++
 					break
 				}
@@ -717,27 +717,27 @@ export class huffmanBitWriter {
 		for (let __goscriptRangeTarget4 = tokens, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
 			let t = __goscriptRangeTarget4![__rangeIndex]
 			if (t < 1073741824) {
-				await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscript_token.token_literal(t)])))
+				await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex(leCodes!, __goscript_token.token_literal(t)))))
 				continue
 			}
 			// Write the length
 			let length = $.uint(__goscript_token.token_length(t), 32)
 			let __goscriptShadow0 = __goscript_token.lengthCode
 			let __goscriptShadow1 = $.uint(__goscriptShadow0($.uint(length, 32)), 32)
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(leCodes![__goscriptShadow1 + 257])))
-			let extraLengthBits = $.uint(lengthExtraBits![__goscriptShadow1], 64)
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex(leCodes!, __goscriptShadow1 + 257))))
+			let extraLengthBits = $.uint($.arrayIndex(lengthExtraBits!, __goscriptShadow1), 64)
 			if (extraLengthBits > 0) {
-				let extraLength = $.int($.int(length - lengthBase![__goscriptShadow1], 32), 32)
+				let extraLength = $.int($.int(length - $.arrayIndex(lengthBase!, __goscriptShadow1), 32), 32)
 				await huffmanBitWriter.prototype.writeBits.call(w, $.int(extraLength, 32), extraLengthBits)
 			}
 			// Write the offset
 			let offset = $.uint(__goscript_token.token_offset(t), 32)
 			let __goscriptShadow2 = __goscript_token.offsetCode
 			let __goscriptShadow3 = $.uint(__goscriptShadow2($.uint(offset, 32)), 32)
-			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue(oeCodes![__goscriptShadow3])))
-			let extraOffsetBits = $.uint(offsetExtraBits![__goscriptShadow3], 64)
+			await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex(oeCodes!, __goscriptShadow3))))
+			let extraOffsetBits = $.uint($.arrayIndex(offsetExtraBits!, __goscriptShadow3), 64)
 			if (extraOffsetBits > 0) {
-				let extraOffset = $.int($.int(offset - offsetBase![__goscriptShadow3], 32), 32)
+				let extraOffset = $.int($.int(offset - $.arrayIndex(offsetBase!, __goscriptShadow3), 32), 32)
 				await huffmanBitWriter.prototype.writeBits.call(w, $.int(extraOffset, 32), extraOffsetBits)
 			}
 		}

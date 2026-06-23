@@ -12,7 +12,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	for (let i = 0; i < $.len(encoder); i++) {
-		if ($.uint(decodeMap[$.indexStringOrBytes(encoder, i)], 8) != $.uint(255, 8)) {
+		if ($.uint($.arrayIndex(decodeMap, $.indexStringOrBytes(encoder, i)), 8) != $.uint(255, 8)) {
 			$.panic("duplicate symbol")
 		}
 		decodeMap[$.indexStringOrBytes(encoder, i)] = $.uint($.uint(i, 8), 8)

@@ -77,7 +77,7 @@ export class Encoding {
 		const enc: Encoding | $.VarRef<Encoding> | null = this
 		// Compute the output size without padding to avoid over allocating.
 		let n = $.len(src)
-		while ((n > 0) && ($.int($.int(src![n - 1], 32), 32) == $.int($.pointerValue<Encoding>(enc).padChar, 32))) {
+		while ((n > 0) && ($.int($.int($.arrayIndex(src!, n - 1), 32), 32) == $.int($.pointerValue<Encoding>(enc).padChar, 32))) {
 			n--
 		}
 		n = decodedLen(n, $.int(-1, 32))
@@ -114,7 +114,7 @@ export class Encoding {
 		while (((strconv.IntSize >= 64) && (($.len(src) - si) >= 8)) && (($.len(dst) - n) >= 8)) {
 			let src2: $.Slice<number> = $.goSlice(src, si, si + 8)
 			{
-				let [dn, ok] = assemble64($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![4]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![5]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![6]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![7]], 8))
+				let [dn, ok] = assemble64($.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 0)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 1)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 2)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 3)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 4)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 5)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 6)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 7)), 8))
 				if (ok) {
 					byteorder.BEPutUint64($.goSlice(dst, n, undefined), dn)
 					n = n + (6)
@@ -136,7 +136,7 @@ export class Encoding {
 		while ((($.len(src) - si) >= 4) && (($.len(dst) - n) >= 4)) {
 			let src2: $.Slice<number> = $.goSlice(src, si, si + 4)
 			{
-				let __goscriptTuple2: any = assemble32($.uint($.pointerValue<Encoding>(enc).decodeMap[src2![0]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![1]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![2]], 8), $.uint($.pointerValue<Encoding>(enc).decodeMap[src2![3]], 8))
+				let __goscriptTuple2: any = assemble32($.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 0)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 1)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 2)), 8), $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, $.arrayIndex(src2!, 3)), 8))
 				let dn = $.uint(__goscriptTuple2[0], 32)
 				let ok = __goscriptTuple2[1]
 				if (ok) {
@@ -198,12 +198,12 @@ export class Encoding {
 		let n = (Math.trunc($.len(src) / 3)) * 3
 		while (si < n) {
 			// Convert 3x 8bit source bytes into 4 bytes
-			let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint(src![si + 0], 64), 16), 64)), ($.uint($.uint64Shl($.uint(src![si + 1], 64), 8), 64))), 64)), $.uint(src![si + 2], 64)), 64)
+			let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint($.arrayIndex(src!, si + 0), 64), 16), 64)), ($.uint($.uint64Shl($.uint($.arrayIndex(src!, si + 1), 64), 8), 64))), 64)), $.uint($.arrayIndex(src!, si + 2), 64)), 64)
 
-			dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)], 8)
-			dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)], 8)
-			dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)], 8)
-			dst![di + 3] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(val, 0x3F), 64)], 8)
+			dst![di + 0] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)), 8)
+			dst![di + 1] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)), 8)
+			dst![di + 2] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)), 8)
+			dst![di + 3] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(val, 0x3F), 64)), 8)
 
 			si = si + (3)
 			di = di + (4)
@@ -214,18 +214,18 @@ export class Encoding {
 			return
 		}
 		// Add the remaining small block
-		let val = $.uint($.uint64Shl($.uint(src![si + 0], 64), 16), 64)
+		let val = $.uint($.uint64Shl($.uint($.arrayIndex(src!, si + 0), 64), 16), 64)
 		if (remain == 2) {
-			val = $.uint($.uint64Or(val, $.uint($.uint64Shl($.uint(src![si + 1], 64), 8), 64)), 64)
+			val = $.uint($.uint64Or(val, $.uint($.uint64Shl($.uint($.arrayIndex(src!, si + 1), 64), 8), 64)), 64)
 		}
 
-		dst![di + 0] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)], 8)
-		dst![di + 1] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)], 8)
+		dst![di + 0] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 18), 64)), 0x3F), 64)), 8)
+		dst![di + 1] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 12), 64)), 0x3F), 64)), 8)
 
 		switch (remain) {
 			case 2:
 			{
-				dst![di + 2] = $.uint($.pointerValue<Encoding>(enc).encode[$.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)], 8)
+				dst![di + 2] = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).encode, $.uint($.uint64And(($.uint($.uint64Shr(val, 6), 64)), 0x3F), 64)), 8)
 				if ($.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32)) {
 					dst![di + 3] = $.uint($.uint($.pointerValue<Encoding>(enc).padChar, 8), 8)
 				}
@@ -271,7 +271,7 @@ export class Encoding {
 				$.panic("invalid padding")
 				break
 			}
-			case ($.int(padding, 32) != $.int(-1, 32)) && ($.uint(enc.value.decodeMap[$.uint(padding, 8)], 8) != $.uint(255, 8)):
+			case ($.int(padding, 32) != $.int(-1, 32)) && ($.uint($.arrayIndex(enc.value.decodeMap, $.uint(padding, 8)), 8) != $.uint(255, 8)):
 			{
 				$.panic("padding contained in alphabet")
 				break
@@ -311,10 +311,10 @@ export class Encoding {
 				dlen = j
 				break
 			}
-			let _in = $.uint(src![si], 8)
+			let _in = $.uint($.arrayIndex(src!, si), 8)
 			si++
 
-			let out = $.uint($.pointerValue<Encoding>(enc).decodeMap[_in], 8)
+			let out = $.uint($.arrayIndex($.pointerValue<Encoding>(enc).decodeMap, _in), 8)
 			if ($.uint(out, 8) != $.uint(0xff, 8)) {
 				dbuf[j] = $.uint(out, 8)
 				continue
@@ -339,14 +339,14 @@ export class Encoding {
 				}
 				case 2:
 				{
-					while ((si < $.len(src)) && (($.uint(src![si], 8) == $.uint(10, 8)) || ($.uint(src![si], 8) == $.uint(13, 8)))) {
+					while ((si < $.len(src)) && (($.uint($.arrayIndex(src!, si), 8) == $.uint(10, 8)) || ($.uint($.arrayIndex(src!, si), 8) == $.uint(13, 8)))) {
 						si++
 					}
 					if (si == $.len(src)) {
 						// not enough padding
 						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.len(src), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 					}
-					if ($.int($.int(src![si], 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
+					if ($.int($.int($.arrayIndex(src!, si), 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
 						// incorrect padding
 						return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 					}
@@ -357,7 +357,7 @@ export class Encoding {
 			}
 
 			// skip over newlines
-			while ((si < $.len(src)) && (($.uint(src![si], 8) == $.uint(10, 8)) || ($.uint(src![si], 8) == $.uint(13, 8)))) {
+			while ((si < $.len(src)) && (($.uint($.arrayIndex(src!, si), 8) == $.uint(10, 8)) || ($.uint($.arrayIndex(src!, si), 8) == $.uint(13, 8)))) {
 				si++
 			}
 			if (si < $.len(src)) {
@@ -369,7 +369,7 @@ export class Encoding {
 		}
 
 		// Convert 4x 6bit source bytes into 3 bytes
-		let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint(dbuf[0], 64), 18), 64)), ($.uint($.uint64Shl($.uint(dbuf[1], 64), 12), 64))), 64)), ($.uint($.uint64Shl($.uint(dbuf[2], 64), 6), 64))), 64)), $.uint(dbuf[3], 64)), 64)
+		let val = $.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Or(($.uint($.uint64Shl($.uint($.arrayIndex(dbuf, 0), 64), 18), 64)), ($.uint($.uint64Shl($.uint($.arrayIndex(dbuf, 1), 64), 12), 64))), 64)), ($.uint($.uint64Shl($.uint($.arrayIndex(dbuf, 2), 64), 6), 64))), 64)), $.uint($.arrayIndex(dbuf, 3), 64)), 64)
 		let __goscriptAssign0_0: number = $.uint($.uint($.uint($.uint64Shr(val, 0), 64), 8), 8)
 		let __goscriptAssign0_1: number = $.uint($.uint($.uint($.uint64Shr(val, 8), 64), 8), 8)
 		let __goscriptAssign0_2: number = $.uint($.uint($.uint($.uint64Shr(val, 16), 64), 8), 8)
@@ -379,21 +379,21 @@ export class Encoding {
 		switch (dlen) {
 			case 4:
 			{
-				dst![2] = $.uint(dbuf[2], 8)
+				dst![2] = $.uint($.arrayIndex(dbuf, 2), 8)
 				dbuf[2] = $.uint(0, 8)
 			}
 			case 3:
 			{
-				dst![1] = $.uint(dbuf[1], 8)
-				if ($.pointerValue<Encoding>(enc).strict && ($.uint(dbuf[2], 8) != $.uint(0, 8))) {
+				dst![1] = $.uint($.arrayIndex(dbuf, 1), 8)
+				if ($.pointerValue<Encoding>(enc).strict && ($.uint($.arrayIndex(dbuf, 2), 8) != $.uint(0, 8))) {
 					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 				}
 				dbuf[1] = $.uint(0, 8)
 			}
 			case 2:
 			{
-				dst![0] = $.uint(dbuf[0], 8)
-				if ($.pointerValue<Encoding>(enc).strict && (($.uint(dbuf[1], 8) != $.uint(0, 8)) || ($.uint(dbuf[2], 8) != $.uint(0, 8)))) {
+				dst![0] = $.uint($.arrayIndex(dbuf, 0), 8)
+				if ($.pointerValue<Encoding>(enc).strict && (($.uint($.arrayIndex(dbuf, 1), 8) != $.uint(0, 8)) || ($.uint($.arrayIndex(dbuf, 2), 8) != $.uint(0, 8)))) {
 					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 2, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 				}
 				break
@@ -512,7 +512,7 @@ export class encoder {
 		if ($.pointerValue<encoder>(e).nbuf > 0) {
 			let i: number = 0
 			for (i = 0; (i < $.len(p)) && ($.pointerValue<encoder>(e).nbuf < 3); i++) {
-				$.pointerValue<encoder>(e).buf[$.pointerValue<encoder>(e).nbuf] = $.uint(p![i], 8)
+				$.pointerValue<encoder>(e).buf[$.pointerValue<encoder>(e).nbuf] = $.uint($.arrayIndex(p!, i), 8)
 				$.pointerValue<encoder>(e).nbuf++
 			}
 			n = n + (i)
@@ -836,7 +836,7 @@ export function NewEncoding(encoder: string): Encoding | $.VarRef<Encoding> | nu
 				$.panic("encoding alphabet contains newline character")
 				break
 			}
-			case $.uint($.pointerValue<Encoding>(e).decodeMap[$.indexStringOrBytes(encoder, i)], 8) != $.uint(255, 8):
+			case $.uint($.arrayIndex($.pointerValue<Encoding>(e).decodeMap, $.indexStringOrBytes(encoder, i)), 8) != $.uint(255, 8):
 			{
 				$.panic("encoding alphabet includes duplicate symbols")
 				break

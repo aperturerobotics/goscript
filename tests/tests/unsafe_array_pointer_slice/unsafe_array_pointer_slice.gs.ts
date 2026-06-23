@@ -12,14 +12,14 @@ export async function main(): globalThis.Promise<void> {
 	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(1, 8), $.uint(2, 8), $.uint(3, 8), $.uint(4, 8)])
 	let ptr: $.VarRef<Uint8Array> | null = ($.arrayPointerFromIndexRef<number>($.indexRef(buf!, 1), 4, 1, 1) as unknown as $.VarRef<Uint8Array> | null)
 	let view: $.Slice<number> = $.goSlice($.pointerValue<Uint8Array>(ptr), undefined, undefined)
-	$.println($.len(view), $.uint(view![0], 8), $.uint(view![3], 8))
+	$.println($.len(view), $.uint($.arrayIndex(view!, 0), 8), $.uint($.arrayIndex(view!, 3), 8))
 	$.pointerValue<Uint8Array>(ptr)[2] = $.uint(7, 8)
-	$.println($.uint(buf![3], 8))
+	$.println($.uint($.arrayIndex(buf!, 3), 8))
 
 	let __goscriptShadow0: $.VarRef<Uint8Array> = $.varRef(new Uint8Array(4))
 	fill(__goscriptShadow0)
 	let shadowView: $.Slice<number> = $.goSlice(__goscriptShadow0.value, undefined, undefined)
-	$.println($.len(shadowView), $.uint(shadowView![0], 8), $.uint(shadowView![3], 8))
+	$.println($.len(shadowView), $.uint($.arrayIndex(shadowView!, 0), 8), $.uint($.arrayIndex(shadowView!, 3), 8))
 }
 
 export function fill(out: $.VarRef<Uint8Array> | null): void {

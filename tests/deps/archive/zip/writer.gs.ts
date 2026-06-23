@@ -575,7 +575,7 @@ export class Writer {
 				}
 			}
 		}
-		if (($.len($.pointerValue<Writer>(w).dir) > 0) && ($.pointerValue<header>($.pointerValue<Writer>(w).dir![$.len($.pointerValue<Writer>(w).dir) - 1]).FileHeader == fh)) {
+		if (($.len($.pointerValue<Writer>(w).dir) > 0) && ($.pointerValue<header>($.arrayIndex($.pointerValue<Writer>(w).dir!, $.len($.pointerValue<Writer>(w).dir) - 1)).FileHeader == fh)) {
 			// See https://golang.org/issue/11144 confusion.
 			return errors.New("archive/zip: invalid duplicate FileHeader")
 		}

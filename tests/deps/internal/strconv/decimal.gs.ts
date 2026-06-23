@@ -94,7 +94,7 @@ export class decimal {
 		// Reverse again to produce forward decimal in a.d.
 		$.pointerValue<decimal>(a).nd = 0
 		for (n--; n >= 0; n--) {
-			$.pointerValue<decimal>(a).d[$.pointerValue<decimal>(a).nd] = $.uint(buf[n], 8)
+			$.pointerValue<decimal>(a).d[$.pointerValue<decimal>(a).nd] = $.uint($.arrayIndex(buf, n), 8)
 			$.pointerValue<decimal>(a).nd++
 		}
 		$.pointerValue<decimal>(a).dp = $.pointerValue<decimal>(a).nd
@@ -130,7 +130,7 @@ export class decimal {
 
 		// round up
 		for (let i = nd - 1; i >= 0; i--) {
-			let c = $.uint($.pointerValue<decimal>(a).d[i], 8)
+			let c = $.uint($.arrayIndex($.pointerValue<decimal>(a).d, i), 8)
 			if (c < 57) {
 				$.pointerValue<decimal>(a).d[i]++
 				$.pointerValue<decimal>(a).nd = i + 1
@@ -153,7 +153,7 @@ export class decimal {
 		let i: number = 0
 		let n = 0n
 		for (i = 0; (i < $.pointerValue<decimal>(a).dp) && (i < $.pointerValue<decimal>(a).nd); i++) {
-			n = $.uint64Add(($.uint64Mul(n, 10)), $.uint64($.pointerValue<decimal>(a).d[i] - 48))
+			n = $.uint64Add(($.uint64Mul(n, 10)), $.uint64($.arrayIndex($.pointerValue<decimal>(a).d, i) - 48))
 		}
 		for (; i < $.pointerValue<decimal>(a).dp; i++) {
 			n = $.uint64Mul(n, 10n)
@@ -273,17 +273,17 @@ export class decimal {
 					if ($.pointerValue<decimal>(d).dp >= $.len(__goscript_atof.powtab)) {
 						n = 27
 					} else {
-						n = __goscript_atof.powtab![$.pointerValue<decimal>(d).dp]
+						n = $.arrayIndex(__goscript_atof.powtab!, $.pointerValue<decimal>(d).dp)
 					}
 					decimal.prototype.Shift.call(d, -n)
 					exp = exp + (n)
 				}
-				while (($.pointerValue<decimal>(d).dp < 0) || (($.pointerValue<decimal>(d).dp == 0) && ($.pointerValue<decimal>(d).d[0] < 53))) {
+				while (($.pointerValue<decimal>(d).dp < 0) || (($.pointerValue<decimal>(d).dp == 0) && ($.arrayIndex($.pointerValue<decimal>(d).d, 0) < 53))) {
 					let n: number = 0
 					if (-$.pointerValue<decimal>(d).dp >= $.len(__goscript_atof.powtab)) {
 						n = 27
 					} else {
-						n = __goscript_atof.powtab![-$.pointerValue<decimal>(d).dp]
+						n = $.arrayIndex(__goscript_atof.powtab!, -$.pointerValue<decimal>(d).dp)
 					}
 					decimal.prototype.Shift.call(d, n)
 					exp = exp - (n)
@@ -511,7 +511,7 @@ export function digitZero(dst: $.Slice<number>): number {
 }
 
 export function trim(a: decimal | $.VarRef<decimal> | null): void {
-	while (($.pointerValue<decimal>(a).nd > 0) && ($.uint($.pointerValue<decimal>(a).d[$.pointerValue<decimal>(a).nd - 1], 8) == $.uint(48, 8))) {
+	while (($.pointerValue<decimal>(a).nd > 0) && ($.uint($.arrayIndex($.pointerValue<decimal>(a).d, $.pointerValue<decimal>(a).nd - 1), 8) == $.uint(48, 8))) {
 		$.pointerValue<decimal>(a).nd--
 	}
 	if ($.pointerValue<decimal>(a).nd == 0) {
@@ -538,7 +538,7 @@ export function rightShift(a: decimal | $.VarRef<decimal> | null, k: number): vo
 			}
 			break
 		}
-		let c = $.uint($.pointerValue<decimal>(a).d[r], 64)
+		let c = $.uint($.arrayIndex($.pointerValue<decimal>(a).d, r), 64)
 		n = $.uint($.uint64Sub(($.uint($.uint64Add(($.uint($.uint64Mul(n, 10), 64)), c), 64)), 48), 64)
 	}
 	$.pointerValue<decimal>(a).dp = $.pointerValue<decimal>(a).dp - (r - 1)
@@ -547,7 +547,7 @@ export function rightShift(a: decimal | $.VarRef<decimal> | null, k: number): vo
 
 	// Pick up a digit, put down a digit.
 	for (; r < $.pointerValue<decimal>(a).nd; r++) {
-		let c = $.uint($.pointerValue<decimal>(a).d[r], 64)
+		let c = $.uint($.arrayIndex($.pointerValue<decimal>(a).d, r), 64)
 		let dig = $.uint($.uint64Shr(n, k), 64)
 		n = $.uint($.uint64And(n, mask), 64)
 		$.pointerValue<decimal>(a).d[w] = $.uint($.uint($.uint($.uint64Add(dig, 48), 64), 8), 8)
@@ -585,16 +585,16 @@ export function prefixIsLessThan(b: $.Slice<number>, s: string): boolean {
 		if (i >= $.len(b)) {
 			return true
 		}
-		if ($.uint(b![i], 8) != $.uint($.indexStringOrBytes(s, i), 8)) {
-			return b![i] < $.indexStringOrBytes(s, i)
+		if ($.uint($.arrayIndex(b!, i), 8) != $.uint($.indexStringOrBytes(s, i), 8)) {
+			return $.arrayIndex(b!, i) < $.indexStringOrBytes(s, i)
 		}
 	}
 	return false
 }
 
 export function leftShift(a: decimal | $.VarRef<decimal> | null, k: number): void {
-	let delta = leftcheats![k].delta
-	if (prefixIsLessThan($.goSlice($.pointerValue<decimal>(a).d, 0, $.pointerValue<decimal>(a).nd), leftcheats![k].cutoff)) {
+	let delta = $.arrayIndex(leftcheats!, k).delta
+	if (prefixIsLessThan($.goSlice($.pointerValue<decimal>(a).d, 0, $.pointerValue<decimal>(a).nd), $.arrayIndex(leftcheats!, k).cutoff)) {
 		delta--
 	}
 
@@ -604,7 +604,7 @@ export function leftShift(a: decimal | $.VarRef<decimal> | null, k: number): voi
 	// Pick up a digit, put down a digit.
 	let n: number = 0
 	for (r--; r >= 0; r--) {
-		n = $.uint($.uint64Add(n, $.uint($.uint64Shl(($.uint($.uint64Sub($.uint($.pointerValue<decimal>(a).d[r], 64), 48), 64)), k), 64)), 64)
+		n = $.uint($.uint64Add(n, $.uint($.uint64Shl(($.uint($.uint64Sub($.uint($.arrayIndex($.pointerValue<decimal>(a).d, r), 64), 48), 64)), k), 64)), 64)
 		let quo = $.uint($.uint64Div(n, 10), 64)
 		let rem = $.uint($.uint64Sub(n, ($.uint($.uint64Mul(10, quo), 64))), 64)
 		w--
@@ -645,13 +645,13 @@ export function shouldRoundUp(a: decimal | $.VarRef<decimal> | null, nd: number)
 	if ((nd < 0) || (nd >= $.pointerValue<decimal>(a).nd)) {
 		return false
 	}
-	if (($.uint($.pointerValue<decimal>(a).d[nd], 8) == $.uint(53, 8)) && ((nd + 1) == $.pointerValue<decimal>(a).nd)) {
+	if (($.uint($.arrayIndex($.pointerValue<decimal>(a).d, nd), 8) == $.uint(53, 8)) && ((nd + 1) == $.pointerValue<decimal>(a).nd)) {
 		// if we truncated, a little higher than what's recorded - always round up
 		if ($.pointerValue<decimal>(a).trunc) {
 			return true
 		}
-		return (nd > 0) && ($.uint((($.pointerValue<decimal>(a).d[nd - 1] - 48) % 2), 8) != $.uint(0, 8))
+		return (nd > 0) && ($.uint((($.arrayIndex($.pointerValue<decimal>(a).d, nd - 1) - 48) % 2), 8) != $.uint(0, 8))
 	}
 	// not halfway - digit tells all
-	return $.pointerValue<decimal>(a).d[nd] >= 53
+	return $.arrayIndex($.pointerValue<decimal>(a).d, nd) >= 53
 }

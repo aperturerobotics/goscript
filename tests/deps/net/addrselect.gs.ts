@@ -254,11 +254,11 @@ export function sortByRFC6724withSrcs(addrs: $.Slice<__goscript_iprawsock.IPAddr
 	for (let __goscriptRangeTarget0 = addrs, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		let v = __goscriptRangeTarget0![i]
 		let [addrAttrIP, ] = netip.AddrFromSlice(v.IP)
-		addrInfos![i] = (() => { const __goscriptLiteralField0 = $.markAsStructValue($.cloneStructValue(ipAttrOf($.markAsStructValue($.cloneStructValue(addrAttrIP))))); const __goscriptLiteralField1 = $.markAsStructValue($.cloneStructValue(ipAttrOf($.markAsStructValue($.cloneStructValue(srcs![i]))))); return $.markAsStructValue(new byRFC6724Info({addr: $.markAsStructValue($.cloneStructValue(addrs![i])), addrAttr: __goscriptLiteralField0, src: $.markAsStructValue($.cloneStructValue(srcs![i])), srcAttr: __goscriptLiteralField1})) })()
+		addrInfos![i] = (() => { const __goscriptLiteralField0 = $.markAsStructValue($.cloneStructValue(ipAttrOf($.markAsStructValue($.cloneStructValue(addrAttrIP))))); const __goscriptLiteralField1 = $.markAsStructValue($.cloneStructValue(ipAttrOf($.markAsStructValue($.cloneStructValue($.arrayIndex(srcs!, i)))))); return $.markAsStructValue(new byRFC6724Info({addr: $.markAsStructValue($.cloneStructValue($.arrayIndex(addrs!, i))), addrAttr: __goscriptLiteralField0, src: $.markAsStructValue($.cloneStructValue($.arrayIndex(srcs!, i))), srcAttr: __goscriptLiteralField1})) })()
 	}
 	slices.SortStableFunc(addrInfos, compareByRFC6724)
 	for (let __goscriptRangeTarget1 = addrInfos, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
-		addrs![i] = $.markAsStructValue($.cloneStructValue(addrInfos![i].addr))
+		addrs![i] = $.markAsStructValue($.cloneStructValue($.arrayIndex(addrInfos!, i).addr))
 	}
 }
 
@@ -266,8 +266,8 @@ export async function srcAddrs(addrs: $.Slice<__goscript_iprawsock.IPAddr>): glo
 	let srcs: $.Slice<netip.Addr> = $.makeSlice<netip.Addr>($.len(addrs), undefined, undefined, () => $.markAsStructValue(new netip.Addr()))
 	let dst = $.varRef($.markAsStructValue(new __goscript_udpsock.UDPAddr({Port: 53})))
 	for (let __goscriptRangeTarget2 = addrs, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
-		dst.value.IP = (addrs![i].IP as __goscript_ip.IP)
-		dst.value.Zone = addrs![i].Zone
+		dst.value.IP = ($.arrayIndex(addrs!, i).IP as __goscript_ip.IP)
+		dst.value.Zone = $.arrayIndex(addrs!, i).Zone
 		let __goscriptTuple0: any = await __goscript_udpsock.DialUDP("udp", null, dst)
 		let c: __goscript_udpsock.UDPConn | $.VarRef<__goscript_udpsock.UDPConn> | null = __goscriptTuple0[0]
 		let err = __goscriptTuple0[1]
@@ -444,11 +444,11 @@ export function classifyScope(ip: netip.Addr): scope {
 	let ipv6 = $.markAsStructValue($.cloneStructValue(ip)).Is6() && !$.markAsStructValue($.cloneStructValue(ip)).Is4In6()
 	let ipv6AsBytes = $.markAsStructValue($.cloneStructValue(ip)).As16()
 	if (ipv6 && $.markAsStructValue($.cloneStructValue(ip)).IsMulticast()) {
-		return $.uint(ipv6AsBytes[1] & 0xf, 8)
+		return $.uint($.arrayIndex(ipv6AsBytes, 1) & 0xf, 8)
 	}
 	// Site-local addresses are defined in RFC 3513 section 2.5.6
 	// (and deprecated in RFC 3879).
-	if ((ipv6 && ($.uint(ipv6AsBytes[0], 8) == $.uint(0xfe, 8))) && ($.uint((ipv6AsBytes[1] & 0xc0), 8) == $.uint(0xc0, 8))) {
+	if ((ipv6 && ($.uint($.arrayIndex(ipv6AsBytes, 0), 8) == $.uint(0xfe, 8))) && ($.uint(($.arrayIndex(ipv6AsBytes, 1) & 0xc0), 8) == $.uint(0xc0, 8))) {
 		return $.uint(5, 8)
 	}
 	return $.uint(14, 8)
@@ -472,15 +472,15 @@ export function commonPrefixLen(a: netip.Addr, b: __goscript_ip.IP): number {
 		b = ($.goSlice(b, undefined, 8) as __goscript_ip.IP)
 	}
 	while ($.len(aAsSlice) > 0) {
-		if ($.uint(aAsSlice![0], 8) == $.uint(b![0], 8)) {
+		if ($.uint($.arrayIndex(aAsSlice!, 0), 8) == $.uint($.arrayIndex(b!, 0), 8)) {
 			cpl = cpl + (8)
 			aAsSlice = $.goSlice(aAsSlice, 1, undefined)
 			b = ($.goSlice(b, 1, undefined) as __goscript_ip.IP)
 			continue
 		}
 		let bits = 8
-		let ab = $.uint(aAsSlice![0], 8)
-		let bb = $.uint(b![0], 8)
+		let ab = $.uint($.arrayIndex(aAsSlice!, 0), 8)
+		let bb = $.uint($.arrayIndex(b!, 0), 8)
 		while (true) {
 			ab = (ab >>> ($.uint(1, 8))) >>> 0
 			bb = (bb >>> ($.uint(1, 8))) >>> 0

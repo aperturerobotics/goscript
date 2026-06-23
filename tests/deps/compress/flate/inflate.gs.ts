@@ -254,7 +254,7 @@ export class huffmanDecoder {
 		for (let i = min; i <= max; i++) {
 			code = code << (1)
 			nextcode[i] = code
-			code = code + (count[i])
+			code = code + ($.arrayIndex(count, i))
 		}
 
 		// Check that the coding is complete (i.e., that we've
@@ -272,13 +272,13 @@ export class huffmanDecoder {
 			$.pointerValue<huffmanDecoder>(h).linkMask = $.uint($.uint(numLinks - 1, 32), 32)
 
 			// create link tables
-			let link = nextcode[9 + 1] >> 1
+			let link = $.arrayIndex(nextcode, 9 + 1) >> 1
 			$.pointerValue<huffmanDecoder>(h).links = $.makeSlice<$.Slice<number>>(512 - link)
 			for (let j = $.uint(link, 64); j < 512; j++) {
 				let reverse = $.int(bits2.Reverse16($.uint($.uint(j, 16), 16)))
 				reverse = reverse >> ($.uint($.uint($.uint64Sub(16, 9), 64), 64))
 				let off = $.uint($.uint64Sub(j, $.uint(link, 64)), 64)
-				if (false && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[reverse], 32) != $.uint(0, 32))) {
+				if (false && ($.uint($.arrayIndex($.pointerValue<huffmanDecoder>(h).chunks, reverse), 32) != $.uint(0, 32))) {
 					$.panic("impossible: overwriting existing chunk")
 				}
 				$.pointerValue<huffmanDecoder>(h).chunks[reverse] = $.uint($.uint($.uint($.uint64Or(($.uint($.uint64Shl(off, 4), 64)), ($.uint($.uint64Add(9, 1), 64))), 64), 32), 32)
@@ -291,7 +291,7 @@ export class huffmanDecoder {
 			if (n == 0) {
 				continue
 			}
-			let __goscriptShadow0 = nextcode[n]
+			let __goscriptShadow0 = $.arrayIndex(nextcode, n)
 			nextcode[n]++
 			let chunk = $.uint($.uint((i << 4) | n, 32), 32)
 			let reverse = $.int(bits2.Reverse16($.uint($.uint(__goscriptShadow0, 16), 16)))
@@ -303,23 +303,23 @@ export class huffmanDecoder {
 					// never a valid chunk, because the
 					// lower 4 "count" bits should be
 					// between 1 and 15.
-					if (false && ($.uint($.pointerValue<huffmanDecoder>(h).chunks[off], 32) != $.uint(0, 32))) {
+					if (false && ($.uint($.arrayIndex($.pointerValue<huffmanDecoder>(h).chunks, off), 32) != $.uint(0, 32))) {
 						$.panic("impossible: overwriting existing chunk")
 					}
 					$.pointerValue<huffmanDecoder>(h).chunks[off] = $.uint(chunk, 32)
 				}
 			} else {
 				let j = reverse & (512 - 1)
-				if (false && ($.uint(($.pointerValue<huffmanDecoder>(h).chunks[j] & 15), 32) != $.uint((9 + 1), 32))) {
+				if (false && ($.uint(($.arrayIndex($.pointerValue<huffmanDecoder>(h).chunks, j) & 15), 32) != $.uint((9 + 1), 32))) {
 					// Longer codes should have been
 					// associated with a link table above.
 					$.panic("impossible: not an indirect chunk")
 				}
-				let value = $.uint($.uintShr($.pointerValue<huffmanDecoder>(h).chunks[j], 4, 32), 32)
-				let linktab: $.Slice<number> = $.pointerValue<huffmanDecoder>(h).links![value]
+				let value = $.uint($.uintShr($.arrayIndex($.pointerValue<huffmanDecoder>(h).chunks, j), 4, 32), 32)
+				let linktab: $.Slice<number> = $.arrayIndex($.pointerValue<huffmanDecoder>(h).links!, value)
 				reverse = reverse >> (9)
 				for (let off = reverse; off < $.len(linktab); off = off + (1 << $.uint(n - 9, 64))) {
-					if (false && ($.uint(linktab![off], 32) != $.uint(0, 32))) {
+					if (false && ($.uint($.arrayIndex(linktab!, off), 32) != $.uint(0, 32))) {
 						$.panic("impossible: overwriting existing chunk")
 					}
 					linktab![off] = $.uint(chunk, 32)
@@ -667,8 +667,8 @@ export class decompressor {
 			$.pointerValue<decompressor>(f).err = noEOF(err)
 			return
 		}
-		let n = $.int($.pointerValue<decompressor>(f).buf[0]) | ($.int($.pointerValue<decompressor>(f).buf[1]) << 8)
-		let nn = $.int($.pointerValue<decompressor>(f).buf[2]) | ($.int($.pointerValue<decompressor>(f).buf[3]) << 8)
+		let n = $.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 0)) | ($.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 1)) << 8)
+		let nn = $.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 2)) | ($.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 3)) << 8)
 		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint(Number($.int64Xor(n, -1n)), 16), 16)) {
 			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			return
@@ -721,10 +721,10 @@ export class decompressor {
 				b = b | ($.uint($.uint(c, 32) << ($.uint($.uint64And(nb, 31), 64)), 32))
 				nb = $.uint($.uint64Add(nb, 8), 64)
 			}
-			let chunk = $.uint($.pointerValue<huffmanDecoder>(h).chunks[b & (512 - 1)], 32)
+			let chunk = $.uint($.arrayIndex($.pointerValue<huffmanDecoder>(h).chunks, b & (512 - 1)), 32)
 			n = $.uint(chunk & 15, 64)
 			if (n > 9) {
-				chunk = $.uint($.pointerValue<huffmanDecoder>(h).links![$.uintShr(chunk, 4, 32)]![($.uintShr(b, 9, 32)) & $.pointerValue<huffmanDecoder>(h).linkMask], 32)
+				chunk = $.uint($.arrayIndex($.arrayIndex($.pointerValue<huffmanDecoder>(h).links!, $.uintShr(chunk, 4, 32))!, ($.uintShr(b, 9, 32)) & $.pointerValue<huffmanDecoder>(h).linkMask), 32)
 				n = $.uint(chunk & 15, 64)
 			}
 			if (n <= nb) {
@@ -1088,12 +1088,12 @@ export class decompressor {
 					}
 				}
 			}
-			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = $.int($.pointerValue<decompressor>(f).b & 0x7)
+			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[$.arrayIndex(codeOrder, i)] = $.int($.pointerValue<decompressor>(f).b & 0x7)
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(3, 32))) >>> 0
 			$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, 3), 64)
 		}
 		for (let i = nclen; i < $.len(codeOrder); i++) {
-			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[codeOrder[i]] = 0
+			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[$.arrayIndex(codeOrder, i)] = 0
 		}
 		if (!$.pointerValue<decompressor>(f).h1.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits), 0, undefined))) {
 			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
@@ -1129,7 +1129,7 @@ export class decompressor {
 					if (i == 0) {
 						return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					}
-					b = $.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[i - 1]
+					b = $.arrayIndex($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), i - 1)
 					break
 				}
 				case 17:
@@ -1175,8 +1175,8 @@ export class decompressor {
 		// for the HLIT tree to the length of the EOB marker since we know that
 		// every block must terminate with one. This preserves the property that
 		// we never read any extra bytes after the end of the DEFLATE stream.
-		if ($.pointerValue<decompressor>(f).h1.min < $.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[256]) {
-			$.pointerValue<decompressor>(f).h1.min = $.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[256]
+		if ($.pointerValue<decompressor>(f).h1.min < $.arrayIndex($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), 256)) {
+			$.pointerValue<decompressor>(f).h1.min = $.arrayIndex($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), 256)
 		}
 
 		return null

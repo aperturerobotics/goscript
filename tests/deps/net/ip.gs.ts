@@ -80,7 +80,7 @@ export class IPNet {
 			return false
 		}
 		for (let i = 0; i < l; i++) {
-			if ($.uint((nn![i] & m![i]), 8) != $.uint((ip![i] & m![i]), 8)) {
+			if ($.uint(($.arrayIndex(nn!, i) & $.arrayIndex(m!, i)), 8) != $.uint(($.arrayIndex(ip!, i) & $.arrayIndex(m!, i)), 8)) {
 				return false
 			}
 		}
@@ -238,7 +238,7 @@ export function IP_IsLoopback(ip: IP): boolean {
 	{
 		let ip4: IP = (IP_To4(ip) as IP)
 		if (ip4 != null) {
-			return $.uint(ip4![0], 8) == $.uint(127, 8)
+			return $.uint($.arrayIndex(ip4!, 0), 8) == $.uint(127, 8)
 		}
 	}
 	return IP_Equal(ip, (IPv6loopback as IP))
@@ -254,46 +254,46 @@ export function IP_IsPrivate(ip: IP): boolean {
 			//     10.0.0.0        -   10.255.255.255  (10/8 prefix)
 			//     172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
 			//     192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
-			return (($.uint(ip4![0], 8) == $.uint(10, 8)) || (($.uint(ip4![0], 8) == $.uint(172, 8)) && ($.uint((ip4![1] & 0xf0), 8) == $.uint(16, 8)))) || (($.uint(ip4![0], 8) == $.uint(192, 8)) && ($.uint(ip4![1], 8) == $.uint(168, 8)))
+			return (($.uint($.arrayIndex(ip4!, 0), 8) == $.uint(10, 8)) || (($.uint($.arrayIndex(ip4!, 0), 8) == $.uint(172, 8)) && ($.uint(($.arrayIndex(ip4!, 1) & 0xf0), 8) == $.uint(16, 8)))) || (($.uint($.arrayIndex(ip4!, 0), 8) == $.uint(192, 8)) && ($.uint($.arrayIndex(ip4!, 1), 8) == $.uint(168, 8)))
 		}
 	}
 	// Following RFC 4193, Section 8. IANA Considerations which says:
 	//   The IANA has assigned the FC00::/7 prefix to "Unique Local Unicast".
-	return ($.len((ip as IP)) == 16) && ($.uint((ip![0] & 0xfe), 8) == $.uint(0xfc, 8))
+	return ($.len((ip as IP)) == 16) && ($.uint(($.arrayIndex(ip!, 0) & 0xfe), 8) == $.uint(0xfc, 8))
 }
 
 export function IP_IsMulticast(ip: IP): boolean {
 	{
 		let ip4: IP = (IP_To4(ip) as IP)
 		if (ip4 != null) {
-			return $.uint((ip4![0] & 0xf0), 8) == $.uint(0xe0, 8)
+			return $.uint(($.arrayIndex(ip4!, 0) & 0xf0), 8) == $.uint(0xe0, 8)
 		}
 	}
-	return ($.len((ip as IP)) == 16) && ($.uint(ip![0], 8) == $.uint(0xff, 8))
+	return ($.len((ip as IP)) == 16) && ($.uint($.arrayIndex(ip!, 0), 8) == $.uint(0xff, 8))
 }
 
 export function IP_IsInterfaceLocalMulticast(ip: IP): boolean {
-	return (($.len((ip as IP)) == 16) && ($.uint(ip![0], 8) == $.uint(0xff, 8))) && ($.uint((ip![1] & 0x0f), 8) == $.uint(0x01, 8))
+	return (($.len((ip as IP)) == 16) && ($.uint($.arrayIndex(ip!, 0), 8) == $.uint(0xff, 8))) && ($.uint(($.arrayIndex(ip!, 1) & 0x0f), 8) == $.uint(0x01, 8))
 }
 
 export function IP_IsLinkLocalMulticast(ip: IP): boolean {
 	{
 		let ip4: IP = (IP_To4(ip) as IP)
 		if (ip4 != null) {
-			return (($.uint(ip4![0], 8) == $.uint(224, 8)) && ($.uint(ip4![1], 8) == $.uint(0, 8))) && ($.uint(ip4![2], 8) == $.uint(0, 8))
+			return (($.uint($.arrayIndex(ip4!, 0), 8) == $.uint(224, 8)) && ($.uint($.arrayIndex(ip4!, 1), 8) == $.uint(0, 8))) && ($.uint($.arrayIndex(ip4!, 2), 8) == $.uint(0, 8))
 		}
 	}
-	return (($.len((ip as IP)) == 16) && ($.uint(ip![0], 8) == $.uint(0xff, 8))) && ($.uint((ip![1] & 0x0f), 8) == $.uint(0x02, 8))
+	return (($.len((ip as IP)) == 16) && ($.uint($.arrayIndex(ip!, 0), 8) == $.uint(0xff, 8))) && ($.uint(($.arrayIndex(ip!, 1) & 0x0f), 8) == $.uint(0x02, 8))
 }
 
 export function IP_IsLinkLocalUnicast(ip: IP): boolean {
 	{
 		let ip4: IP = (IP_To4(ip) as IP)
 		if (ip4 != null) {
-			return ($.uint(ip4![0], 8) == $.uint(169, 8)) && ($.uint(ip4![1], 8) == $.uint(254, 8))
+			return ($.uint($.arrayIndex(ip4!, 0), 8) == $.uint(169, 8)) && ($.uint($.arrayIndex(ip4!, 1), 8) == $.uint(254, 8))
 		}
 	}
-	return (($.len((ip as IP)) == 16) && ($.uint(ip![0], 8) == $.uint(0xfe, 8))) && ($.uint((ip![1] & 0xc0), 8) == $.uint(0x80, 8))
+	return (($.len((ip as IP)) == 16) && ($.uint($.arrayIndex(ip!, 0), 8) == $.uint(0xfe, 8))) && ($.uint(($.arrayIndex(ip!, 1) & 0xc0), 8) == $.uint(0x80, 8))
 }
 
 export function IP_IsGlobalUnicast(ip: IP): boolean {
@@ -302,7 +302,7 @@ export function IP_IsGlobalUnicast(ip: IP): boolean {
 
 export function isZeros(p: IP): boolean {
 	for (let i = 0; i < $.len((p as IP)); i++) {
-		if ($.uint(p![i], 8) != $.uint(0, 8)) {
+		if ($.uint($.arrayIndex(p!, i), 8) != $.uint(0, 8)) {
 			return false
 		}
 	}
@@ -313,7 +313,7 @@ export function IP_To4(ip: IP): IP {
 	if ($.len((ip as IP)) == 4) {
 		return (ip as IP)
 	}
-	if (((($.len((ip as IP)) == 16) && isZeros(($.goSlice(ip, 0, 10) as IP))) && ($.uint(ip![10], 8) == $.uint(0xff, 8))) && ($.uint(ip![11], 8) == $.uint(0xff, 8))) {
+	if (((($.len((ip as IP)) == 16) && isZeros(($.goSlice(ip, 0, 10) as IP))) && ($.uint($.arrayIndex(ip!, 10), 8) == $.uint(0xff, 8))) && ($.uint($.arrayIndex(ip!, 11), 8) == $.uint(0xff, 8))) {
 		return ($.goSlice(ip, 12, 16) as IP)
 	}
 	return (null as IP)
@@ -321,7 +321,7 @@ export function IP_To4(ip: IP): IP {
 
 export function IP_To16(ip: IP): IP {
 	if ($.len((ip as IP)) == 4) {
-		return (IPv4($.uint(ip![0], 8), $.uint(ip![1], 8), $.uint(ip![2], 8), $.uint(ip![3], 8)) as IP)
+		return (IPv4($.uint($.arrayIndex(ip!, 0), 8), $.uint($.arrayIndex(ip!, 1), 8), $.uint($.arrayIndex(ip!, 2), 8), $.uint($.arrayIndex(ip!, 3), 8)) as IP)
 	}
 	if ($.len((ip as IP)) == 16) {
 		return (ip as IP)
@@ -355,12 +355,12 @@ export function IP_DefaultMask(ip: IP): IPMask {
 		}
 	}
 	switch (true) {
-		case ip![0] < 0x80:
+		case $.arrayIndex(ip!, 0) < 0x80:
 		{
 			return (classAMask as IPMask)
 			break
 		}
-		case ip![0] < 0xC0:
+		case $.arrayIndex(ip!, 0) < 0xC0:
 		{
 			return (classBMask as IPMask)
 			break
@@ -397,7 +397,7 @@ export function IP_Mask(ip: IP, mask: IPMask): IP {
 	}
 	let out: IP = ($.makeSlice<number>(n, undefined, "byte") as IP)
 	for (let i = 0; i < n; i++) {
-		out![i] = $.uint(ip![i] & mask![i], 8)
+		out![i] = $.uint($.arrayIndex(ip!, i) & $.arrayIndex(mask!, i), 8)
 	}
 	return (out as IP)
 }
@@ -533,7 +533,7 @@ export function simpleMaskLength(mask: IPMask): number {
 			return -1
 		}
 		for (i++; i < $.len((mask as IPMask)); i++) {
-			if ($.uint(mask![i], 8) != $.uint(0, 8)) {
+			if ($.uint($.arrayIndex(mask!, i), 8) != $.uint(0, 8)) {
 				return -1
 			}
 		}

@@ -450,7 +450,7 @@ export async function dnsStreamRoundTrip(c: __goscript_net.Conn | null, id: numb
 			return [$.markAsStructValue(new dnsmessage.Parser()), $.markAsStructValue(new dnsmessage.Header()), err]
 		}
 	}
-	let l = ($.int(b![0]) << 8) | $.int(b![1])
+	let l = ($.int($.arrayIndex(b!, 0)) << 8) | $.int($.arrayIndex(b!, 1))
 	if (l > $.len(b)) {
 		b = $.makeSlice<number>(l, undefined, "byte")
 	}

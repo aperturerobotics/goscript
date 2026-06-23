@@ -6,19 +6,19 @@ import * as $ from "@goscript/builtin/index.js"
 export async function main(): globalThis.Promise<void> {
 	// Test basic array literal
 	let a: number[] = [1, 2, 3]
-	$.println(a[0], a[1], a[2])
+	$.println($.arrayIndex(a, 0), $.arrayIndex(a, 1), $.arrayIndex(a, 2))
 
 	// Test array literal with inferred length
 	let b = ["hello", "world"]
-	$.println(b[0], b[1])
+	$.println($.arrayIndex(b, 0), $.arrayIndex(b, 1))
 
 	// Test array literal with specific element initialization
 	let c = [0, 10, 0, 30, 0]
-	$.println(c[0], c[1], c[2], c[3], c[4])
+	$.println($.arrayIndex(c, 0), $.arrayIndex(c, 1), $.arrayIndex(c, 2), $.arrayIndex(c, 3), $.arrayIndex(c, 4))
 
 	// Test empty byte array literal
 	let d = new Uint8Array(4)
-	$.println($.len(d), $.uint(d[0], 8), $.uint(d[3], 8))
+	$.println($.len(d), $.uint($.arrayIndex(d, 0), 8), $.uint($.arrayIndex(d, 3), 8))
 }
 
 if ($.isMainScript(import.meta)) {

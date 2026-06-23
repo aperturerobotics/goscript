@@ -198,7 +198,7 @@ export async function main(): globalThis.Promise<void> {
 				break
 		}
 	}
-	$.println("oid", $.len((oid.value as ObjectIdentifier)), oid.value![0], ok)
+	$.println("oid", $.len((oid.value as ObjectIdentifier)), $.arrayIndex(oid.value!, 0), ok)
 
 	let raw: $.VarRef<RawValue> = $.varRef($.markAsStructValue(new RawValue()))
 	let rawValue: any = $.interfaceValue<any>(raw, "*main.RawValue")

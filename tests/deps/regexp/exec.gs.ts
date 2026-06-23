@@ -362,8 +362,8 @@ export class machine {
 			}
 
 			{
-				var j = $.uint($.pointerValue<queue>(q).sparse![pc], 32)
-				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.uint($.pointerValue<queue>(q).dense![j].pc, 32) == $.uint(pc, 32))) {
+				var j = $.uint($.arrayIndex($.pointerValue<queue>(q).sparse!, pc), 32)
+				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.uint($.arrayIndex($.pointerValue<queue>(q).dense!, j).pc, 32) == $.uint(pc, 32))) {
 					return t
 				}
 			}
@@ -411,7 +411,7 @@ export class machine {
 				case syntax.InstCapture:
 				{
 					if ($.int($.pointerValue<syntax.Inst>(i).Arg) < $.len(cap)) {
-						let opos = cap![$.pointerValue<syntax.Inst>(i).Arg]
+						let opos = $.arrayIndex(cap!, $.pointerValue<syntax.Inst>(i).Arg)
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = pos
 						machine.prototype.add.call(m, q, $.uint($.pointerValue<syntax.Inst>(i).Out, 32), pos, cap, cond, null)
 						cap![$.pointerValue<syntax.Inst>(i).Arg] = opos
@@ -452,7 +452,7 @@ export class machine {
 		{
 			let n = $.len($.pointerValue<machine>(m).pool)
 			if (n > 0) {
-				t = $.pointerValue<machine>(m).pool![n - 1]
+				t = $.arrayIndex($.pointerValue<machine>(m).pool!, n - 1)
 				$.pointerValue<machine>(m).pool = $.goSlice($.pointerValue<machine>(m).pool, undefined, n - 1)
 			} else {
 				t = new thread()
@@ -582,7 +582,7 @@ export class machine {
 			if (t == null) {
 				continue
 			}
-			if (((longest && $.pointerValue<machine>(m).matched) && ($.len($.pointerValue<thread>(t).cap) > 0)) && ($.pointerValue<machine>(m).matchcap![0] < $.pointerValue<thread>(t).cap![0])) {
+			if (((longest && $.pointerValue<machine>(m).matched) && ($.len($.pointerValue<thread>(t).cap) > 0)) && ($.arrayIndex($.pointerValue<machine>(m).matchcap!, 0) < $.arrayIndex($.pointerValue<thread>(t).cap!, 0))) {
 				$.pointerValue<machine>(m).pool = $.append($.pointerValue<machine>(m).pool, t)
 				continue
 			}
@@ -596,7 +596,7 @@ export class machine {
 				}
 				case syntax.InstMatch:
 				{
-					if (($.len($.pointerValue<thread>(t).cap) > 0) && ((!longest || !$.pointerValue<machine>(m).matched) || ($.pointerValue<machine>(m).matchcap![1] < pos))) {
+					if (($.len($.pointerValue<thread>(t).cap) > 0) && ((!longest || !$.pointerValue<machine>(m).matched) || ($.arrayIndex($.pointerValue<machine>(m).matchcap!, 1) < pos))) {
 						$.pointerValue<thread>(t).cap![1] = pos
 						$.copy($.pointerValue<machine>(m).matchcap, $.pointerValue<thread>(t).cap)
 					}
@@ -620,7 +620,7 @@ export class machine {
 				}
 				case syntax.InstRune1:
 				{
-					add = $.int(c, 32) == $.int($.pointerValue<syntax.Inst>(i).Rune![0], 32)
+					add = $.int(c, 32) == $.int($.arrayIndex($.pointerValue<syntax.Inst>(i).Rune!, 0), 32)
 					break
 				}
 				case syntax.InstRuneAny:

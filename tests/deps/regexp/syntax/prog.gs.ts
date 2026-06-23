@@ -81,8 +81,8 @@ export class Prog {
 
 		// Have prefix; gather characters.
 		let buf: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(7, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.pointerValue<Inst>(i).Rune![0], 32) != $.int(utf8.RuneError, 32))) {
-			buf.value.WriteRune($.int($.pointerValue<Inst>(i).Rune![0], 32))
+		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(7, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.arrayIndex($.pointerValue<Inst>(i).Rune!, 0), 32) != $.int(utf8.RuneError, 32))) {
+			buf.value.WriteRune($.int($.arrayIndex($.pointerValue<Inst>(i).Rune!, 0), 32))
 			i = Prog.prototype.skipNop.call(p, $.uint($.pointerValue<Inst>(i).Out, 32))
 		}
 		return [buf.value.String(), $.uint($.pointerValue<Inst>(i).Op, 8) == $.uint(4, 8)]
@@ -258,7 +258,7 @@ export class Inst {
 			}
 			case 1:
 			{
-				let r0 = $.int(rune![0], 32)
+				let r0 = $.int($.arrayIndex(rune!, 0), 32)
 				if ($.int(r, 32) == $.int(r0, 32)) {
 					return 0
 				}
@@ -274,7 +274,7 @@ export class Inst {
 			}
 			case 2:
 			{
-				if ((r >= rune![0]) && (r <= rune![1])) {
+				if ((r >= $.arrayIndex(rune!, 0)) && (r <= $.arrayIndex(rune!, 1))) {
 					return 0
 				}
 				return -1
@@ -285,10 +285,10 @@ export class Inst {
 			case 8:
 			{
 				for (let j = 0; j < $.len(rune); j = j + (2)) {
-					if (r < rune![j]) {
+					if (r < $.arrayIndex(rune!, j)) {
 						return -1
 					}
-					if (r <= rune![j + 1]) {
+					if (r <= $.arrayIndex(rune!, j + 1)) {
 						return Math.trunc(j / 2)
 					}
 				}
@@ -303,9 +303,9 @@ export class Inst {
 		while (lo < hi) {
 			let m = $.int($.uint($.uint64Shr($.uint(lo + hi, 64), 1), 64))
 			{
-				let c = $.int(rune![2 * m], 32)
+				let c = $.int($.arrayIndex(rune!, 2 * m), 32)
 				if (c <= r) {
-					if (r <= rune![(2 * m) + 1]) {
+					if (r <= $.arrayIndex(rune!, (2 * m) + 1)) {
 						return m
 					}
 					lo = m + 1
@@ -394,7 +394,7 @@ export function InstOp_String(i: InstOp): string {
 	if ($.uint(i, 64) >= $.uint($.len(instOpNames), 64)) {
 		return ""
 	}
-	return instOpNames![i]
+	return $.arrayIndex(instOpNames!, i)
 }
 
 export function EmptyOpContext(r1: number, r2: number): EmptyOp {

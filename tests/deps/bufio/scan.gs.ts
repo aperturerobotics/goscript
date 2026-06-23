@@ -382,7 +382,7 @@ export function ScanRunes(data: $.Slice<number>, atEOF: boolean): [number, $.Sli
 	}
 
 	// Fast path 1: ASCII.
-	if (data![0] < utf8.RuneSelf) {
+	if ($.arrayIndex(data!, 0) < utf8.RuneSelf) {
 		return [1, $.goSlice(data, 0, 1), null]
 	}
 
@@ -409,7 +409,7 @@ export function ScanRunes(data: $.Slice<number>, atEOF: boolean): [number, $.Sli
 }
 
 export function dropCR(data: $.Slice<number>): $.Slice<number> {
-	if (($.len(data) > 0) && ($.uint(data![$.len(data) - 1], 8) == $.uint(13, 8))) {
+	if (($.len(data) > 0) && ($.uint($.arrayIndex(data!, $.len(data) - 1), 8) == $.uint(13, 8))) {
 		return $.goSlice(data, 0, $.len(data) - 1)
 	}
 	return data

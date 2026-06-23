@@ -62,7 +62,7 @@ export class Stack {
 			$.panic("pop from empty stack")
 		}
 		let last = $.len($.pointerValue<Stack>(s).items) - 1
-		let value = $.pointerValue<Stack>(s).items![last]
+		let value = $.arrayIndex($.pointerValue<Stack>(s).items!, last)
 		$.pointerValue<Stack>(s).items = $.goSlice($.pointerValue<Stack>(s).items, undefined, last)
 		return [value, true]
 	}
@@ -287,7 +287,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("=== Interface constraint ===")
 	let items: $.Slice<Item | $.VarRef<Item> | null> = $.arrayToSlice<Item | $.VarRef<Item> | null>([new Item({Name: "alpha"}), new Item({Name: "beta"})])
 	let clones: $.Slice<Item | $.VarRef<Item> | null> = (await CloneAll({T: { type: { kind: $.TypeKind.Pointer, elemType: "main.Item" }, zero: () => null }}, items) as $.Slice<Item | $.VarRef<Item> | null>)
-	$.println("clone:", $.pointerValue<Item>(clones![0]).Name, $.pointerValue<Item>(clones![1]).Name, clones![0] == items![0])
+	$.println("clone:", $.pointerValue<Item>($.arrayIndex(clones!, 0)).Name, $.pointerValue<Item>($.arrayIndex(clones!, 1)).Name, $.arrayIndex(clones!, 0) == $.arrayIndex(items!, 0))
 
 	$.println("=== Generic struct with map field ===")
 	let mapper: Mapper | $.VarRef<Mapper> | null = (NewMapper({K: { type: { kind: $.TypeKind.Basic, name: "string" }, zero: () => "" }, V: { type: { kind: $.TypeKind.Basic, name: "int" }, zero: () => 0 }}) as Mapper | $.VarRef<Mapper> | null)

@@ -182,8 +182,8 @@ export class ipStackCapabilities {
 				continue
 			}
 			__defer.defer(async () => { await poll.CloseFunc!(__goscriptShadow0) })
-			syscall.SetsockoptInt(__goscriptShadow0, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, probes![i].value)
-			let __goscriptTuple0: any = await probes![i].laddr.sockaddr(syscall.AF_INET6)
+			syscall.SetsockoptInt(__goscriptShadow0, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, $.arrayIndex(probes!, i).value)
+			let __goscriptTuple0: any = await $.arrayIndex(probes!, i).laddr.sockaddr(syscall.AF_INET6)
 			let sa = __goscriptTuple0[0]
 			__goscriptShadow1 = __goscriptTuple0[1]
 			if (__goscriptShadow1 != null) {
@@ -309,7 +309,7 @@ export async function addrList_first(addrs: addrList, strategy: ((_p0: __goscrip
 			return addr
 		}
 	}
-	return addrs![0]
+	return $.arrayIndex(addrs!, 0)
 }
 
 export async function addrList_partition(addrs: addrList, strategy: ((_p0: __goscript_net.Addr | null) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<[addrList, addrList]> {

@@ -119,9 +119,9 @@ export async function main(): globalThis.Promise<void> {
 	$.println("nil:", q == null)
 
 	let inline: $.Slice<number> = inlineSlice(values)
-	$.println("inline:", inline![0], inline![1])
+	$.println("inline:", $.arrayIndex(inline!, 0), $.arrayIndex(inline!, 1))
 	inline![0] = 9
-	$.println("updated:", values![0])
+	$.println("updated:", $.arrayIndex(values!, 0))
 
 	let src: $.VarRef<sourceStruct> = $.varRef($.markAsStructValue(new sourceStruct()))
 	$.println("struct:", markThroughView(src), src.value.flag)

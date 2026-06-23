@@ -317,7 +317,7 @@ export class RWMutexLocker {
 			$.pointerValue<RWMutexLocker>(l).mtx.Unlock()
 			$.panic("csync: unlock of unlocked RWMutexLocker")
 		}
-		let rel: (() => void) | null = $.pointerValue<RWMutexLocker>(l).rels![$.len($.pointerValue<RWMutexLocker>(l).rels) - 1]
+		let rel: (() => void) | null = $.arrayIndex($.pointerValue<RWMutexLocker>(l).rels!, $.len($.pointerValue<RWMutexLocker>(l).rels) - 1)
 		if ($.len($.pointerValue<RWMutexLocker>(l).rels) == 1) {
 			$.pointerValue<RWMutexLocker>(l).rels = null
 		} else {

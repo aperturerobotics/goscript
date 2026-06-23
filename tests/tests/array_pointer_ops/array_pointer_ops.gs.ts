@@ -23,7 +23,7 @@ export function closureArrayAddress(): number {
 	void ((): void => {
 		let table = $.varRef(new Uint8Array([$.uint(6, 8), $.uint(7, 8), $.uint(8, 8), $.uint(9, 8)]))
 		let ptr: $.VarRef<Uint8Array> | null = table
-		result = $.int($.pointerValue<Uint8Array>(ptr)[2])
+		result = $.int($.arrayIndex($.pointerValue<Uint8Array>(ptr), 2))
 	})()
 	return result
 }
@@ -36,7 +36,7 @@ export async function main(): globalThis.Promise<void> {
 
 	$.pointerValue<bigint[]>(cache)[0] = 5n
 	$.pointerValue<bigint[]>(cache)[1] = 7n
-	$.println("index:", $.pointerValue<bigint[]>(cache)[0], $.pointerValue<bigint[]>(cache)[1])
+	$.println("index:", $.arrayIndex($.pointerValue<bigint[]>(cache), 0), $.arrayIndex($.pointerValue<bigint[]>(cache), 1))
 
 	for (let __goscriptRangeTarget2 = $.pointerValue<bigint[]>(cache), i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 		let x = __goscriptRangeTarget2![i]
@@ -44,17 +44,17 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let view: $.Slice<bigint> = $.goSlice($.pointerValue<bigint[]>(cache), undefined, undefined)
-	$.println("slice:", $.len(view), view![2])
+	$.println("slice:", $.len(view), $.arrayIndex(view!, 2))
 
 	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
 	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))
-	$.println("converted:", $.uint(buf![0], 8), $.uint(buf![1], 8), $.uint(buf![2], 8), $.uint(buf![3], 8), $.uint(buf![4], 8))
+	$.println("converted:", $.uint($.arrayIndex(buf!, 0), 8), $.uint($.arrayIndex(buf!, 1), 8), $.uint($.arrayIndex(buf!, 2), 8), $.uint($.arrayIndex(buf!, 3), 8), $.uint($.arrayIndex(buf!, 4), 8))
 	$.println("converted sum:", sumArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null)))
 
 	let literal: $.VarRef<Uint8Array> | null = $.varRef(new Uint8Array([$.uint(4, 8), $.uint(3, 8), $.uint(2, 8), $.uint(1, 8)]))
 	$.println("literal sum:", sumArray(literal))
 	fillArray(literal)
-	$.println("literal filled:", $.uint($.pointerValue<Uint8Array>(literal)[0], 8), $.uint($.pointerValue<Uint8Array>(literal)[1], 8), $.uint($.pointerValue<Uint8Array>(literal)[2], 8), $.uint($.pointerValue<Uint8Array>(literal)[3], 8))
+	$.println("literal filled:", $.uint($.arrayIndex($.pointerValue<Uint8Array>(literal), 0), 8), $.uint($.arrayIndex($.pointerValue<Uint8Array>(literal), 1), 8), $.uint($.arrayIndex($.pointerValue<Uint8Array>(literal), 2), 8), $.uint($.arrayIndex($.pointerValue<Uint8Array>(literal), 3), 8))
 	$.println("closure ptr:", closureArrayAddress())
 }
 

@@ -11,7 +11,7 @@ export function setWords(w: $.VarRef<words> | null): [$.VarRef<words> | null, bo
 }
 
 export function words_Rsh(w: $.VarRef<words> | null, n: number): bigint {
-	return $.uint64Shr($.pointerValue<bigint[]>(w)[0], n)
+	return $.uint64Shr($.arrayIndex($.pointerValue<bigint[]>(w), 0), n)
 }
 
 export async function main(): globalThis.Promise<void> {

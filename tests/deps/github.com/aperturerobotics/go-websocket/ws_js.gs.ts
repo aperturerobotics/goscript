@@ -556,7 +556,7 @@ export class Conn {
 		await $.pointerValue<Conn>(c).readBufMu.Lock()
 		__defer.defer(() => { $.pointerValue<Conn>(c).readBufMu.Unlock() })
 
-		let me = $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).readBuf![0]))
+		let me = $.markAsStructValue($.cloneStructValue($.arrayIndex($.pointerValue<Conn>(c).readBuf!, 0)))
 		// We copy the messages forward and decrease the size
 		// of the slice to avoid reallocating.
 		$.copy($.pointerValue<Conn>(c).readBuf, $.goSlice($.pointerValue<Conn>(c).readBuf, 1, undefined))

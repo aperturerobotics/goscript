@@ -91,12 +91,12 @@ export async function __goscript_init_readProtocolsOnce(): globalThis.Promise<vo
 			continue
 		}
 		{
-			let [proto, , __goscriptShadow1] = __goscript_parse.dtoi(f![1])
+			let [proto, , __goscriptShadow1] = __goscript_parse.dtoi($.arrayIndex(f!, 1))
 			if (__goscriptShadow1) {
 				{
-					let [, __goscriptShadow2] = $.mapGet<string, number, number>(__goscript_lookup.__goscript_get_protocols(), f![0], 0)
+					let [, __goscriptShadow2] = $.mapGet<string, number, number>(__goscript_lookup.__goscript_get_protocols(), $.arrayIndex(f!, 0), 0)
 					if (!__goscriptShadow2) {
-						$.mapSet(__goscript_lookup.__goscript_get_protocols(), f![0], proto)
+						$.mapSet(__goscript_lookup.__goscript_get_protocols(), $.arrayIndex(f!, 0), proto)
 					}
 				}
 				for (let __goscriptRangeTarget0 = $.goSlice(f, 2, undefined), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {

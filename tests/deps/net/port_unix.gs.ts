@@ -48,7 +48,7 @@ export async function readServices(): globalThis.Promise<void> {
 		if ($.len(f) < 2) {
 			continue
 		}
-		let portnet = f![1]
+		let portnet = $.arrayIndex(f!, 1)
 		let [port, j, __goscriptShadow1] = __goscript_parse.dtoi(portnet)
 		if (((!__goscriptShadow1 || (port <= 0)) || (j >= $.len(portnet))) || ($.uint($.indexStringOrBytes(portnet, j), 8) != $.uint(47, 8))) {
 			continue
@@ -63,7 +63,7 @@ export async function readServices(): globalThis.Promise<void> {
 		}
 		for (let i = 0; i < $.len(f); i++) {
 			if (i != 1) {
-				$.mapSet(m, f![i], port)
+				$.mapSet(m, $.arrayIndex(f!, i), port)
 			}
 		}
 	}

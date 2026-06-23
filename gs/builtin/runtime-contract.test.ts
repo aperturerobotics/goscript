@@ -530,7 +530,7 @@ describe('builtin runtime contract helpers', () => {
     expect(array).toEqual([9, 3])
     expect(source![0]).toBe(2)
     expect(() => sliceToArray<number>(source, 3)).toThrow(
-      'cannot convert slice with length 2 to array with length 3',
+      'cannot convert slice with length 2 to array or pointer to array with length 3',
     )
 
     expect(sliceToArray<number>(new Uint8Array([4, 5, 6]), 2, 'byte')).toEqual(

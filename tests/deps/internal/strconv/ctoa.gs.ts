@@ -22,7 +22,7 @@ export function AppendComplex(dst: $.Slice<number>, c: $.Complex, fmt: number, p
 	let i = $.len(dst)
 	dst = __goscript_ftoa.AppendFloat(dst, $.imag(c), $.uint(fmt, 8), prec, bitSize)
 	// Check if imaginary part has a sign. If not, add one.
-	if (($.uint(dst![i], 8) != $.uint(43, 8)) && ($.uint(dst![i], 8) != $.uint(45, 8))) {
+	if (($.uint($.arrayIndex(dst!, i), 8) != $.uint(43, 8)) && ($.uint($.arrayIndex(dst!, i), 8) != $.uint(45, 8))) {
 		dst = $.append(dst, $.uint(0, 8))
 		$.copy($.goSlice(dst, i + 1, undefined), $.goSlice(dst, i, undefined))
 		dst![i] = $.uint(43, 8)

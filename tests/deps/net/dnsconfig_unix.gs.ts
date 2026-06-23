@@ -66,7 +66,7 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 		if ($.len(f) < 1) {
 			continue
 		}
-		switch (f![0]) {
+		switch ($.arrayIndex(f!, 0)) {
 			case "nameserver":
 			{
 				if (($.len(f) > 1) && ($.len($.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers) < 3)) {
@@ -74,9 +74,9 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 					// just an IP address. Otherwise we need DNS
 					// to look it up.
 					{
-						let [, __goscriptShadow3] = netip.ParseAddr(f![1])
+						let [, __goscriptShadow3] = netip.ParseAddr($.arrayIndex(f!, 1))
 						if (__goscriptShadow3 == null) {
-							$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers = $.append($.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers, __goscript_ipsock.JoinHostPort(f![1], "53"))
+							$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers = $.append($.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).servers, __goscript_ipsock.JoinHostPort($.arrayIndex(f!, 1), "53"))
 						}
 					}
 				}
@@ -85,7 +85,7 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 			case "domain":
 			{
 				if ($.len(f) > 1) {
-					$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).search = $.arrayToSlice<string>([ensureRooted(f![1])])
+					$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).search = $.arrayToSlice<string>([ensureRooted($.arrayIndex(f!, 1))])
 				}
 				break
 			}
@@ -93,7 +93,7 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 			{
 				$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).search = $.makeSlice<string>(0, $.len(f) - 1, "string")
 				for (let i = 1; i < $.len(f); i++) {
-					let name = ensureRooted(f![i])
+					let name = ensureRooted($.arrayIndex(f!, i))
 					if ($.stringEqual(name, ".")) {
 						continue
 					}

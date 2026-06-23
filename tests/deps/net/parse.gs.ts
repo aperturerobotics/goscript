@@ -76,7 +76,7 @@ export class file {
 		let data: $.Slice<number> = $.pointerValue<file>(f).data
 		let i = 0
 		for (i = 0; i < $.len(data); i++) {
-			if ($.uint(data![i], 8) == $.uint(10, 8)) {
+			if ($.uint($.arrayIndex(data!, i), 8) == $.uint(10, 8)) {
 				s = $.bytesToString($.goSlice(data, 0, i))
 				ok = true
 				// move data

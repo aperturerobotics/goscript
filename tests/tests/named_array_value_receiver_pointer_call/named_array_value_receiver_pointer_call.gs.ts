@@ -13,7 +13,7 @@ export function flags_values(__goscriptReceiver0: flags): [number, number] {
 	let f: $.VarRef<flags> = $.varRef(__goscriptReceiver0)
 	flags__set(f, 0)
 	flags__set(f, 1)
-	return [f.value[0], f.value[1] + 1]
+	return [$.arrayIndex(f.value, 0), $.arrayIndex(f.value, 1) + 1]
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -134,15 +134,15 @@ export async function readHosts(): globalThis.Promise<void> {
 			if ($.len(f) < 2) {
 				continue
 			}
-			let addr = parseLiteralIP(f![0])
+			let addr = parseLiteralIP($.arrayIndex(f!, 0))
 			if ($.stringEqual(addr, "")) {
 				continue
 			}
 
 			let canonical: string = ""
 			for (let i = 1; i < $.len(f); i++) {
-				let name = __goscript_dnsclient.absDomainName(f![i])
-				let h: $.Slice<number> = $.stringToBytes(f![i])
+				let name = __goscript_dnsclient.absDomainName($.arrayIndex(f!, i))
+				let h: $.Slice<number> = $.stringToBytes($.arrayIndex(f!, i))
 				__goscript_parse.lowerASCIIBytes(h)
 				let key = __goscript_dnsclient.absDomainName($.bytesToString(h))
 

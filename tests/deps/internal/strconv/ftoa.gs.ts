@@ -519,15 +519,15 @@ export function roundShortest(d: __goscript_decimal.decimal | $.VarRef<__goscrip
 		let li = (ui - $.pointerValue<__goscript_decimal.decimal>(upper).dp) + $.pointerValue<__goscript_decimal.decimal>(lower).dp
 		let l = $.uint($.uint(48, 8), 8)
 		if ((li >= 0) && (li < $.pointerValue<__goscript_decimal.decimal>(lower).nd)) {
-			l = $.uint($.pointerValue<__goscript_decimal.decimal>(lower).d[li], 8)
+			l = $.uint($.arrayIndex($.pointerValue<__goscript_decimal.decimal>(lower).d, li), 8)
 		}
 		let m = $.uint($.uint(48, 8), 8)
 		if (mi >= 0) {
-			m = $.uint($.pointerValue<__goscript_decimal.decimal>(d).d[mi], 8)
+			m = $.uint($.arrayIndex($.pointerValue<__goscript_decimal.decimal>(d).d, mi), 8)
 		}
 		let u = $.uint($.uint(48, 8), 8)
 		if (ui < $.pointerValue<__goscript_decimal.decimal>(upper).nd) {
-			u = $.uint($.pointerValue<__goscript_decimal.decimal>(upper).d[ui], 8)
+			u = $.uint($.arrayIndex($.pointerValue<__goscript_decimal.decimal>(upper).d, ui), 8)
 		}
 
 		// Okay to round down (truncate) if lower has a different digit
@@ -590,7 +590,7 @@ export function fmtE(dst: $.Slice<number>, neg: boolean, d: decimalSlice, prec: 
 	// first digit
 	let ch = $.uint($.uint(48, 8), 8)
 	if (d.nd != 0) {
-		ch = $.uint(d.d![0], 8)
+		ch = $.uint($.arrayIndex(d.d!, 0), 8)
 	}
 	dst = $.append(dst, $.uint(ch, 8))
 
@@ -669,7 +669,7 @@ export function fmtF(dst: $.Slice<number>, neg: boolean, d: decimalSlice, prec: 
 			{
 				let j = d.dp + i
 				if ((0 <= j) && (j < d.nd)) {
-					ch = $.uint(d.d![j], 8)
+					ch = $.uint($.arrayIndex(d.d!, j), 8)
 				}
 			}
 			dst = $.append(dst, $.uint(ch, 8))

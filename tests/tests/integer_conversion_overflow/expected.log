@@ -1,0 +1,6 @@
+int32: 5
+uint8: 5
+int16: 5
+uint32 of -1: 4294967295
+uint64 of -1: 18446744073709551615
+int64 of max uint64: -1

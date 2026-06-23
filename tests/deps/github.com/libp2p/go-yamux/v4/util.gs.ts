@@ -178,10 +178,10 @@ export class segmentedBuffer {
 		if ($.pointerValue<segmentedBuffer>(s).bPos == $.len($.pointerValue<segmentedBuffer>(s).b)) {
 			return [0, io.EOF]
 		}
-		let data: $.Slice<number> = $.goSlice($.pointerValue<segmentedBuffer>(s).b![$.pointerValue<segmentedBuffer>(s).bPos], $.pointerValue<segmentedBuffer>(s).readPos, undefined)
+		let data: $.Slice<number> = $.goSlice($.arrayIndex($.pointerValue<segmentedBuffer>(s).b!, $.pointerValue<segmentedBuffer>(s).bPos), $.pointerValue<segmentedBuffer>(s).readPos, undefined)
 		let n = $.copy(b, data)
 		if (n == $.len(data)) {
-			await pool.Put($.pointerValue<segmentedBuffer>(s).b![$.pointerValue<segmentedBuffer>(s).bPos])
+			await pool.Put($.arrayIndex($.pointerValue<segmentedBuffer>(s).b!, $.pointerValue<segmentedBuffer>(s).bPos))
 			$.pointerValue<segmentedBuffer>(s).b![$.pointerValue<segmentedBuffer>(s).bPos] = null
 			$.pointerValue<segmentedBuffer>(s).bPos++
 			$.pointerValue<segmentedBuffer>(s).readPos = 0
@@ -264,7 +264,7 @@ export async function asyncNotify(ch: $.Channel<{}> | null): globalThis.Promise<
 }
 
 export function min(values: $.Slice<number>): number {
-	let m = $.uint(values![0], 32)
+	let m = $.uint($.arrayIndex(values!, 0), 32)
 	for (let __goscriptRangeTarget0 = $.goSlice(values, 1, undefined), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let v = __goscriptRangeTarget0![__rangeIndex]
 		if (v < m) {

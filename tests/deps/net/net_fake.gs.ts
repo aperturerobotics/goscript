@@ -459,7 +459,7 @@ export class fakeNetFD {
 			return __goscriptSelect1Value
 		}
 
-		let peer: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null = incoming![0]
+		let peer: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null = $.arrayIndex(incoming!, 0)
 		incoming = $.goSlice(incoming, 1, undefined)
 		if ($.len(incoming) == 0) {
 			await $.chanSend($.pointerValue<fakeNetFD>(ffd).incomingEmpty, true)

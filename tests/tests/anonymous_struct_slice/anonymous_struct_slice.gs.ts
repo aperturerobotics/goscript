@@ -56,7 +56,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let x = {Name: "third", Offsets: (null as $.Slice<number>), Count: 3}
 	x.Offsets = $.append(x.Offsets, 5)
-	$.println(x.Name, x.Offsets![0], x.Count)
+	$.println(x.Name, $.arrayIndex(x.Offsets!, 0), x.Count)
 
 	let __goscriptTuple0: any = buildNamedItems()
 	let items: $.Slice<namedItem> = __goscriptTuple0[0]

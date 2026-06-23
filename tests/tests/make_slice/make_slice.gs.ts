@@ -50,7 +50,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Before append - len:", $.len(s5), "cap:", $.cap(s5))
 	s5 = $.append(s5, 30)
 	$.println("After append - len:", $.len(s5), "cap:", $.cap(s5))
-	$.println("s5[2]:", s5![2])
+	$.println("s5[2]:", $.arrayIndex(s5!, 2))
 
 	// Test 8: Append to bytes with extra capacity
 	$.println("--- Append to bytes with extra capacity ---")
@@ -59,8 +59,8 @@ export async function main(): globalThis.Promise<void> {
 	$.println("Before append - len:", $.len(b3), "cap:", $.cap(b3))
 	b3 = $.append(b3, $.uint(66, 8))
 	$.println("After append - len:", $.len(b3), "cap:", $.cap(b3))
-	$.println("b3[0]:", $.uint(b3![0], 8))
-	$.println("b3[1]:", $.uint(b3![1], 8))
+	$.println("b3[0]:", $.uint($.arrayIndex(b3!, 0), 8))
+	$.println("b3[1]:", $.uint($.arrayIndex(b3!, 1), 8))
 
 	// Test 9: Large capacity slice
 	$.println("--- Large capacity slice ---")
@@ -85,8 +85,8 @@ export async function main(): globalThis.Promise<void> {
 	}
 	let sub: $.Slice<number> = $.goSlice(s6, 2, 5)
 	$.println("sub - len:", $.len(sub), "cap:", $.cap(sub))
-	$.println("sub[0]:", sub![0])
-	$.println("sub[2]:", sub![2])
+	$.println("sub[0]:", $.arrayIndex(sub!, 0))
+	$.println("sub[2]:", $.arrayIndex(sub!, 2))
 
 	// Test 12: String slices with capacity
 	$.println("--- String slices with capacity ---")
@@ -95,7 +95,7 @@ export async function main(): globalThis.Promise<void> {
 	str![1] = "world"
 	str![2] = "test"
 	$.println("str - len:", $.len(str), "cap:", $.cap(str))
-	$.println("str[1]:", str![1])
+	$.println("str[1]:", $.arrayIndex(str!, 1))
 
 	$.println("--- All tests completed ---")
 }

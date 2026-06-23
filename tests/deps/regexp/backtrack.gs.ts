@@ -156,7 +156,7 @@ export class bitState {
 		let b: bitState | $.VarRef<bitState> | null = this
 		// Only check shouldVisit when arg is false.
 		// When arg is true, we are continuing a previous visit.
-		if (($.uint($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst![pc].Op, 8) != $.uint(syntax.InstFail, 8)) && (arg || bitState.prototype.shouldVisit.call(b, $.uint(pc, 32), pos))) {
+		if (($.uint($.arrayIndex($.pointerValue<syntax.Prog>($.pointerValue<__goscript_regexp.Regexp>(re).prog).Inst!, pc).Op, 8) != $.uint(syntax.InstFail, 8)) && (arg || bitState.prototype.shouldVisit.call(b, $.uint(pc, 32), pos))) {
 			$.pointerValue<bitState>(b).jobs = $.append($.pointerValue<bitState>(b).jobs, $.markAsStructValue(new job({pc: $.uint(pc, 32), arg: arg, pos: pos})))
 		}
 	}
@@ -201,7 +201,7 @@ export class bitState {
 	public shouldVisit(pc: number, pos: number): boolean {
 		let b: bitState | $.VarRef<bitState> | null = this
 		let n = $.uint(($.int(pc) * ($.pointerValue<bitState>(b).end + 1)) + pos, 64)
-		if ($.uint(($.pointerValue<bitState>(b).visited![$.uint($.uint64Div(n, 32), 64)] & (1 << ($.uint($.uint64And(n, ($.uint($.uint64Sub(32, 1), 64))), 64)))), 32) != $.uint(0, 32)) {
+		if ($.uint(($.arrayIndex($.pointerValue<bitState>(b).visited!, $.uint($.uint64Div(n, 32), 64)) & (1 << ($.uint($.uint64And(n, ($.uint($.uint64Sub(32, 1), 64))), 64)))), 32) != $.uint(0, 32)) {
 			return false
 		}
 		$.pointerValue<bitState>(b).visited![$.uint($.uint64Div(n, 32), 64)] = $.pointerValue<bitState>(b).visited![$.uint($.uint64Div(n, 32), 64)] | ($.uint(1 << ($.uint($.uint64And(n, ($.uint($.uint64Sub(32, 1), 64))), 64)), 32))

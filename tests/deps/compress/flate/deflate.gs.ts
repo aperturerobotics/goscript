@@ -411,7 +411,7 @@ export class compressor {
 					// Flush current output block if any.
 					if ($.pointerValue<compressor>(d).byteAvailable) {
 						// There is still one pending token that needs to be flushed
-						$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.literalToken($.uint($.uint($.pointerValue<compressor>(d).window![$.pointerValue<compressor>(d).index - 1], 32), 32)), 32))
+						$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.literalToken($.uint($.uint($.arrayIndex($.pointerValue<compressor>(d).window!, $.pointerValue<compressor>(d).index - 1), 32), 32)), 32))
 						$.pointerValue<compressor>(d).byteAvailable = false
 					}
 					if ($.len($.pointerValue<compressor>(d).tokens) > 0) {
@@ -510,7 +510,7 @@ export class compressor {
 					if ($.pointerValue<compressor>(d).compressionLevel.fastSkipHashing != 2147483647) {
 						i = $.pointerValue<compressor>(d).index
 					}
-					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.literalToken($.uint($.uint($.pointerValue<compressor>(d).window![i], 32), 32)), 32))
+					$.pointerValue<compressor>(d).tokens = $.append($.pointerValue<compressor>(d).tokens, $.uint(__goscript_token.literalToken($.uint($.uint($.arrayIndex($.pointerValue<compressor>(d).window!, i), 32), 32)), 32))
 					if ($.len($.pointerValue<compressor>(d).tokens) == 16384) {
 						{
 							$.pointerValue<compressor>(d).err = await compressor.prototype.writeBlock.call(d, $.pointerValue<compressor>(d).tokens, i + 1)
@@ -700,12 +700,12 @@ export class compressor {
 			tries = tries >> (2)
 		}
 
-		let wEnd = $.uint(win![pos + length], 8)
+		let wEnd = $.uint($.arrayIndex(win!, pos + length), 8)
 		let wPos: $.Slice<number> = $.goSlice(win, pos, undefined)
 		let minIndex = pos - 32768
 
 		for (let i = prevHead; tries > 0; tries--) {
-			if ($.uint(wEnd, 8) == $.uint(win![i + length], 8)) {
+			if ($.uint(wEnd, 8) == $.uint($.arrayIndex(win!, i + length), 8)) {
 				let n = matchLen($.goSlice(win, i, undefined), wPos, minMatchLook)
 
 				if ((n > length) && ((n > 4) || ((pos - i) <= 4096))) {
@@ -716,14 +716,14 @@ export class compressor {
 						// The match is good enough that we don't try to find a better one.
 						break
 					}
-					wEnd = $.uint(win![pos + n], 8)
+					wEnd = $.uint($.arrayIndex(win!, pos + n), 8)
 				}
 			}
 			if (i == minIndex) {
 				// hashPrev[i & windowMask] has already been overwritten, so stop now.
 				break
 			}
-			i = $.int($.pointerValue<compressor>(d).hashPrev[i & 32767]) - $.pointerValue<compressor>(d).hashOffset
+			i = $.int($.arrayIndex($.pointerValue<compressor>(d).hashPrev, i & 32767)) - $.pointerValue<compressor>(d).hashOffset
 			if ((i < minIndex) || (i < 0)) {
 				break
 			}
@@ -753,7 +753,7 @@ export class compressor {
 			}
 			case level == 1:
 			{
-				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue(levels![level]))
+				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue($.arrayIndex(levels!, level)))
 				$.pointerValue<compressor>(d).window = $.makeSlice<number>(65535, undefined, "byte")
 				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillStore(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).encSpeed(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
@@ -767,7 +767,7 @@ export class compressor {
 			}
 			case (2 <= level) && (level <= 9):
 			{
-				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue(levels![level]))
+				$.pointerValue<compressor>(d).compressionLevel = $.markAsStructValue($.cloneStructValue($.arrayIndex(levels!, level)))
 				compressor.prototype.initDeflate.call(d)
 				$.pointerValue<compressor>(d).fill = $.functionValue((d: compressor | $.VarRef<compressor> | null, b: $.Slice<number>): number => $.pointerValue<compressor>(d).fillDeflate(b), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 				$.pointerValue<compressor>(d).step = $.functionValue(async (d: compressor | $.VarRef<compressor> | null): globalThis.Promise<void> => await $.pointerValue<compressor>(d).deflate(), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Pointer, elemType: "flate.compressor" }], results: [] } as $.FunctionTypeInfo))
@@ -1096,18 +1096,18 @@ export function __goscript_set_levels(__goscriptValue: $.Slice<compressionLevel>
 }
 
 export function hash4(b: $.Slice<number>): number {
-	return $.uint($.uintShr((((($.uint(b![3], 32) | ($.uint(b![2], 32) << 8)) | ($.uint(b![1], 32) << 16)) | ($.uint(b![0], 32) << 24)) * 506832829), (32 - 17), 32), 32)
+	return $.uint($.uintShr((((($.uint($.arrayIndex(b!, 3), 32) | ($.uint($.arrayIndex(b!, 2), 32) << 8)) | ($.uint($.arrayIndex(b!, 1), 32) << 16)) | ($.uint($.arrayIndex(b!, 0), 32) << 24)) * 506832829), (32 - 17), 32), 32)
 }
 
 export function bulkHash4(b: $.Slice<number>, dst: $.Slice<number>): void {
 	if ($.len(b) < 4) {
 		return
 	}
-	let hb = $.uint((($.uint(b![3], 32) | ($.uint(b![2], 32) << 8)) | ($.uint(b![1], 32) << 16)) | ($.uint(b![0], 32) << 24), 32)
+	let hb = $.uint((($.uint($.arrayIndex(b!, 3), 32) | ($.uint($.arrayIndex(b!, 2), 32) << 8)) | ($.uint($.arrayIndex(b!, 1), 32) << 16)) | ($.uint($.arrayIndex(b!, 0), 32) << 24), 32)
 	dst![0] = $.uint($.uintShr((hb * 506832829), (32 - 17), 32), 32)
 	let end = ($.len(b) - 4) + 1
 	for (let i = 1; i < end; i++) {
-		hb = $.uint((hb << 8) | $.uint(b![i + 3], 32), 32)
+		hb = $.uint((hb << 8) | $.uint($.arrayIndex(b!, i + 3), 32), 32)
 		dst![i] = $.uint($.uintShr((hb * 506832829), (32 - 17), 32), 32)
 	}
 }
@@ -1117,7 +1117,7 @@ export function matchLen(a: $.Slice<number>, b: $.Slice<number>, max: number): n
 	b = $.goSlice(b, undefined, $.len(a))
 	for (let __goscriptRangeTarget3 = a, i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 		let av = __goscriptRangeTarget3![i]
-		if ($.uint(b![i], 8) != $.uint(av, 8)) {
+		if ($.uint($.arrayIndex(b!, i), 8) != $.uint(av, 8)) {
 			return i
 		}
 	}

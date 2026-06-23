@@ -118,7 +118,7 @@ export class WebSocket {
 	public async addEventListener(eventType: string, fn: ((e: js.Value) => void) | null): globalThis.Promise<(() => void) | null> {
 		const c = this
 		let f = $.markAsStructValue($.cloneStructValue(js.FuncOf($.functionValue((_this: js.Value, args: $.Slice<js.Value>): any => {
-			fn!($.markAsStructValue($.cloneStructValue(args![0])))
+			fn!($.markAsStructValue($.cloneStructValue($.arrayIndex(args!, 0))))
 			return null
 		}, ({ kind: $.TypeKind.Function, params: ["js.Value", { kind: $.TypeKind.Slice, elemType: "js.Value" }], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo)))))
 		$.markAsStructValue($.cloneStructValue(c.v)).Call("addEventListener", eventType, $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(f)), "js.Func"))

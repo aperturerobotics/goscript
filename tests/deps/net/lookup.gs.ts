@@ -1233,7 +1233,7 @@ export class Resolver {
 			return [(null as __goscript_ipsock.addrList), err]
 		}
 
-		if (($.len(ips) == 1) && __goscript_ip.IP_Equal(ips![0].IP, (__goscript_ip.IPv6unspecified as __goscript_ip.IP))) {
+		if (($.len(ips) == 1) && __goscript_ip.IP_Equal($.arrayIndex(ips!, 0).IP, (__goscript_ip.IPv6unspecified as __goscript_ip.IP))) {
 			ips = $.append(ips, $.markAsStructValue(new __goscript_iprawsock.IPAddr({IP: (__goscript_ip.IPv4zero as __goscript_ip.IP)})))
 		}
 
@@ -1624,7 +1624,7 @@ export class Resolver {
 
 		for (let i = 0; i < $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).attempts; i++) {
 			for (let j = $.uint($.uint(0, 32), 32); j < sLen; j++) {
-				let server = $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).servers![(serverOffset + j) % sLen]
+				let server = $.arrayIndex($.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).servers!, (serverOffset + j) % sLen)
 
 				let __goscriptTuple48: any = await Resolver.prototype.exchange.call(r, ctx, server, $.markAsStructValue($.cloneStructValue(q)), $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).timeout, $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).useTCP, $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).trustAD)
 				let p = $.varRef(__goscriptTuple48[0])
@@ -1979,7 +1979,7 @@ export function parseCNAMEFromResources(resources: $.Slice<dnsmessage.Resource>)
 	if ($.len(resources) == 0) {
 		return ["", errors.New("no CNAME record received")]
 	}
-	let __goscriptTuple50: any = $.typeAssertTuple<dnsmessage.CNAMEResource | $.VarRef<dnsmessage.CNAMEResource> | null>(resources![0].Body, { kind: $.TypeKind.Pointer, elemType: "dnsmessage.CNAMEResource" })
+	let __goscriptTuple50: any = $.typeAssertTuple<dnsmessage.CNAMEResource | $.VarRef<dnsmessage.CNAMEResource> | null>($.arrayIndex(resources!, 0).Body, { kind: $.TypeKind.Pointer, elemType: "dnsmessage.CNAMEResource" })
 	let c: dnsmessage.CNAMEResource | $.VarRef<dnsmessage.CNAMEResource> | null = __goscriptTuple50[0]
 	let ok = __goscriptTuple50[1]
 	if (!ok) {

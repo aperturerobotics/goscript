@@ -186,15 +186,15 @@ export class huffmanEncoder {
 		for (let level = $.int($.int(1, 32), 32); level <= maxBits; level++) {
 			// For every level, the first two items are the first two characters.
 			// We initialize the levels as if we had already figured this out.
-			levels[level] = $.markAsStructValue(new levelInfo({level: $.int(level, 32), lastFreq: $.int(list![1].freq, 32), nextCharFreq: $.int(list![2].freq, 32), nextPairFreq: $.int(list![0].freq + list![1].freq, 32)}))
-			leafCounts[level][level] = $.int(2, 32)
+			levels[level] = $.markAsStructValue(new levelInfo({level: $.int(level, 32), lastFreq: $.int($.arrayIndex(list!, 1).freq, 32), nextCharFreq: $.int($.arrayIndex(list!, 2).freq, 32), nextPairFreq: $.int($.arrayIndex(list!, 0).freq + $.arrayIndex(list!, 1).freq, 32)}))
+			$.arrayIndex(leafCounts, level)[level] = $.int(2, 32)
 			if ($.int(level, 32) == $.int(1, 32)) {
-				levels[level].nextPairFreq = $.int(math.MaxInt32, 32)
+				$.arrayIndex(levels, level).nextPairFreq = $.int(math.MaxInt32, 32)
 			}
 		}
 
 		// We need a total of 2*n - 2 items at top level and have already generated 2.
-		levels[maxBits].needed = $.int((2 * n) - 4, 32)
+		$.arrayIndex(levels, maxBits).needed = $.int((2 * n) - 4, 32)
 
 		let level = $.int(maxBits, 32)
 		while (true) {
@@ -205,7 +205,7 @@ export class huffmanEncoder {
 				// To make sure we never come back to this level or any lower level,
 				// set nextPairFreq impossibly large.
 				$.pointerValue<levelInfo>(l).needed = $.int(0, 32)
-				levels[level + 1].nextPairFreq = $.int(math.MaxInt32, 32)
+				$.arrayIndex(levels, level + 1).nextPairFreq = $.int(math.MaxInt32, 32)
 				level++
 				continue
 			}
@@ -213,19 +213,19 @@ export class huffmanEncoder {
 			let prevFreq = $.int($.pointerValue<levelInfo>(l).lastFreq, 32)
 			if ($.pointerValue<levelInfo>(l).nextCharFreq < $.pointerValue<levelInfo>(l).nextPairFreq) {
 				// The next item on this row is a leaf node.
-				let __goscriptShadow0 = $.int(leafCounts[level][level] + 1, 32)
+				let __goscriptShadow0 = $.int($.arrayIndex($.arrayIndex(leafCounts, level), level) + 1, 32)
 				$.pointerValue<levelInfo>(l).lastFreq = $.int($.pointerValue<levelInfo>(l).nextCharFreq, 32)
 				// Lower leafCounts are the same of the previous node.
-				leafCounts[level][level] = $.int(__goscriptShadow0, 32)
-				$.pointerValue<levelInfo>(l).nextCharFreq = $.int(list![__goscriptShadow0].freq, 32)
+				$.arrayIndex(leafCounts, level)[level] = $.int(__goscriptShadow0, 32)
+				$.pointerValue<levelInfo>(l).nextCharFreq = $.int($.arrayIndex(list!, __goscriptShadow0).freq, 32)
 			} else {
 				// The next item on this row is a pair from the previous row.
 				// nextPairFreq isn't valid until we generate two
 				// more values in the level below
 				$.pointerValue<levelInfo>(l).lastFreq = $.int($.pointerValue<levelInfo>(l).nextPairFreq, 32)
 				// Take leaf counts from the lower level, except counts[level] remains the same.
-				$.copy($.goSlice(leafCounts[level], undefined, level), $.goSlice(leafCounts[level - 1], undefined, level))
-				levels[$.pointerValue<levelInfo>(l).level - 1].needed = $.int(2, 32)
+				$.copy($.goSlice($.arrayIndex(leafCounts, level), undefined, level), $.goSlice($.arrayIndex(leafCounts, level - 1), undefined, level))
+				$.arrayIndex(levels, $.pointerValue<levelInfo>(l).level - 1).needed = $.int(2, 32)
 			}
 
 			{
@@ -239,11 +239,11 @@ export class huffmanEncoder {
 						// All done!
 						break
 					}
-					levels[$.pointerValue<levelInfo>(l).level + 1].nextPairFreq = $.int(prevFreq + $.pointerValue<levelInfo>(l).lastFreq, 32)
+					$.arrayIndex(levels, $.pointerValue<levelInfo>(l).level + 1).nextPairFreq = $.int(prevFreq + $.pointerValue<levelInfo>(l).lastFreq, 32)
 					level++
 				} else {
 					// If we stole from below, move down temporarily to replenish it.
-					while (levels[level - 1].needed > 0) {
+					while ($.arrayIndex(levels, level - 1).needed > 0) {
 						level--
 					}
 				}
@@ -252,7 +252,7 @@ export class huffmanEncoder {
 
 		// Somethings is wrong if at the end, the top level is null or hasn't used
 		// all of the leaves.
-		if ($.int(leafCounts[maxBits][maxBits], 32) != $.int(n, 32)) {
+		if ($.int($.arrayIndex($.arrayIndex(leafCounts, maxBits), maxBits), 32) != $.int(n, 32)) {
 			$.panic("leafCounts[maxBits][maxBits] != n")
 		}
 
@@ -262,7 +262,7 @@ export class huffmanEncoder {
 		for (let __goscriptShadow2 = $.int(maxBits, 32); __goscriptShadow2 > 0; __goscriptShadow2--) {
 			// chain.leafCount gives the number of literals requiring at least "bits"
 			// bits to encode.
-			bitCount![__goscriptShadow1] = $.int($.pointerValue<number[]>(counts)[__goscriptShadow2] - $.pointerValue<number[]>(counts)[__goscriptShadow2 - 1], 32)
+			bitCount![__goscriptShadow1] = $.int($.arrayIndex($.pointerValue<number[]>(counts), __goscriptShadow2) - $.arrayIndex($.pointerValue<number[]>(counts), __goscriptShadow2 - 1), 32)
 			__goscriptShadow1++
 		}
 		return bitCount
@@ -274,7 +274,7 @@ export class huffmanEncoder {
 		for (let __goscriptRangeTarget2 = freq, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
 			let f = __goscriptRangeTarget2![i]
 			if ($.int(f, 32) != $.int(0, 32)) {
-				total = total + ($.int(f) * $.int($.pointerValue<huffmanEncoder>(h).codes![i].len))
+				total = total + ($.int(f) * $.int($.arrayIndex($.pointerValue<huffmanEncoder>(h).codes!, i).len))
 			}
 		}
 		return total
@@ -298,7 +298,7 @@ export class huffmanEncoder {
 				list![count] = $.markAsStructValue(new literalNode({literal: $.uint($.uint(i, 16), 16), freq: $.int(f, 32)}))
 				count++
 			} else {
-				$.pointerValue<huffmanEncoder>(h).codes![i].len = $.uint(0, 16)
+				$.arrayIndex($.pointerValue<huffmanEncoder>(h).codes!, i).len = $.uint(0, 16)
 			}
 		}
 
@@ -309,7 +309,7 @@ export class huffmanEncoder {
 			for (let __goscriptRangeTarget4 = list, i = 0; i < $.len(__goscriptRangeTarget4); i++) {
 				let node = __goscriptRangeTarget4![i]
 				// "list" is in order of increasing literal value.
-				$.pointerValue<huffmanEncoder>(h).codes![node.literal].set($.uint($.uint(i, 16), 16), $.uint(1, 16))
+				$.arrayIndex($.pointerValue<huffmanEncoder>(h).codes!, node.literal).set($.uint($.uint(i, 16), 16), $.uint(1, 16))
 			}
 			return
 		}
@@ -551,12 +551,12 @@ export function byLiteral_Len(s: byLiteral): number {
 }
 
 export function byLiteral_Less(s: byLiteral, i: number, j: number): boolean {
-	return s![i].literal < s![j].literal
+	return $.arrayIndex(s!, i).literal < $.arrayIndex(s!, j).literal
 }
 
 export function byLiteral_Swap(s: byLiteral, i: number, j: number): void {
-	let __goscriptAssign0_0: literalNode = $.markAsStructValue($.cloneStructValue(s![j]))
-	let __goscriptAssign0_1: literalNode = $.markAsStructValue($.cloneStructValue(s![i]))
+	let __goscriptAssign0_0: literalNode = $.markAsStructValue($.cloneStructValue($.arrayIndex(s!, j)))
+	let __goscriptAssign0_1: literalNode = $.markAsStructValue($.cloneStructValue($.arrayIndex(s!, i)))
 	s![i] = __goscriptAssign0_0
 	s![j] = __goscriptAssign0_1
 }
@@ -573,15 +573,15 @@ export function byFreq_Len(s: byFreq): number {
 }
 
 export function byFreq_Less(s: byFreq, i: number, j: number): boolean {
-	if ($.int(s![i].freq, 32) == $.int(s![j].freq, 32)) {
-		return s![i].literal < s![j].literal
+	if ($.int($.arrayIndex(s!, i).freq, 32) == $.int($.arrayIndex(s!, j).freq, 32)) {
+		return $.arrayIndex(s!, i).literal < $.arrayIndex(s!, j).literal
 	}
-	return s![i].freq < s![j].freq
+	return $.arrayIndex(s!, i).freq < $.arrayIndex(s!, j).freq
 }
 
 export function byFreq_Swap(s: byFreq, i: number, j: number): void {
-	let __goscriptAssign1_0: literalNode = $.markAsStructValue($.cloneStructValue(s![j]))
-	let __goscriptAssign1_1: literalNode = $.markAsStructValue($.cloneStructValue(s![i]))
+	let __goscriptAssign1_0: literalNode = $.markAsStructValue($.cloneStructValue($.arrayIndex(s!, j)))
+	let __goscriptAssign1_1: literalNode = $.markAsStructValue($.cloneStructValue($.arrayIndex(s!, i)))
 	s![i] = __goscriptAssign1_0
 	s![j] = __goscriptAssign1_1
 }

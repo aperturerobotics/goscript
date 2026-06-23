@@ -8,7 +8,7 @@ export async function main(): globalThis.Promise<void> {
 	callbacks = $.append(callbacks, $.functionValue((value: number): number => {
 		return value + 1
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
-	let value = await callbacks![0]!(2)
+	let value = await $.arrayIndex(callbacks!, 0)!(2)
 	$.println("value:", value)
 }
 

@@ -294,8 +294,8 @@ export class fsTester {
 				await fsTester.prototype.checkDirList.call(t, dir, "first Open+ReadDir(-1) vs fsys.ReadDir", list, __goscriptShadow4)
 
 				for (let i = 0; (i + 1) < $.len(__goscriptShadow4); i++) {
-					if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()) >= 0) {
-						fsTester.prototype.errorf.call(t, "%s: fsys.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(__goscriptShadow4![i + 1]).Name()]))
+					if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(__goscriptShadow4!, i)).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(__goscriptShadow4!, i + 1)).Name()) >= 0) {
+						fsTester.prototype.errorf.call(t, "%s: fsys.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(__goscriptShadow4!, i)).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(__goscriptShadow4!, i + 1)).Name()]))
 					}
 				}
 			}
@@ -312,8 +312,8 @@ export class fsTester {
 		await fsTester.prototype.checkDirList.call(t, dir, "first Open+ReadDir(-1) vs fs.ReadDir", list, list2)
 
 		for (let i = 0; (i + 1) < $.len(list2); i++) {
-			if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()) >= 0) {
-				fsTester.prototype.errorf.call(t, "%s: fs.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i]).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>(list2![i + 1]).Name()]))
+			if ($.stringCompare(await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(list2!, i)).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(list2!, i + 1)).Name()) >= 0) {
+				fsTester.prototype.errorf.call(t, "%s: fs.ReadDir: list not sorted: %s before %s", $.arrayToSlice<any>([dir, await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(list2!, i)).Name(), await $.pointerValue<Exclude<fs.DirEntry, null>>($.arrayIndex(list2!, i + 1)).Name()]))
 			}
 		}
 
@@ -365,7 +365,7 @@ export class fsTester {
 			let fa: $.Slice<string> = strings.Fields(a)
 			let fb: $.Slice<string> = strings.Fields(b)
 			// sort by name (i < j) and then +/- (j < i, because + < -)
-			return strings.Compare((fa![1] + " ") + fb![0], (fb![1] + " ") + fa![0])
+			return strings.Compare(($.arrayIndex(fa!, 1) + " ") + $.arrayIndex(fb!, 0), ($.arrayIndex(fb!, 1) + " ") + $.arrayIndex(fa!, 0))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)))
 
 		fsTester.prototype.errorf.call(t, "%s: diff %s:\n\t%s", $.arrayToSlice<any>([dir, desc, strings.Join(diffs, "\n\t")]))
@@ -586,7 +586,7 @@ export class fsTester {
 		let problems: $.Slice<string> = null as $.Slice<string>
 		while (($.len(want) > 0) || ($.len(names) > 0)) {
 			switch (true) {
-				case (($.len(want) > 0) && ($.len(names) > 0)) && ($.stringEqual(want![0], names![0])):
+				case (($.len(want) > 0) && ($.len(names) > 0)) && ($.stringEqual($.arrayIndex(want!, 0), $.arrayIndex(names!, 0))):
 				{
 					let __goscriptAssign0_0: $.Slice<string> = $.goSlice(want, 1, undefined)
 					let __goscriptAssign0_1: $.Slice<string> = $.goSlice(names, 1, undefined)
@@ -594,15 +594,15 @@ export class fsTester {
 					names = __goscriptAssign0_1
 					break
 				}
-				case ($.len(want) > 0) && (($.len(names) == 0) || ($.stringCompare(want![0], names![0]) < 0)):
+				case ($.len(want) > 0) && (($.len(names) == 0) || ($.stringCompare($.arrayIndex(want!, 0), $.arrayIndex(names!, 0)) < 0)):
 				{
-					problems = $.append(problems, "missing: " + want![0])
+					problems = $.append(problems, "missing: " + $.arrayIndex(want!, 0))
 					want = $.goSlice(want, 1, undefined)
 					break
 				}
 				default:
 				{
-					problems = $.append(problems, "extra: " + names![0])
+					problems = $.append(problems, "extra: " + $.arrayIndex(names!, 0))
 					names = $.goSlice(names, 1, undefined)
 					break
 				}

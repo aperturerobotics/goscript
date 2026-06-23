@@ -258,7 +258,7 @@ export class Logger {
 		__defer.defer(() => { putBuffer(buf) })
 		formatHeader(buf, $.markAsStructValue($.cloneStructValue(now)), prefix, flag, file, line)
 		buf!.value = await appendOutput!($.pointerValue<$.Slice<number>>(buf))
-		if (($.len($.pointerValue<$.Slice<number>>(buf)) == 0) || ($.uint(($.pointerValue<$.Slice<number>>(buf))![$.len($.pointerValue<$.Slice<number>>(buf)) - 1], 8) != $.uint(10, 8))) {
+		if (($.len($.pointerValue<$.Slice<number>>(buf)) == 0) || ($.uint($.arrayIndex(($.pointerValue<$.Slice<number>>(buf))!, $.len($.pointerValue<$.Slice<number>>(buf)) - 1), 8) != $.uint(10, 8))) {
 			buf!.value = $.append($.pointerValue<$.Slice<number>>(buf), $.uint(10, 8))
 		}
 

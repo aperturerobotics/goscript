@@ -32,14 +32,14 @@ export async function main(): globalThis.Promise<void> {
 		return
 	}
 	$.println("open", err == null, $.len($.pointerValue<zip.Reader>(zr).File))
-	let __goscriptTuple2: any = await zip.File.prototype.Open.call($.pointerValue<zip.Reader>(zr).File![0])
+	let __goscriptTuple2: any = await zip.File.prototype.Open.call($.arrayIndex($.pointerValue<zip.Reader>(zr).File!, 0))
 	let rc = __goscriptTuple2[0]
 	err = __goscriptTuple2[1]
 	$.println("file open", err == null)
 	let __goscriptTuple3: any = await io.ReadAll($.pointerValueOrNil((rc as io.Reader | null))!)
 	let data: $.Slice<number> = __goscriptTuple3[0]
 	err = __goscriptTuple3[1]
-	$.println("file", $.pointerValue<zip.File>($.pointerValue<zip.Reader>(zr).File![0]).FileHeader.Name, $.bytesToString(data), err == null)
+	$.println("file", $.pointerValue<zip.File>($.arrayIndex($.pointerValue<zip.Reader>(zr).File!, 0)).FileHeader.Name, $.bytesToString(data), err == null)
 	err = await $.pointerValue<Exclude<io.ReadCloser, null>>(rc).Close()
 	$.println("file close", err == null)
 }

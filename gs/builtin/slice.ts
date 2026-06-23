@@ -124,6 +124,18 @@ export type Slice<T> =
   | null
   | (T extends number ? Uint8Array : never)
 
+// outOfRangeIndex panics with Go's index-out-of-range runtime message. Go omits
+// the "with length" suffix for negative indices and includes it otherwise, so
+// callers route every element bounds failure through here to stay byte-faithful.
+function outOfRangeIndex(index: number, length: number): never {
+  if (index < 0) {
+    runtimePanic(`runtime error: index out of range [${index}]`)
+  }
+  runtimePanic(
+    `runtime error: index out of range [${index}] with length ${length}`,
+  )
+}
+
 /**
  * wrapSliceProxy wraps a SliceProxy in a Proxy to intercept index access
  * and route it through the backing array.
@@ -138,7 +150,7 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
         if (index < meta.length) {
           return meta.backing[meta.offset + index]
         }
-        runtimePanic(`Slice index out of range: ${index} >= ${meta.length}`)
+        outOfRangeIndex(index, meta.length)
       }
 
       if (prop === 'length') {
@@ -160,7 +172,7 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
           target[index] = value // Also update the proxy target for consistency
           return true
         }
-        runtimePanic(`Slice index out of range: ${index} >= ${meta.length}`)
+        outOfRangeIndex(index, meta.length)
       }
 
       if (prop === 'length' || prop === '__meta__') {
@@ -224,7 +236,7 @@ export function sliceToArray<T>(
 ): T[] | Uint8Array {
   if (len(slice) < length) {
     runtimePanic(
-      `runtime error: cannot convert slice with length ${len(slice)} to array with length ${length}`,
+      `runtime error: cannot convert slice with length ${len(slice)} to array or pointer to array with length ${length}`,
     )
   }
   if (typeHint === 'byte') {
@@ -242,7 +254,7 @@ export function sliceToArrayPointer<T>(
 ): VarRef<T[] | Uint8Array> {
   if (len(slice) < length) {
     runtimePanic(
-      `runtime error: cannot convert slice with length ${len(slice)} to array pointer with length ${length}`,
+      `runtime error: cannot convert slice with length ${len(slice)} to array or pointer to array with length ${length}`,
     )
   }
   if (typeHint === 'byte') {
@@ -1340,23 +1352,55 @@ export function index<T>(
     return indexString(collection, index) // Use the existing indexString for byte access
   } else if (collection instanceof Uint8Array) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
     }
     return collection[index]
   } else if (isComplexSlice(collection)) {
     if (index < 0 || index >= collection.__meta__.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.__meta__.length}`,
-      )
+      outOfRangeIndex(index, collection.__meta__.length)
     }
     return collection.__meta__.backing[collection.__meta__.offset + index]
   } else if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
+    }
+    return collection[index]
+  }
+  runtimePanic('runtime error: index on unsupported type')
+}
+
+/**
+ * arrayIndex reads collection[index] with Go bounds-check semantics, panicking
+ * with the Go runtime message when index is out of range. Strings and maps are
+ * lowered through their own helpers, so this covers Go arrays and slices. The
+ * overloads reproduce the element type of a direct collection[index]: a byte
+ * collection yields number, an element slice yields its element type.
+ */
+export function arrayIndex(collection: Uint8Array, index: number): number
+export function arrayIndex<T>(collection: Slice<T> | T[], index: number): T
+export function arrayIndex<T>(
+  collection: Slice<T> | T[] | Uint8Array,
+  index: number,
+): T | number {
+  if (collection === null || collection === undefined) {
+    outOfRangeIndex(index, 0)
+  }
+  if (collection instanceof Uint8Array) {
+    if (index < 0 || index >= collection.length) {
+      outOfRangeIndex(index, collection.length)
+    }
+    return collection[index]
+  }
+  if (isComplexSlice(collection)) {
+    const length = collection.__meta__.length
+    if (index < 0 || index >= length) {
+      outOfRangeIndex(index, length)
+    }
+    return collection.__meta__.backing[collection.__meta__.offset + index]
+  }
+  if (Array.isArray(collection)) {
+    if (index < 0 || index >= collection.length) {
+      outOfRangeIndex(index, collection.length)
     }
     return collection[index]
   }
@@ -1375,9 +1419,7 @@ export function indexRef<T>(
   }
   if (collection instanceof Uint8Array) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
     }
     const ref: VarRef<T> = {
       get value() {
@@ -1396,9 +1438,7 @@ export function indexRef<T>(
   }
   if (isComplexSlice(collection)) {
     if (index < 0 || index >= collection.__meta__.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.__meta__.length}`,
-      )
+      outOfRangeIndex(index, collection.__meta__.length)
     }
     const backingIndex = collection.__meta__.offset + index
     const ref: VarRef<T> = {
@@ -1418,9 +1458,7 @@ export function indexRef<T>(
   }
   if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
     }
     const ref: VarRef<T> = {
       get value() {
@@ -1543,9 +1581,7 @@ export function indexAddress<T>(
   }
 
   if (index < 0 || index >= length) {
-    runtimePanic(
-      `runtime error: index out of range [${index}] with length ${length}`,
-    )
+    outOfRangeIndex(index, length)
   }
 
   let base = addressBases.get(backing)
@@ -1627,9 +1663,7 @@ export function indexByteAddress<T>(
 
   if (collection instanceof Uint8Array) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
     }
     const view = new Uint8Array(collection.buffer)
     const base = byteAddressBase(collection.buffer, {
@@ -1646,9 +1680,7 @@ export function indexByteAddress<T>(
 
   if (isComplexSlice(collection)) {
     if (index < 0 || index >= collection.__meta__.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.__meta__.length}`,
-      )
+      outOfRangeIndex(index, collection.__meta__.length)
     }
     const backing = collection.__meta__.backing as unknown as number[]
     const byteSize = Math.max(1, Math.trunc(elementByteSize))
@@ -1658,9 +1690,7 @@ export function indexByteAddress<T>(
 
   if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${collection.length}`,
-      )
+      outOfRangeIndex(index, collection.length)
     }
     const byteSize = Math.max(1, Math.trunc(elementByteSize))
     const base = byteAddressBase(
@@ -1824,28 +1854,22 @@ export const indexString = (
     // Bytes - access directly
     if (str instanceof Uint8Array) {
       if (index < 0 || index >= str.length) {
-        runtimePanic(
-          `runtime error: index out of range [${index}] with length ${str.length}`,
-        )
+        outOfRangeIndex(index, str.length)
       }
       return str[index]
     }
     // Array or null
     if (str === null || str === undefined) {
-      runtimePanic(`runtime error: index out of range [${index}] with length 0`)
+      outOfRangeIndex(index, 0)
     }
     if (index < 0 || index >= str.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${str.length}`,
-      )
+      outOfRangeIndex(index, str.length)
     }
     return str[index]
   }
   const bytes = goStringBytes(str)
   if (index < 0 || index >= bytes.length) {
-    runtimePanic(
-      `runtime error: index out of range [${index}] with length ${bytes.length}`,
-    )
+    outOfRangeIndex(index, bytes.length)
   }
   return bytes[index]
 }
@@ -2162,20 +2186,16 @@ export function indexStringOrBytes(
   } else if (value instanceof Uint8Array) {
     // For Uint8Array, direct access returns the byte value
     if (index < 0 || index >= value.length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${value.length}`,
-      )
+      outOfRangeIndex(index, value.length)
     }
     return value[index]
   } else if (value === null) {
-    runtimePanic(`runtime error: index out of range [${index}] with length 0`)
+    outOfRangeIndex(index, 0)
   } else {
     // For Slice<number> (including SliceProxy)
     const length = len(value)
     if (index < 0 || index >= length) {
-      runtimePanic(
-        `runtime error: index out of range [${index}] with length ${length}`,
-      )
+      outOfRangeIndex(index, length)
     }
     return (value as any)[index] as number
   }

@@ -293,19 +293,19 @@ export function atof64exact(mantissa: bigint, exp: number, neg: boolean): [numbe
 		case (exp > 0) && (exp <= (15 + 22)):
 		{
 			if (exp > 22) {
-				f = f * (float64pow10![exp - 22])
+				f = f * ($.arrayIndex(float64pow10!, exp - 22))
 				exp = 22
 			}
 			if ((f > 1e15) || (f < -1e15)) {
 				// the exponent was really too large.
 				return [f, ok]
 			}
-			return [f * float64pow10![exp], true]
+			return [f * $.arrayIndex(float64pow10!, exp), true]
 			break
 		}
 		case (exp < 0) && (exp >= -22):
 		{
-			return [f / float64pow10![-exp], true]
+			return [f / $.arrayIndex(float64pow10!, -exp), true]
 			break
 		}
 	}
@@ -331,19 +331,19 @@ export function atof32exact(mantissa: bigint, exp: number, neg: boolean): [numbe
 		case (exp > 0) && (exp <= (7 + 10)):
 		{
 			if (exp > 10) {
-				f = f * (float32pow10![exp - 10])
+				f = f * ($.arrayIndex(float32pow10!, exp - 10))
 				exp = 10
 			}
 			if ((f > 1e7) || (f < -1e7)) {
 				// the exponent was really too large.
 				return [f, ok]
 			}
-			return [f * float32pow10![exp], true]
+			return [f * $.arrayIndex(float32pow10!, exp), true]
 			break
 		}
 		case (exp < 0) && (exp >= -10):
 		{
-			return [f / float32pow10![-exp], true]
+			return [f / $.arrayIndex(float32pow10!, -exp), true]
 			break
 		}
 	}

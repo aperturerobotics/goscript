@@ -35,7 +35,7 @@ export function simpleUpdate(crc: number, tab: $.VarRef<__goscript_crc32.Table> 
 	crc = $.uint($.uint(~crc, 32), 32)
 	for (let __goscriptRangeTarget0 = p, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let v = __goscriptRangeTarget0![__rangeIndex]
-		crc = $.uint($.pointerValue<number[]>(tab)[$.uint(crc, 8) ^ v] ^ ($.uintShr(crc, 8, 32)), 32)
+		crc = $.uint($.arrayIndex($.pointerValue<number[]>(tab), $.uint(crc, 8) ^ v) ^ ($.uintShr(crc, 8, 32)), 32)
 	}
 	return $.uint($.uint(~crc, 32), 32)
 }
@@ -46,10 +46,10 @@ export function slicingMakeTable(poly: number): $.VarRef<slicing8Table> | null {
 	let t: $.VarRef<slicing8Table> | null = $.varRef<slicing8Table>(Array.from({ length: 8 }, () => Array.from({ length: 256 }, () => 0)))
 	simplePopulateTable($.uint(poly, 32), $.indexRef($.pointerValue<__goscript_crc32.Table[]>(t), 0))
 	for (let i = 0; i < 256; i++) {
-		let crc = $.uint($.pointerValue<__goscript_crc32.Table[]>(t)[0][i], 32)
+		let crc = $.uint($.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(t), 0), i), 32)
 		for (let j = 1; j < 8; j++) {
-			crc = $.uint($.pointerValue<__goscript_crc32.Table[]>(t)[0][crc & 0xFF] ^ ($.uintShr(crc, 8, 32)), 32)
-			$.pointerValue<__goscript_crc32.Table[]>(t)[j][i] = $.uint(crc, 32)
+			crc = $.uint($.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(t), 0), crc & 0xFF) ^ ($.uintShr(crc, 8, 32)), 32)
+			$.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(t), j)[i] = $.uint(crc, 32)
 		}
 	}
 	return t
@@ -60,7 +60,7 @@ export function slicingUpdate(crc: number, tab: $.VarRef<slicing8Table> | null, 
 		crc = $.uint($.uint(~crc, 32), 32)
 		while ($.len(p) > 8) {
 			crc = crc ^ ($.uint(byteorder.LEUint32(p), 32))
-			crc = $.uint((((((($.pointerValue<__goscript_crc32.Table[]>(tab)[0][p![7]] ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[1][p![6]]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[2][p![5]]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[3][p![4]]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[4][$.uintShr(crc, 24, 32)]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[5][($.uintShr(crc, 16, 32)) & 0xFF]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[6][($.uintShr(crc, 8, 32)) & 0xFF]) ^ $.pointerValue<__goscript_crc32.Table[]>(tab)[7][crc & 0xFF], 32)
+			crc = $.uint((((((($.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 0), $.arrayIndex(p!, 7)) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 1), $.arrayIndex(p!, 6))) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 2), $.arrayIndex(p!, 5))) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 3), $.arrayIndex(p!, 4))) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 4), $.uintShr(crc, 24, 32))) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 5), ($.uintShr(crc, 16, 32)) & 0xFF)) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 6), ($.uintShr(crc, 8, 32)) & 0xFF)) ^ $.arrayIndex($.arrayIndex($.pointerValue<__goscript_crc32.Table[]>(tab), 7), crc & 0xFF), 32)
 			p = $.goSlice(p, 8, undefined)
 		}
 		crc = $.uint($.uint(~crc, 32), 32)

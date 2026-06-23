@@ -71,9 +71,9 @@ export async function main(): globalThis.Promise<void> {
 	let n = $.len(scoreResults)
 	for (let i = 0; i < (n - 1); i++) {
 		for (let j = 0; j < ((n - i) - 1); j++) {
-			if ($.stringCompare(scoreResults![j], scoreResults![j + 1]) > 0) {
-				let __goscriptAssign0_0: string = scoreResults![j + 1]
-				let __goscriptAssign0_1: string = scoreResults![j]
+			if ($.stringCompare($.arrayIndex(scoreResults!, j), $.arrayIndex(scoreResults!, j + 1)) > 0) {
+				let __goscriptAssign0_0: string = $.arrayIndex(scoreResults!, j + 1)
+				let __goscriptAssign0_1: string = $.arrayIndex(scoreResults!, j)
 				scoreResults![j] = __goscriptAssign0_0
 				scoreResults![j + 1] = __goscriptAssign0_1
 			}

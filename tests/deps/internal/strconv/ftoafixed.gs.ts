@@ -130,7 +130,7 @@ export function fixedFtoa(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript_
 
 	// Trim excess digit if any, updating truncation and decimal point.
 	// The << 1 is leaving room for the rounding bit.
-	let max = $.uint64Shl(uint64pow10[digits], 1)
+	let max = $.uint64Shl($.arrayIndex(uint64pow10, digits), 1)
 	if (dm >= max) {
 		let r: number = 0
 		let __goscriptAssign0_0: bigint = $.uint64Div(dm, 10)
@@ -163,7 +163,7 @@ export function fixedFtoa(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript_
 			$.pointerValue<__goscript_ftoa.decimalSlice>(d).dp++
 		}
 
-		max = $.uint64Shl(uint64pow10[digits], 1)
+		max = $.uint64Shl($.arrayIndex(uint64pow10, digits), 1)
 	}
 
 	// Round and shift away rounding bit.
@@ -176,7 +176,7 @@ export function fixedFtoa(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript_
 	dm = $.uint64Shr(dm, 1n)
 	if (dm == ($.uint64Shr(max, 1))) {
 		// 999... rolled over to 1000...
-		dm = uint64pow10[digits - 1]
+		dm = $.arrayIndex(uint64pow10, digits - 1)
 		$.pointerValue<__goscript_ftoa.decimalSlice>(d).dp++
 	}
 
@@ -186,7 +186,7 @@ export function fixedFtoa(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript_
 			$.panic("formatBase10")
 		}
 		$.pointerValue<__goscript_ftoa.decimalSlice>(d).nd = digits
-		while ($.uint($.pointerValue<__goscript_ftoa.decimalSlice>(d).d![$.pointerValue<__goscript_ftoa.decimalSlice>(d).nd - 1], 8) == $.uint(48, 8)) {
+		while ($.uint($.arrayIndex($.pointerValue<__goscript_ftoa.decimalSlice>(d).d!, $.pointerValue<__goscript_ftoa.decimalSlice>(d).nd - 1), 8) == $.uint(48, 8)) {
 			$.pointerValue<__goscript_ftoa.decimalSlice>(d).nd--
 		}
 	}

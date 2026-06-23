@@ -546,7 +546,7 @@ export async function TestReader(r: io.Reader | null, content: $.Slice<number>):
 					}
 					return fmt.Errorf("ReadAt(1, %d) = %v, %v, want 1, %s", $.namedValueInterfaceValue<any>(i, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.namedValueInterfaceValue<any>(__goscriptShadow15, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), (__goscriptShadow16 as any), want)
 				}
-				if ($.uint(__goscriptShadow14![i], 8) != $.uint(content![i], 8)) {
+				if ($.uint($.arrayIndex(__goscriptShadow14!, i), 8) != $.uint($.arrayIndex(content!, i), 8)) {
 					return fmt.Errorf("ReadAt(1, %d) = %q want %q", $.namedValueInterfaceValue<any>(i, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), $.interfaceValue<any>($.goSlice(__goscriptShadow14, i, i + 1), "[]byte"), $.interfaceValue<any>($.goSlice(content, i, i + 1), "[]byte"))
 				}
 			}

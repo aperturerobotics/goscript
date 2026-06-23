@@ -65,7 +65,7 @@ export async function main(): globalThis.Promise<void> {
 		await m.value.Load($.namedValueInterfaceValue<any>(v, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 		return null
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "int" }], results: ["error"] } as $.FunctionTypeInfo))]
-	$.println(await callbacks[0]!(1) == null)
+	$.println(await $.arrayIndex(callbacks, 0)!(1) == null)
 }
 
 if ($.isMainScript(import.meta)) {

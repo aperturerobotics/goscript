@@ -203,7 +203,7 @@ export class Reader {
 					$.panic((errNegativeRead as any))
 				}
 				if (n > 0) {
-					$.pointerValue<Reader>(b).lastByte = $.int(p![n - 1])
+					$.pointerValue<Reader>(b).lastByte = $.int($.arrayIndex(p!, n - 1))
 					$.pointerValue<Reader>(b).lastRuneSize = -1
 				}
 				return [n, Reader.prototype.readErr.call(b)]
@@ -229,7 +229,7 @@ export class Reader {
 		// the underlying reader returned a bad count. See issue 49795.
 		n = $.copy(p, $.goSlice($.pointerValue<Reader>(b).buf, $.pointerValue<Reader>(b).r, $.pointerValue<Reader>(b).w))
 		$.pointerValue<Reader>(b).r = $.pointerValue<Reader>(b).r + (n)
-		$.pointerValue<Reader>(b).lastByte = $.int($.pointerValue<Reader>(b).buf![$.pointerValue<Reader>(b).r - 1])
+		$.pointerValue<Reader>(b).lastByte = $.int($.arrayIndex($.pointerValue<Reader>(b).buf!, $.pointerValue<Reader>(b).r - 1))
 		$.pointerValue<Reader>(b).lastRuneSize = -1
 		return [n, null]
 	}
@@ -243,7 +243,7 @@ export class Reader {
 			}
 			await Reader.prototype.fill.call(b)
 		}
-		let c = $.uint($.pointerValue<Reader>(b).buf![$.pointerValue<Reader>(b).r], 8)
+		let c = $.uint($.arrayIndex($.pointerValue<Reader>(b).buf!, $.pointerValue<Reader>(b).r), 8)
 		$.pointerValue<Reader>(b).r++
 		$.pointerValue<Reader>(b).lastByte = $.int(c)
 		return [$.uint(c, 8), null]
@@ -261,7 +261,7 @@ export class Reader {
 		n = 0
 		// Copy full pieces and fragment in.
 		for (let __goscriptRangeTarget0 = full, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
-			n = n + ($.copy($.goSlice(buf, n, undefined), full![i]))
+			n = n + ($.copy($.goSlice(buf, n, undefined), $.arrayIndex(full!, i)))
 		}
 		$.copy($.goSlice(buf, n, undefined), frag)
 		return [buf, err]
@@ -277,7 +277,7 @@ export class Reader {
 		err = __goscriptTuple3[1]
 		if ($.comparableEqual(err, ErrBufferFull)) {
 			// Handle the case where "\r\n" straddles the buffer.
-			if (($.len(line) > 0) && ($.uint(line![$.len(line) - 1], 8) == $.uint(13, 8))) {
+			if (($.len(line) > 0) && ($.uint($.arrayIndex(line!, $.len(line) - 1), 8) == $.uint(13, 8))) {
 				// Put the '\r' back on buf and drop it from line.
 				// Let the next call to ReadLine check for "\r\n".
 				if ($.pointerValue<Reader>(b).r == 0) {
@@ -298,9 +298,9 @@ export class Reader {
 		}
 		err = null
 
-		if ($.uint(line![$.len(line) - 1], 8) == $.uint(10, 8)) {
+		if ($.uint($.arrayIndex(line!, $.len(line) - 1), 8) == $.uint(10, 8)) {
 			let drop = 1
-			if (($.len(line) > 1) && ($.uint(line![$.len(line) - 2], 8) == $.uint(13, 8))) {
+			if (($.len(line) > 1) && ($.uint($.arrayIndex(line!, $.len(line) - 2), 8) == $.uint(13, 8))) {
 				drop = 2
 			}
 			line = $.goSlice(line, undefined, $.len(line) - drop)
@@ -324,7 +324,7 @@ export class Reader {
 		r = $.int(__goscriptTuple4[0], 32)
 		size = __goscriptTuple4[1]
 		$.pointerValue<Reader>(b).r = $.pointerValue<Reader>(b).r + (size)
-		$.pointerValue<Reader>(b).lastByte = $.int($.pointerValue<Reader>(b).buf![$.pointerValue<Reader>(b).r - 1])
+		$.pointerValue<Reader>(b).lastByte = $.int($.arrayIndex($.pointerValue<Reader>(b).buf!, $.pointerValue<Reader>(b).r - 1))
 		$.pointerValue<Reader>(b).lastRuneSize = size
 		return [$.int(r, 32), size, null]
 	}
@@ -371,7 +371,7 @@ export class Reader {
 		{
 			let i = $.len(line) - 1
 			if (i >= 0) {
-				$.pointerValue<Reader>(b).lastByte = $.int(line![i])
+				$.pointerValue<Reader>(b).lastByte = $.int($.arrayIndex(line!, i))
 				$.pointerValue<Reader>(b).lastRuneSize = -1
 			}
 		}

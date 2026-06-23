@@ -159,7 +159,7 @@ export class deflateFast {
 					if (nextS > sLimit) {
 						break emitRemainder
 					}
-					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[nextHash & 16383]))
+					candidate = $.markAsStructValue($.cloneStructValue($.arrayIndex($.pointerValue<deflateFast>(e).table, nextHash & 16383)))
 					let now = $.uint(load32(src, $.int(nextS, 32)), 32)
 					$.pointerValue<deflateFast>(e).table[nextHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int(s + $.pointerValue<deflateFast>(e).cur, 32), val: $.uint(cv, 32)}))
 					nextHash = $.uint(hash($.uint(now, 32)), 32)
@@ -215,7 +215,7 @@ export class deflateFast {
 					$.pointerValue<deflateFast>(e).table[prevHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int(($.pointerValue<deflateFast>(e).cur + s) - 1, 32), val: $.uint($.uint(x, 32), 32)}))
 					x = $.uint64Shr(x, 8n)
 					let currHash = $.uint(hash($.uint($.uint(x, 32), 32)), 32)
-					candidate = $.markAsStructValue($.cloneStructValue($.pointerValue<deflateFast>(e).table[currHash & 16383]))
+					candidate = $.markAsStructValue($.cloneStructValue($.arrayIndex($.pointerValue<deflateFast>(e).table, currHash & 16383)))
 					$.pointerValue<deflateFast>(e).table[currHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int($.pointerValue<deflateFast>(e).cur + s, 32), val: $.uint($.uint(x, 32), 32)}))
 
 					let offset = $.int(s - (candidate.offset - $.pointerValue<deflateFast>(e).cur), 32)
@@ -251,7 +251,7 @@ export class deflateFast {
 			b = $.goSlice(b, undefined, $.len(a))
 			// Extend the match to be as long as possible.
 			for (let __goscriptRangeTarget0 = a, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
-				if ($.uint(a![i], 8) != $.uint(b![i], 8)) {
+				if ($.uint($.arrayIndex(a!, i), 8) != $.uint($.arrayIndex(b!, i), 8)) {
 					return $.int($.int(i, 32), 32)
 				}
 			}
@@ -272,7 +272,7 @@ export class deflateFast {
 		}
 		a = $.goSlice(a, undefined, $.len(b))
 		for (let __goscriptRangeTarget1 = b, i = 0; i < $.len(__goscriptRangeTarget1); i++) {
-			if ($.uint(a![i], 8) != $.uint(b![i], 8)) {
+			if ($.uint($.arrayIndex(a!, i), 8) != $.uint($.arrayIndex(b!, i), 8)) {
 				return $.int($.int(i, 32), 32)
 			}
 		}
@@ -288,7 +288,7 @@ export class deflateFast {
 		a = $.goSlice(src, s + n, s1)
 		b = $.goSlice(src, undefined, $.len(a))
 		for (let __goscriptRangeTarget2 = a, i = 0; i < $.len(__goscriptRangeTarget2); i++) {
-			if ($.uint(a![i], 8) != $.uint(b![i], 8)) {
+			if ($.uint($.arrayIndex(a!, i), 8) != $.uint($.arrayIndex(b!, i), 8)) {
 				return $.int($.int(i, 32) + n, 32)
 			}
 		}
@@ -319,7 +319,7 @@ export class deflateFast {
 
 		// Shift down everything in the table that isn't already too far away.
 		for (let __goscriptRangeTarget3 = $.goSlice($.pointerValue<deflateFast>(e).table, undefined, undefined), i = 0; i < $.len(__goscriptRangeTarget3); i++) {
-			let v = $.int((($.pointerValue<deflateFast>(e).table[i].offset - $.pointerValue<deflateFast>(e).cur) + 32768) + 1, 32)
+			let v = $.int((($.arrayIndex($.pointerValue<deflateFast>(e).table, i).offset - $.pointerValue<deflateFast>(e).cur) + 32768) + 1, 32)
 			if (v < 0) {
 				// We want to reset e.cur to maxMatchOffset + 1, so we need to shift
 				// all table entries down by (e.cur - (maxMatchOffset + 1)).
@@ -327,7 +327,7 @@ export class deflateFast {
 				// any negative offsets at 0.
 				v = $.int(0, 32)
 			}
-			$.pointerValue<deflateFast>(e).table[i].offset = $.int(v, 32)
+			$.arrayIndex($.pointerValue<deflateFast>(e).table, i).offset = $.int(v, 32)
 		}
 		$.pointerValue<deflateFast>(e).cur = $.int(32768 + 1, 32)
 	}
@@ -357,12 +357,12 @@ export const minNonLiteralBlockSize: number = 17
 
 export function load32(b: $.Slice<number>, i: number): number {
 	b = $.goSlice(b, i, i + 4, $.len(b))
-	return $.uint((($.uint(b![0], 32) | ($.uint(b![1], 32) << 8)) | ($.uint(b![2], 32) << 16)) | ($.uint(b![3], 32) << 24), 32)
+	return $.uint((($.uint($.arrayIndex(b!, 0), 32) | ($.uint($.arrayIndex(b!, 1), 32) << 8)) | ($.uint($.arrayIndex(b!, 2), 32) << 16)) | ($.uint($.arrayIndex(b!, 3), 32) << 24), 32)
 }
 
 export function load64(b: $.Slice<number>, i: number): bigint {
 	b = $.goSlice(b, i, i + 8, $.len(b))
-	return $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or($.uint64(b![0]), ($.uint64Shl($.uint64(b![1]), 8)))), ($.uint64Shl($.uint64(b![2]), 16)))), ($.uint64Shl($.uint64(b![3]), 24)))), ($.uint64Mul($.uint64(b![4]), (2 ** 32))))), ($.uint64Mul($.uint64(b![5]), (2 ** 40))))), ($.uint64Mul($.uint64(b![6]), (2 ** 48))))), ($.uint64Mul($.uint64(b![7]), (2 ** 56))))
+	return $.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or(($.uint64Or($.uint64($.arrayIndex(b!, 0)), ($.uint64Shl($.uint64($.arrayIndex(b!, 1)), 8)))), ($.uint64Shl($.uint64($.arrayIndex(b!, 2)), 16)))), ($.uint64Shl($.uint64($.arrayIndex(b!, 3)), 24)))), ($.uint64Mul($.uint64($.arrayIndex(b!, 4)), (2 ** 32))))), ($.uint64Mul($.uint64($.arrayIndex(b!, 5)), (2 ** 40))))), ($.uint64Mul($.uint64($.arrayIndex(b!, 6)), (2 ** 48))))), ($.uint64Mul($.uint64($.arrayIndex(b!, 7)), (2 ** 56))))
 }
 
 export function hash(u: number): number {

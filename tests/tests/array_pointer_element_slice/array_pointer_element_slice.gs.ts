@@ -53,7 +53,7 @@ export async function main(): globalThis.Promise<void> {
 	let child: node | $.VarRef<node> | null = new node()
 	$.pointerValue<node>(root).sub = $.append($.goSlice($.pointerValue<node>(root).sub0, undefined, 0), child)
 
-	$.println($.len($.pointerValue<node>(root).sub), $.pointerValue<node>(root).sub![0] == child)
+	$.println($.len($.pointerValue<node>(root).sub), $.arrayIndex($.pointerValue<node>(root).sub!, 0) == child)
 }
 
 if ($.isMainScript(import.meta)) {

@@ -123,7 +123,7 @@ export class Buffer {
 		if ($.pointerValue<Buffer>(b).rOff >= $.len($.pointerValue<Buffer>(b).buf)) {
 			return [$.uint(0, 8), io.EOF]
 		}
-		let c = $.uint($.pointerValue<Buffer>(b).buf![$.pointerValue<Buffer>(b).rOff], 8)
+		let c = $.uint($.arrayIndex($.pointerValue<Buffer>(b).buf!, $.pointerValue<Buffer>(b).rOff), 8)
 		$.pointerValue<Buffer>(b).rOff++
 		return [$.uint(c, 8), null]
 	}

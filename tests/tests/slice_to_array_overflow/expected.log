@@ -1,0 +1,3 @@
+array: runtime error: cannot convert slice with length 2 to array or pointer to array with length 4
+pointer: runtime error: cannot convert slice with length 2 to array or pointer to array with length 4
+done

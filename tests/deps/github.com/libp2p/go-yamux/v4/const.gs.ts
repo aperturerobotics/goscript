@@ -200,11 +200,11 @@ export function __goscript_set_ErrKeepAliveTimeout(__goscriptValue: Error | $.Va
 export type header = Uint8Array
 
 export function header_Version(h: header): number {
-	return $.uint(h[0], 8)
+	return $.uint($.arrayIndex(h, 0), 8)
 }
 
 export function header_MsgType(h: header): number {
-	return $.uint(h[1], 8)
+	return $.uint($.arrayIndex(h, 1), 8)
 }
 
 export function header_Flags(h: header): number {

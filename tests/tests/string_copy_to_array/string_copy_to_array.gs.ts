@@ -10,7 +10,7 @@ export async function main(): globalThis.Promise<void> {
 
 	// Check that arr is initialized with 255 values
 	for (let i = 0; i < $.len(arr); i++) {
-		if ($.uint(arr[i], 8) != $.uint(255, 8)) {
+		if ($.uint($.arrayIndex(arr, i), 8) != $.uint(255, 8)) {
 			$.panic("copy failed")
 		}
 	}

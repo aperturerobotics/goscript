@@ -303,7 +303,7 @@ export class commonRPC {
 			}
 
 			if ($.len($.pointerValue<commonRPC>(c).dataQueue) != 0) {
-				let msg: $.Slice<number> = $.pointerValue<commonRPC>(c).dataQueue![0]
+				let msg: $.Slice<number> = $.arrayIndex($.pointerValue<commonRPC>(c).dataQueue!, 0)
 				$.pointerValue<commonRPC>(c).dataQueue![0] = null
 				$.pointerValue<commonRPC>(c).dataQueue = $.goSlice($.pointerValue<commonRPC>(c).dataQueue, 1, undefined)
 				locked.value.Unlock()

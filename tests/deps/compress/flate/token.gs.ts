@@ -48,15 +48,15 @@ export function token_length(t: token): number {
 }
 
 export function lengthCode(len: number): number {
-	return $.uint(lengthCodes[len], 32)
+	return $.uint($.arrayIndex(lengthCodes, len), 32)
 }
 
 export function offsetCode(off: number): number {
 	if (off < $.uint($.len(offsetCodes), 32)) {
-		return $.uint(offsetCodes[off], 32)
+		return $.uint($.arrayIndex(offsetCodes, off), 32)
 	}
 	if (($.uintShr(off, 7, 32)) < $.uint($.len(offsetCodes), 32)) {
-		return $.uint(offsetCodes[$.uintShr(off, 7, 32)] + 14, 32)
+		return $.uint($.arrayIndex(offsetCodes, $.uintShr(off, 7, 32)) + 14, 32)
 	}
-	return $.uint(offsetCodes[$.uintShr(off, 14, 32)] + 28, 32)
+	return $.uint($.arrayIndex(offsetCodes, $.uintShr(off, 14, 32)) + 28, 32)
 }

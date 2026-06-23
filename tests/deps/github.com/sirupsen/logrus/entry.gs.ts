@@ -701,7 +701,7 @@ export async function getCaller(): globalThis.Promise<runtime.Frame | $.VarRef<r
 
 		// dynamic get the package name and the minimum caller depth
 		for (let i = 0; i < 25; i++) {
-			let funcName = runtime.Func.prototype.Name.call($.pointerValue<runtime.Func>(runtime.FuncForPC($.uint(pcs![i], 64))))
+			let funcName = runtime.Func.prototype.Name.call($.pointerValue<runtime.Func>(runtime.FuncForPC($.uint($.arrayIndex(pcs!, i), 64))))
 			if (strings.Contains(funcName, "getCaller")) {
 				logrusPackage = getPackageName(funcName)
 				break

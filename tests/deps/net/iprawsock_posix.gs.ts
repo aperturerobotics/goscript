@@ -123,11 +123,11 @@ export function stripIPv4Header(n: number, b: $.Slice<number>): number {
 	if ($.len(b) < 20) {
 		return n
 	}
-	let l = $.int(b![0] & 0x0f) << 2
+	let l = $.int($.arrayIndex(b!, 0) & 0x0f) << 2
 	if ((20 > l) || (l > $.len(b))) {
 		return n
 	}
-	if ($.uint(($.uintShr(b![0], 4, 8)), 8) != $.uint(4, 8)) {
+	if ($.uint(($.uintShr($.arrayIndex(b!, 0), 4, 8)), 8) != $.uint(4, 8)) {
 		return n
 	}
 	$.copy(b, $.goSlice(b, l, undefined))

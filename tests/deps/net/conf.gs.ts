@@ -288,11 +288,11 @@ export class conf {
 				// We don't recognize this format.
 				return [fallbackOrder, dnsConf]
 			}
-			switch (lookup![0]) {
+			switch ($.arrayIndex(lookup!, 0)) {
 				case "bind":
 				{
 					if ($.len(lookup) == 2) {
-						if ($.stringEqual(lookup![1], "file")) {
+						if ($.stringEqual($.arrayIndex(lookup!, 1), "file")) {
 							return [2, dnsConf]
 						}
 						// Unrecognized.
@@ -304,7 +304,7 @@ export class conf {
 				case "file":
 				{
 					if ($.len(lookup) == 2) {
-						if ($.stringEqual(lookup![1], "bind")) {
+						if ($.stringEqual($.arrayIndex(lookup!, 1), "bind")) {
 							return [1, dnsConf]
 						}
 						// Unrecognized.

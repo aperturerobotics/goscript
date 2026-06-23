@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("length:", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(obj)).Get("nums"))).Length())
 
 	let cb = $.markAsStructValue($.cloneStructValue(js.FuncOf($.functionValue((_this: js.Value, args: $.Slice<js.Value>): any => {
-		return $.namedValueInterfaceValue<any>($.markAsStructValue($.cloneStructValue(args![0])).Int() + 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" })
+		return $.namedValueInterfaceValue<any>($.markAsStructValue($.cloneStructValue($.arrayIndex(args!, 0))).Int() + 1, "int", {}, { kind: $.TypeKind.Basic, name: "int" })
 	}, ({ kind: $.TypeKind.Function, params: ["js.Value", { kind: $.TypeKind.Slice, elemType: "js.Value" }], results: [{ kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo)))))
 	__defer.defer(() => { $.markAsStructValue($.cloneStructValue(cb)).Release() })
 	$.println("callback:", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(cb)).Invoke($.namedValueInterfaceValue<any>(41, "int", {}, { kind: $.TypeKind.Basic, name: "int" })))).Int())

@@ -4061,6 +4061,13 @@ func (o *LoweringOwner) lowerStmtInto(ctx lowerFileContext, stmt ast.Stmt, out [
 			}
 			return append(out, loweredStmt{text: setter + "(" + expr + " " + op + " " + oneLiteral + ")"}), diagnostics
 		}
+		if _, ok := unwrapParenExpr(typed.X).(*ast.IndexExpr); ok {
+			// Array/slice index increment needs the assignable target[index] form;
+			// the read path wraps indexing in a bounds-checked helper that cannot be
+			// an increment operand. Map index increment is handled above.
+			target, diagnostics := o.lowerAssignmentTarget(ctx, typed.X, false)
+			return append(out, loweredStmt{text: target + typed.Tok.String()}), diagnostics
+		}
 		expr, diagnostics := o.lowerExpr(ctx, typed.X)
 		return append(out, loweredStmt{text: expr + typed.Tok.String()}), diagnostics
 	case *ast.BranchStmt:
@@ -9513,6 +9520,18 @@ func (o *LoweringOwner) lowerAssignmentTarget(
 		return o.lowerIdent(ctx, typed, false), nil
 	case *ast.StarExpr:
 		return o.lowerPointerValueExpr(ctx, typed.X)
+	case *ast.IndexExpr:
+		// Assignment targets need an assignable JS reference (target[index]); the
+		// read path wraps array/slice indexing in a bounds-checked helper, which
+		// is not assignable. Map and string targets keep their own paths.
+		targetType := ctx.semPkg.source.TypesInfo.TypeOf(typed.X)
+		if isStringType(targetType) || isMapType(targetType) {
+			return o.lowerExpr(ctx, expr)
+		}
+		target, targetDiagnostics := o.lowerExpr(ctx, typed.X)
+		index, indexDiagnostics := o.lowerExpr(ctx, typed.Index)
+		diagnostics := append(targetDiagnostics, indexDiagnostics...)
+		return o.lowerIndexTarget(ctx, target, targetType) + "[" + o.lowerNumberIndexValue(ctx, typed.Index, index) + "]", diagnostics
 	default:
 		return o.lowerExpr(ctx, expr)
 	}
@@ -10218,7 +10237,7 @@ func (o *LoweringOwner) lowerIndexExpr(ctx lowerFileContext, expr *ast.IndexExpr
 	case isMapType(targetType):
 		return o.lowerMapGetValue(ctx, expr, target, index), diagnostics
 	default:
-		return o.lowerIndexTarget(ctx, target, targetType) + "[" + o.lowerNumberIndexValue(ctx, expr.Index, index) + "]", diagnostics
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperArrayIndex) + "(" + o.lowerIndexTarget(ctx, target, targetType) + ", " + o.lowerNumberIndexValue(ctx, expr.Index, index) + ")", diagnostics
 	}
 }
 
