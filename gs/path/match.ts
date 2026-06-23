@@ -78,7 +78,7 @@ export function Match(pattern: string, name: string): [boolean, $.GoError] {
         for (let i = 0; i < $.len(name) && $.indexString(name, i) != 47; i++) {
           let [t, ok, err] = matchChunk(
             chunk,
-            $.sliceString(name, i, undefined),
+            $.sliceString(name, i + 1, undefined),
           )
 
           // if we're the last chunk, make sure we exhausted the name
@@ -300,8 +300,11 @@ export function getEsc(chunk: string): [number, string, $.GoError] {
     return [0, '', ErrBadPattern]
   }
   chunk = $.sliceString(chunk, n, undefined)
-  if ($.len(chunk) == 0 || $.indexString(chunk, 0) != 45 || $.len(chunk) == 1) {
-    return [r, chunk, null]
+  // An escape that consumes the last rune of the class leaves no terminator,
+  // so the pattern is malformed (Go reports ErrBadPattern instead of indexing
+  // past the end of the chunk).
+  if ($.len(chunk) == 0) {
+    return [r, chunk, ErrBadPattern]
   }
   return [r, chunk, null]
 }
