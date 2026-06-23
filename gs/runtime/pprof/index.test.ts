@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   Lookup,
   NewProfile,
+  Profiles,
   StartCPUProfile,
   StopCPUProfile,
   WriteHeapProfile,
@@ -59,6 +60,25 @@ describe('runtime/pprof override', () => {
     expect(profile.Count()).toBe(0)
     expect(() => NewProfile('goscript.test')).toThrow(
       'pprof: NewProfile name already in use: goscript.test',
+    )
+  })
+
+  it('lists built-in and custom profiles', () => {
+    const custom =
+      Lookup('goscript.profiles') ?? NewProfile('goscript.profiles')
+    const profiles = Array.from(Profiles() ?? [])
+    const names = profiles.map((profile) => profile?.Name())
+
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'allocs',
+        'block',
+        'goroutine',
+        'heap',
+        'mutex',
+        'threadcreate',
+        custom.Name(),
+      ]),
     )
   })
 })

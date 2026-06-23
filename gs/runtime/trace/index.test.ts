@@ -5,6 +5,7 @@ import * as context from '@goscript/context/index.js'
 import {
   IsEnabled,
   Log,
+  Logf,
   NewTask,
   Start,
   StartRegion,
@@ -109,6 +110,7 @@ describe('runtime/trace override', () => {
     const [ctx, task] = NewTask(context.Background(), 'proof-task')
     WithRegion(ctx, 'proof-region', () => {
       Log(ctx, 'proof-key', 'proof-value')
+      Logf(ctx, 'proof-format', 'value=%s count=%d', 'ok', 3)
     })
     task.End()
 
@@ -126,6 +128,7 @@ describe('runtime/trace override', () => {
     expect(text).toContain('proof-task')
     expect(text).toContain('proof-region')
     expect(text).toContain('proof-value')
+    expect(text).toContain('value=ok count=3')
   })
 
   it('splits a large capture into batches under the size limit', () => {
