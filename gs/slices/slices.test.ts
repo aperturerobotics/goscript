@@ -13,7 +13,9 @@ import {
   CompareFunc,
   Concat,
   DeleteFunc,
+  Equal,
   EqualFunc,
+  Index,
   IndexFunc,
   IsSorted,
   IsSortedFunc,
@@ -26,6 +28,35 @@ import {
   SortFunc,
   SortStableFunc,
 } from './slices.js'
+
+describe('slices Go comparable equality and lower-bound search', () => {
+  // Go compares comparable elements (arrays/structs) by value with ==, and
+  // BinarySearch returns the earliest index for duplicate targets.
+  it('Compact removes adjacent equal-by-value array elements', () => {
+    expect(Array.from(Compact($.arrayToSlice([[1], [1], [2]])) ?? [])).toEqual([
+      [1],
+      [2],
+    ])
+  })
+
+  it('Equal compares array elements by value', () => {
+    expect(Equal($.arrayToSlice([[1, 2]]), $.arrayToSlice([[1, 2]]))).toBe(true)
+    expect(Equal($.arrayToSlice([[1, 2]]), $.arrayToSlice([[1, 3]]))).toBe(
+      false,
+    )
+  })
+
+  it('Index finds an equal-by-value array element', () => {
+    expect(Index($.arrayToSlice([[1], [2], [3]]), [2])).toBe(1)
+    expect(Index($.arrayToSlice([[1], [2]]), [9])).toBe(-1)
+  })
+
+  it('BinarySearch returns the first index of a duplicate target', () => {
+    expect(BinarySearch($.arrayToSlice([1, 2, 2, 2, 3]), 2)).toEqual([1, true])
+    expect(BinarySearch($.arrayToSlice([1, 2, 2, 2, 3]), 4)).toEqual([5, false])
+    expect(BinarySearch($.arrayToSlice([1, 3, 5]), 0)).toEqual([0, false])
+  })
+})
 
 describe('slices.SortFunc', () => {
   it('awaits async comparison callbacks', async () => {

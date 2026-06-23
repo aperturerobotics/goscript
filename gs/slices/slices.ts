@@ -381,7 +381,7 @@ export function Compact<T>(s: $.Slice<T>): $.Slice<T> {
   }
   let w = 1
   for (let i = 1; i < $.len(s); i++) {
-    if ((s as any)[i] !== (s as any)[i - 1]) {
+    if (!$.comparableEqual((s as any)[i], (s as any)[i - 1])) {
       ;(s as any)[w] = (s as any)[i]
       w++
     }
@@ -432,7 +432,7 @@ export function Equal<T>(s1: $.Slice<T>, s2: $.Slice<T>): boolean {
     return false
   }
   for (let i = 0; i < len1; i++) {
-    if ((s1 as any)[i] !== (s2 as any)[i]) {
+    if (!$.comparableEqual((s1 as any)[i], (s2 as any)[i])) {
       return false
     }
   }
@@ -461,7 +461,7 @@ export function EqualFunc<T, U>(
 
 export function Index<T>(s: $.Slice<T>, v: T): number {
   for (let i = 0; i < $.len(s); i++) {
-    if ((s as any)[i] === v) {
+    if ($.comparableEqual((s as any)[i], v)) {
       return i
     }
   }
@@ -688,23 +688,23 @@ export function BinarySearchFunc<E, T>(
   if (cmp == null) {
     throw new Error('slices.BinarySearchFunc: nil comparison function')
   }
+  const n = $.len(x)
   let left = 0
-  let right = $.len(x)
+  let right = n
 
+  // Lower-bound search: narrow to the earliest index not less than target so
+  // duplicate targets return the first match, matching Go's BinarySearchFunc.
   while (left < right) {
     const mid = Math.floor((left + right) / 2)
-    const result = syncNumber(cmp((x as any)[mid] as E, target))
-
-    if (result < 0) {
+    if (syncNumber(cmp((x as any)[mid] as E, target)) < 0) {
       left = mid + 1
-    } else if (result > 0) {
-      right = mid
     } else {
-      return [mid, true]
+      right = mid
     }
   }
 
-  return [left, false]
+  const found = left < n && syncNumber(cmp((x as any)[left] as E, target)) === 0
+  return [left, found]
 }
 
 function syncNumber(value: SyncCallbackResult<number>): number {
