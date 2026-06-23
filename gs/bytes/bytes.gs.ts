@@ -638,22 +638,19 @@ export function ToTitle(s: $.Bytes): $.Bytes {
 // ToUpperSpecial treats s as UTF-8-encoded bytes and returns a copy with all the Unicode letters mapped to their
 // upper case, giving priority to the special casing rules.
 export function ToUpperSpecial(c: unicode.SpecialCase, s: $.Bytes): $.Bytes {
-	// For now, ignore special case and fall back to regular ToUpper
-	return ToUpper(s)
+	return Map((r) => c.ToUpper(r), s)
 }
 
 // ToLowerSpecial treats s as UTF-8-encoded bytes and returns a copy with all the Unicode letters mapped to their
 // lower case, giving priority to the special casing rules.
 export function ToLowerSpecial(c: unicode.SpecialCase, s: $.Bytes): $.Bytes {
-	// For now, ignore special case and fall back to regular ToLower
-	return ToLower(s)
+	return Map((r) => c.ToLower(r), s)
 }
 
 // ToTitleSpecial treats s as UTF-8-encoded bytes and returns a copy with all the Unicode letters mapped to their
 // title case, giving priority to the special casing rules.
 export function ToTitleSpecial(c: unicode.SpecialCase, s: $.Bytes): $.Bytes {
-	// For now, ignore special case and fall back to regular ToTitle
-	return ToTitle(s)
+	return Map((r) => c.ToTitle(r), s)
 }
 
 // ToValidUTF8 treats s as UTF-8-encoded bytes and returns a copy with each run of bytes
@@ -1226,18 +1223,32 @@ export function EqualFold(s: $.Bytes, t: $.Bytes): boolean {
 			if (s![si] !== t![ti]) return false
 			si++
 			ti++
-		} else {
-			// Convert both to lowercase for comparison
-			const sLower = unicode.ToLower(sr)
-			const tLower = unicode.ToLower(tr)
-			
-			if (sLower !== tLower) return false
-			
-			si += ssize
-			ti += tsize
+			continue
 		}
+		si += ssize
+		ti += tsize
+		let a = sr
+		let b = tr
+		if (a === b) continue
+		if (b < a) {
+			const tmp = a
+			a = b
+			b = tmp
+		}
+		if (b < 0x80) {
+			// ASCII: a and b match only as the same letter in opposite case.
+			if (a >= 0x41 && a <= 0x5a && b === a + 0x20) continue
+			return false
+		}
+		// Walk the simple-fold orbit of the smaller rune toward the larger.
+		let r = unicode.SimpleFold(a)
+		while (r !== a && r < b) {
+			r = unicode.SimpleFold(r)
+		}
+		if (r === b) continue
+		return false
 	}
-	
+
 	return si === $.len(s) && ti === $.len(t)
 }
 

@@ -1,5 +1,19 @@
 import type { Slice } from '@goscript/builtin/index.js'
 
+import {
+  categoryData,
+  scriptData,
+  propertyData,
+  foldCategoryData,
+  foldScriptData,
+  caseRangeData,
+  turkishCaseData,
+  asciiFold,
+  caseOrbitData,
+  latin1Props,
+  type RangeData,
+} from './tables.js'
+
 // Package unicode provides data and functions to test some properties of Unicode code points.
 
 // Constants
@@ -15,7 +29,11 @@ export const LowerCase = 1
 export const TitleCase = 2
 export const MaxCase = 3
 
+// UpperLower is the delta sentinel marking an upper/lower alternating CaseRange.
 export const UpperLower = MaxRune + 1
+
+// linearMax is the maximum size table for linear search for non-Latin1 rune.
+const linearMax = 18
 
 // Range16 represents a range of 16-bit Unicode code points
 type Range16Init = {
@@ -156,178 +174,204 @@ export class CaseRange {
   }
 }
 
-// SpecialCase represents language-specific case mappings
-export type SpecialCase = CaseRange[]
+// SpecialCase represents language-specific case mappings such as Turkish.
+// It carries the language's CaseRange overrides and falls back to the package
+// case mappings when a rune is not covered, matching Go's SpecialCase methods.
+export class SpecialCase {
+  public ranges: CaseRange[]
 
-// Basic character classification functions using JavaScript's built-in Unicode support
+  constructor(ranges: CaseRange[] = []) {
+    this.ranges = ranges
+  }
 
-// IsControl reports whether the rune is a control character
-export function IsControl(r: number): boolean {
-  // Control characters are in categories Cc, Cf, Co, Cs
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  // Use regex to match control characters
-  return /[\p{Cc}\p{Cf}\p{Co}\p{Cs}]/u.test(char)
-}
+  public ToUpper(r: number): number {
+    let [r1, hadMapping] = to(UpperCase, r, this.ranges)
+    if (r1 === r && !hadMapping) {
+      r1 = ToUpper(r)
+    }
+    return r1
+  }
 
-// IsDigit reports whether the rune is a decimal digit
-export function IsDigit(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{Nd}/u.test(char)
-}
+  public ToTitle(r: number): number {
+    let [r1, hadMapping] = to(TitleCase, r, this.ranges)
+    if (r1 === r && !hadMapping) {
+      r1 = ToTitle(r)
+    }
+    return r1
+  }
 
-// IsGraphic reports whether the rune is defined as a Graphic by Unicode
-export function IsGraphic(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  return IsLetter(r) || IsMark(r) || IsNumber(r) || IsPunct(r) || IsSymbol(r)
-}
-
-// IsLetter reports whether the rune is a letter (category L)
-export function IsLetter(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{L}/u.test(char)
-}
-
-// IsLower reports whether the rune is a lower case letter
-export function IsLower(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{Ll}/u.test(char)
-}
-
-// IsMark reports whether the rune is a mark character (category M)
-export function IsMark(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{M}/u.test(char)
-}
-
-// IsNumber reports whether the rune is a number (category N)
-export function IsNumber(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{N}/u.test(char)
-}
-
-// IsPrint reports whether the rune is defined as printable by Go
-export function IsPrint(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  if (IsGraphic(r)) return true
-  return r === 0x20 // space character
-}
-
-// IsPunct reports whether the rune is a punctuation character (category P)
-export function IsPunct(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{P}/u.test(char)
-}
-
-// IsSpace reports whether the rune is a space character
-export function IsSpace(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\s/u.test(char) || /\p{Z}/u.test(char)
-}
-
-// IsSymbol reports whether the rune is a symbol character (category S)
-export function IsSymbol(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{S}/u.test(char)
-}
-
-// IsTitle reports whether the rune is a title case letter
-export function IsTitle(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{Lt}/u.test(char)
-}
-
-// IsUpper reports whether the rune is an upper case letter
-export function IsUpper(r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
-  const char = String.fromCodePoint(r)
-  return /\p{Lu}/u.test(char)
-}
-
-// Case conversion functions
-
-// ToLower returns the lowercase mapping of the rune
-export function ToLower(r: number): number {
-  if (r < 0 || r > MaxRune) return r
-  const char = String.fromCodePoint(r)
-  const lower = char.toLowerCase()
-  return lower.codePointAt(0) || r
-}
-
-// ToUpper returns the uppercase mapping of the rune
-export function ToUpper(r: number): number {
-  if (r < 0 || r > MaxRune) return r
-  const char = String.fromCodePoint(r)
-  const upper = char.toUpperCase()
-  return upper.codePointAt(0) || r
-}
-
-// ToTitle returns the title case mapping of the rune
-export function ToTitle(r: number): number {
-  // For most characters, title case is the same as uppercase
-  return ToUpper(r)
-}
-
-// To returns the case mapping of the rune
-export function To(_case: number, r: number): number {
-  switch (_case) {
-    case UpperCase:
-      return ToUpper(r)
-    case LowerCase:
-      return ToLower(r)
-    case TitleCase:
-      return ToTitle(r)
-    default:
-      return r
+  public ToLower(r: number): number {
+    let [r1, hadMapping] = to(LowerCase, r, this.ranges)
+    if (r1 === r && !hadMapping) {
+      r1 = ToLower(r)
+    }
+    return r1
   }
 }
 
-// SimpleFold returns the next rune in the simple case folding sequence
-export function SimpleFold(r: number): number {
-  if (r < 0 || r > MaxRune) return r
+// Table construction from the generated pure-numeric tables.
 
-  // Simple implementation - just toggle between upper and lower case
-  if (IsUpper(r)) {
-    return ToLower(r)
-  } else if (IsLower(r)) {
-    return ToUpper(r)
-  }
-  return r
+function buildRangeTable(d: RangeData): RangeTable {
+  return new RangeTable(
+    d[0].map((t) => new Range16(t[0], t[1], t[2])),
+    d[1].map((t) => new Range32(t[0], t[1], t[2])),
+    d[2],
+  )
 }
 
-// Is reports whether the rune is in the specified table of ranges
-export function Is(rangeTab: RangeTable, r: number): boolean {
-  if (r < 0 || r > MaxRune) return false
+function buildTableMap(data: Record<string, RangeData>): Map<string, RangeTable> {
+  const out = new Map<string, RangeTable>()
+  for (const key of Object.keys(data)) {
+    out.set(key, buildRangeTable(data[key]))
+  }
+  return out
+}
 
-  // Check 16-bit ranges
-  for (const range of rangeTab.R16) {
-    if (r < range.Lo) break
-    if (r <= range.Hi) {
+function buildCaseRanges(
+  data: Array<[number, number, number, number, number]>,
+): CaseRange[] {
+  return data.map((d) => new CaseRange(d[0], d[1], [d[2], d[3], d[4]]))
+}
+
+// Categories is the set of Unicode general category tables keyed by name.
+export const Categories = buildTableMap(categoryData)
+export const Scripts = buildTableMap(scriptData)
+export const Properties = buildTableMap(propertyData)
+export const FoldCategory = buildTableMap(foldCategoryData)
+export const FoldScript = buildTableMap(foldScriptData)
+
+// CategoryAliases maps alternate category names to their canonical names.
+export const CategoryAliases = new Map<string, string>([
+  ['Other', 'C'],
+  ['cntrl', 'Cc'],
+  ['Letter', 'L'],
+  ['Mark', 'M'],
+  ['Number', 'N'],
+  ['Punctuation', 'P'],
+  ['Symbol', 'S'],
+  ['Separator', 'Z'],
+  ['digit', 'Nd'],
+])
+
+// Named general category tables.
+export const C = Categories.get('C')!
+export const Cc = Categories.get('Cc')!
+export const Cf = Categories.get('Cf')!
+export const Cn = Categories.get('Cn')!
+export const Co = Categories.get('Co')!
+export const Cs = Categories.get('Cs')!
+export const L = Categories.get('L')!
+export const LC = Categories.get('LC')!
+export const Ll = Categories.get('Ll')!
+export const Lm = Categories.get('Lm')!
+export const Lo = Categories.get('Lo')!
+export const Lt = Categories.get('Lt')!
+export const Lu = Categories.get('Lu')!
+export const M = Categories.get('M')!
+export const Mc = Categories.get('Mc')!
+export const Me = Categories.get('Me')!
+export const Mn = Categories.get('Mn')!
+export const N = Categories.get('N')!
+export const Nd = Categories.get('Nd')!
+export const Nl = Categories.get('Nl')!
+export const No = Categories.get('No')!
+export const P = Categories.get('P')!
+export const Pc = Categories.get('Pc')!
+export const Pd = Categories.get('Pd')!
+export const Pe = Categories.get('Pe')!
+export const Pf = Categories.get('Pf')!
+export const Pi = Categories.get('Pi')!
+export const Po = Categories.get('Po')!
+export const Ps = Categories.get('Ps')!
+export const S = Categories.get('S')!
+export const Sc = Categories.get('Sc')!
+export const Sk = Categories.get('Sk')!
+export const Sm = Categories.get('Sm')!
+export const So = Categories.get('So')!
+export const Z = Categories.get('Z')!
+export const Zl = Categories.get('Zl')!
+export const Zp = Categories.get('Zp')!
+export const Zs = Categories.get('Zs')!
+
+// Friendly category aliases matching Go's exported names.
+export const Letter = L
+export const Mark = M
+export const Number = N
+export const Other = C
+export const Punct = P
+export const Space = Z
+export const Symbol = S
+export const Digit = Nd
+export const Lower = Ll
+export const Title = Lt
+export const Upper = Lu
+
+// White_Space is the Unicode property table used for non-Latin1 IsSpace.
+export const White_Space = Properties.get('White_Space')!
+
+// GraphicRanges defines the set of graphic characters according to Unicode.
+export const GraphicRanges: RangeTable[] = [L, M, N, P, S, Zs]
+
+// PrintRanges defines the set of printable characters according to Go.
+export const PrintRanges: RangeTable[] = [L, M, N, P, S]
+
+// CaseRanges is the table of Unicode case mappings.
+export const CaseRanges: CaseRange[] = buildCaseRanges(caseRangeData)
+
+// TurkishCase / AzeriCase are the Turkish (and Azeri) special case mappings.
+export const TurkishCase = new SpecialCase(buildCaseRanges(turkishCaseData))
+export const AzeriCase = TurkishCase
+
+// caseOrbit maps a rune to the next rune in its simple-fold orbit when that next
+// rune differs from the plain case toggle. SimpleFold consults it above ASCII.
+const caseOrbit = new Map<number, number>(caseOrbitData)
+
+// searchRanges reports whether r is contained in the sorted range list, using a
+// linear scan for short tables or Latin1 runes and a binary search otherwise.
+function searchRanges(ranges: Array<Range16 | Range32>, r: number): boolean {
+  if (ranges.length <= linearMax || r <= MaxLatin1) {
+    for (const range of ranges) {
+      if (r < range.Lo) {
+        return false
+      }
+      if (r <= range.Hi) {
+        return range.Stride === 1 || (r - range.Lo) % range.Stride === 0
+      }
+    }
+    return false
+  }
+  let lo = 0
+  let hi = ranges.length
+  while (lo < hi) {
+    const m = lo + ((hi - lo) >> 1)
+    const range = ranges[m]
+    if (range.Lo <= r && r <= range.Hi) {
       return range.Stride === 1 || (r - range.Lo) % range.Stride === 0
     }
-  }
-
-  // Check 32-bit ranges
-  for (const range of rangeTab.R32) {
-    if (r < range.Lo) break
-    if (r <= range.Hi) {
-      return range.Stride === 1 || (r - range.Lo) % range.Stride === 0
+    if (r < range.Lo) {
+      hi = m
+    } else {
+      lo = m + 1
     }
   }
-
   return false
 }
 
-// In reports whether the rune is a member of one of the ranges
+// Is reports whether the rune is in the specified table of ranges.
+export function Is(rangeTab: RangeTable, r: number): boolean {
+  const r16 = rangeTab.R16
+  // Compare as unsigned to correctly reject negative runes.
+  if (r16.length > 0 && (r >>> 0) <= (r16[r16.length - 1].Hi >>> 0)) {
+    return searchRanges(r16, r & 0xffff)
+  }
+  const r32 = rangeTab.R32
+  if (r32.length > 0 && r >= r32[0].Lo) {
+    return searchRanges(r32, r)
+  }
+  return false
+}
+
+// In reports whether the rune is a member of one of the ranges.
 export function In(r: number, ...ranges: RangeTable[]): boolean {
   for (const rangeTab of ranges) {
     if (Is(rangeTab, r)) {
@@ -337,188 +381,228 @@ export function In(r: number, ...ranges: RangeTable[]): boolean {
   return false
 }
 
-// IsOneOf reports whether the rune is a member of one of the ranges
+// IsOneOf reports whether the rune is a member of one of the ranges.
 export function IsOneOf(ranges: RangeTable[], r: number): boolean {
-  return In(r, ...ranges)
+  for (const rangeTab of ranges) {
+    if (Is(rangeTab, r)) {
+      return true
+    }
+  }
+  return false
 }
 
-// Predefined range tables for common character categories
-// These are simplified versions - in a full implementation, these would contain
-// the complete Unicode range data
+// to maps the rune using the specified case and case-range table, returning the
+// mapped rune and whether a mapping was found.
+function to(_case: number, r: number, caseRange: CaseRange[]): [number, boolean] {
+  if (_case < 0 || _case >= MaxCase) {
+    return [ReplacementChar, false]
+  }
+  let lo = 0
+  let hi = caseRange.length
+  while (lo < hi) {
+    const m = lo + ((hi - lo) >> 1)
+    const cr = caseRange[m]
+    if (cr.Lo <= r && r <= cr.Hi) {
+      const delta = cr.Delta[_case]
+      if (delta > MaxRune) {
+        // In an upper/lower alternating sequence the even offsets from the start
+        // are upper case and the odd offsets lower; clearing or setting the low
+        // bit of the offset selects the right case.
+        return [cr.Lo + (((r - cr.Lo) & ~1) | (_case & 1)), true]
+      }
+      return [r + delta, true]
+    }
+    if (r < cr.Lo) {
+      hi = m
+    } else {
+      lo = m + 1
+    }
+  }
+  return [r, false]
+}
 
-export const Letter = new RangeTable(
-  [new Range16(0x0041, 0x005a, 1), new Range16(0x0061, 0x007a, 1)], // Basic Latin letters
-  [],
-)
+// To maps the rune to the specified case: UpperCase, LowerCase, or TitleCase.
+export function To(_case: number, r: number): number {
+  return to(_case, r, CaseRanges)[0]
+}
 
-export const Digit = new RangeTable(
-  [new Range16(0x0030, 0x0039, 1)], // ASCII digits
-  [],
-)
+// ToUpper maps the rune to upper case.
+export function ToUpper(r: number): number {
+  if (r <= MaxASCII) {
+    if (r >= 0x61 && r <= 0x7a) {
+      r -= 0x20
+    }
+    return r
+  }
+  return To(UpperCase, r)
+}
 
-export const Space = new RangeTable(
-  [new Range16(0x0009, 0x000d, 1), new Range16(0x0020, 0x0020, 1)], // Basic whitespace
-  [],
-)
+// ToLower maps the rune to lower case.
+export function ToLower(r: number): number {
+  if (r <= MaxASCII) {
+    if (r >= 0x41 && r <= 0x5a) {
+      r += 0x20
+    }
+    return r
+  }
+  return To(LowerCase, r)
+}
 
-export const Upper = new RangeTable(
-  [new Range16(0x0041, 0x005a, 1)], // ASCII uppercase
-  [],
-)
+// ToTitle maps the rune to title case.
+export function ToTitle(r: number): number {
+  if (r <= MaxASCII) {
+    if (r >= 0x61 && r <= 0x7a) {
+      r -= 0x20
+    }
+    return r
+  }
+  return To(TitleCase, r)
+}
 
-export const Lower = new RangeTable(
-  [new Range16(0x0061, 0x007a, 1)], // ASCII lowercase
-  [],
-)
+// SimpleFold iterates over the Unicode code points equivalent under simple case
+// folding, returning the next rune in the fold orbit.
+export function SimpleFold(r: number): number {
+  if (r < 0 || r > MaxRune) {
+    return r
+  }
+  if (r < asciiFold.length) {
+    return asciiFold[r]
+  }
+  const orbit = caseOrbit.get(r)
+  if (orbit !== undefined) {
+    return orbit
+  }
+  const l = ToLower(r)
+  if (l !== r) {
+    return l
+  }
+  return ToUpper(r)
+}
 
-export const Title = new RangeTable([], [])
+// Latin1 property bits, kept in sync with the l1* constants in gen.go. The
+// latin1Props table records Go's predicate results for U+0000..U+00FF so the
+// Latin1 fast paths stay byte-faithful without re-deriving Go's property masks.
+const L1_CONTROL = 1 << 0
+const L1_LETTER = 1 << 1
+const L1_UPPER = 1 << 2
+const L1_LOWER = 1 << 3
+const L1_TITLE = 1 << 4
+const L1_NUMBER = 1 << 5
+const L1_DIGIT = 1 << 6
+const L1_MARK = 1 << 7
+const L1_PUNCT = 1 << 8
+const L1_SYMBOL = 1 << 9
+const L1_SPACE = 1 << 10
+const L1_GRAPHIC = 1 << 11
+const L1_PRINT = 1 << 12
 
-export const Punct = new RangeTable(
-  [
-    new Range16(0x0021, 0x002f, 1), // !"#$%&'()*+,-./
-    new Range16(0x003a, 0x0040, 1), // :;<=>?@
-    new Range16(0x005b, 0x0060, 1), // [\]^_`
-    new Range16(0x007b, 0x007e, 1), // {|}~
-  ],
-  [],
-)
+function isLatin1(r: number): boolean {
+  return r >= 0 && r <= MaxLatin1
+}
 
-export const Symbol = new RangeTable([], [])
+// IsControl reports whether the rune is a control character. Such characters do
+// not appear above Latin1.
+export function IsControl(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_CONTROL) !== 0
+  }
+  return false
+}
 
-export const Mark = new RangeTable([], [])
+// IsDigit reports whether the rune is a decimal digit.
+export function IsDigit(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_DIGIT) !== 0
+  }
+  return Is(Digit, r)
+}
 
-export const Number = new RangeTable(
-  [new Range16(0x0030, 0x0039, 1)], // ASCII digits
-  [],
-)
+// IsLetter reports whether the rune is a letter (category L).
+export function IsLetter(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_LETTER) !== 0
+  }
+  return Is(Letter, r)
+}
 
-// Categories map
-export const Categories = new Map<string, RangeTable>([
-  ['L', Letter],
-  ['Ll', Lower],
-  ['Lu', Upper],
-  ['Lt', Title],
-  ['M', Mark],
-  ['N', Number],
-  ['Nd', Digit],
-  ['P', Punct],
-  ['S', Symbol],
-  ['Z', Space],
-])
+// IsNumber reports whether the rune is a number (category N).
+export function IsNumber(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_NUMBER) !== 0
+  }
+  return Is(Number, r)
+}
 
-export const CategoryAliases = new Map<string, string>([
-  ['C', 'C'],
-  ['Cc', 'Cc'],
-  ['cntrl', 'Cc'],
-  ['Cf', 'Cf'],
-  ['Co', 'Co'],
-  ['Cs', 'Cs'],
-  ['L', 'L'],
-  ['LC', 'LC'],
-  ['Ll', 'Ll'],
-  ['Lm', 'Lm'],
-  ['Lo', 'Lo'],
-  ['Lt', 'Lt'],
-  ['Lu', 'Lu'],
-  ['M', 'M'],
-  ['Mc', 'Mc'],
-  ['Me', 'Me'],
-  ['Mn', 'Mn'],
-  ['N', 'N'],
-  ['Nd', 'Nd'],
-  ['digit', 'Nd'],
-  ['Nl', 'Nl'],
-  ['No', 'No'],
-  ['P', 'P'],
-  ['Pc', 'Pc'],
-  ['Pd', 'Pd'],
-  ['Pe', 'Pe'],
-  ['Pf', 'Pf'],
-  ['Pi', 'Pi'],
-  ['Po', 'Po'],
-  ['Ps', 'Ps'],
-  ['S', 'S'],
-  ['Sc', 'Sc'],
-  ['Sk', 'Sk'],
-  ['Sm', 'Sm'],
-  ['So', 'So'],
-  ['Z', 'Z'],
-  ['Zl', 'Zl'],
-  ['Zp', 'Zp'],
-  ['Zs', 'Zs'],
-])
+// IsMark reports whether the rune is a mark character (category M).
+export function IsMark(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_MARK) !== 0
+  }
+  return Is(Mark, r)
+}
 
-// Scripts and Properties maps (simplified)
-export const Scripts = new Map<string, RangeTable>()
-export const Properties = new Map<string, RangeTable>()
-export const FoldCategory = new Map<string, RangeTable>()
-export const FoldScript = new Map<string, RangeTable>()
+// IsSpace reports whether the rune is a space character as defined by Unicode.
+export function IsSpace(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_SPACE) !== 0
+  }
+  return Is(White_Space, r)
+}
 
-// Graphic ranges
-export const GraphicRanges = [Letter, Mark, Number, Punct, Symbol]
+// IsPunct reports whether the rune is a punctuation character (category P).
+export function IsPunct(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_PUNCT) !== 0
+  }
+  return Is(Punct, r)
+}
 
-// Print ranges
-export const PrintRanges = [Letter, Mark, Number, Punct, Symbol, Space]
+// IsSymbol reports whether the rune is a symbolic character (category S).
+export function IsSymbol(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_SYMBOL) !== 0
+  }
+  return Is(Symbol, r)
+}
 
-// Case ranges (simplified)
-export const CaseRanges: CaseRange[] = []
+// IsUpper reports whether the rune is an upper case letter.
+export function IsUpper(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_UPPER) !== 0
+  }
+  return Is(Upper, r)
+}
 
-// Special cases
-export const TurkishCase: SpecialCase = []
-export const AzeriCase: SpecialCase = TurkishCase
+// IsLower reports whether the rune is a lower case letter.
+export function IsLower(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_LOWER) !== 0
+  }
+  return Is(Lower, r)
+}
 
-// Predefined character categories (simplified implementations)
-export const Cc = new RangeTable(
-  [new Range16(0x0000, 0x001f, 1), new Range16(0x007f, 0x009f, 1)],
-  [],
-)
-export const Cf = new RangeTable([], [])
-export const Cn = new RangeTable([], [])
-export const Co = new RangeTable([], [])
-export const Cs = new RangeTable([new Range16(0xd800, 0xdfff, 1)], [])
-export const Lm = new RangeTable([], [])
-export const Lo = new RangeTable([], [])
-export const Mc = new RangeTable([], [])
-export const Me = new RangeTable([], [])
-export const Mn = new RangeTable([], [])
-export const Nl = new RangeTable([], [])
-export const No = new RangeTable([], [])
-export const Pc = new RangeTable([new Range16(0x005f, 0x005f, 1)], []) // underscore
-export const Pd = new RangeTable([new Range16(0x002d, 0x002d, 1)], []) // hyphen
-export const Pe = new RangeTable(
-  [
-    new Range16(0x0029, 0x0029, 1),
-    new Range16(0x005d, 0x005d, 1),
-    new Range16(0x007d, 0x007d, 1),
-  ],
-  [],
-)
-export const Pf = new RangeTable([], [])
-export const Pi = new RangeTable([], [])
-export const Po = new RangeTable(
-  [new Range16(0x0021, 0x0023, 1), new Range16(0x0025, 0x0027, 1)],
-  [],
-)
-export const Ps = new RangeTable(
-  [
-    new Range16(0x0028, 0x0028, 1),
-    new Range16(0x005b, 0x005b, 1),
-    new Range16(0x007b, 0x007b, 1),
-  ],
-  [],
-)
-export const Sc = new RangeTable([new Range16(0x0024, 0x0024, 1)], []) // dollar sign
-export const Sk = new RangeTable(
-  [new Range16(0x005e, 0x005e, 1), new Range16(0x0060, 0x0060, 1)],
-  [],
-)
-export const Sm = new RangeTable(
-  [new Range16(0x002b, 0x002b, 1), new Range16(0x003c, 0x003e, 1)],
-  [],
-)
-export const So = new RangeTable([], [])
-export const Zl = new RangeTable([], [])
-export const Zp = new RangeTable([], [])
-export const Zs = new RangeTable([new Range16(0x0020, 0x0020, 1)], []) // space
+// IsTitle reports whether the rune is a title case letter.
+export function IsTitle(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_TITLE) !== 0
+  }
+  return Is(Title, r)
+}
 
-Categories.set('Cn', Cn)
+// IsGraphic reports whether the rune is defined as a Graphic by Unicode: letters,
+// marks, numbers, punctuation, symbols, and spaces (categories L, M, N, P, S, Zs).
+export function IsGraphic(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_GRAPHIC) !== 0
+  }
+  return In(r, ...GraphicRanges)
+}
+
+// IsPrint reports whether the rune is defined as printable by Go: the Graphic
+// characters minus the non-ASCII spaces (so only ASCII space is printable).
+export function IsPrint(r: number): boolean {
+  if (isLatin1(r)) {
+    return (latin1Props[r] & L1_PRINT) !== 0
+  }
+  return In(r, ...PrintRanges)
+}

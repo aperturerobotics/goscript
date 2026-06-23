@@ -380,7 +380,8 @@ describe('strings', () => {
   describe('Title', () => {
     it('should convert to title case', () => {
       expect(Title('hello world')).toBe('Hello World')
-      expect(Title('HELLO WORLD')).toBe('Hello World')
+      // Go's Title only title-cases word-initial letters; the rest is unchanged.
+      expect(Title('HELLO WORLD')).toBe('HELLO WORLD')
       expect(Title('')).toBe('')
     })
   })
@@ -411,9 +412,11 @@ describe('strings', () => {
 
   describe('special casing and UTF-8 cleanup', () => {
     it('should expose special-case string helpers', () => {
-      expect(ToUpperSpecial([], 'hello')).toBe('HELLO')
-      expect(ToLowerSpecial([], 'HELLO')).toBe('hello')
-      expect(ToTitleSpecial([], 'hello world')).toBe('HELLO WORLD')
+      expect(ToUpperSpecial(new unicode.SpecialCase(), 'hello')).toBe('HELLO')
+      expect(ToLowerSpecial(new unicode.SpecialCase(), 'HELLO')).toBe('hello')
+      expect(ToTitleSpecial(new unicode.SpecialCase(), 'hello world')).toBe(
+        'HELLO WORLD',
+      )
       expect(ToUpperSpecial(unicode.TurkishCase, 'iki')).toBe('İKİ')
       expect(ToLowerSpecial(unicode.TurkishCase, 'Iİ')).toBe('ıi')
       expect(ToTitleSpecial(unicode.TurkishCase, 'iki')).toBe('İKİ')

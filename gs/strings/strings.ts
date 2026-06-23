@@ -353,70 +353,32 @@ export function Repeat(s: string, count: number): string {
 
 // ToUpper returns s with all Unicode letters mapped to their upper case.
 export function ToUpper(s: string): string {
-  return s.toUpperCase()
+  return Map(unicode.ToUpper, s)
 }
 
+// ToUpperSpecial returns s with all Unicode letters mapped to their upper case using the case mapping specified by c.
 export function ToUpperSpecial(c: unicode.SpecialCase, s: string): string {
-  if (isTurkishCase(c)) {
-    return mapTurkishCase(s, 'upper')
-  }
-  return ToUpper(s)
+  return Map((r) => c.ToUpper(r), s)
 }
 
 // ToLower returns s with all Unicode letters mapped to their lower case.
 export function ToLower(s: string): string {
-  return s.toLowerCase()
+  return Map(unicode.ToLower, s)
 }
 
+// ToLowerSpecial returns s with all Unicode letters mapped to their lower case using the case mapping specified by c.
 export function ToLowerSpecial(c: unicode.SpecialCase, s: string): string {
-  if (isTurkishCase(c)) {
-    return mapTurkishCase(s, 'lower')
-  }
-  return ToLower(s)
+  return Map((r) => c.ToLower(r), s)
 }
 
 // ToTitle returns a copy of the string s with all Unicode letters mapped to their Unicode title case.
 export function ToTitle(s: string): string {
-  return s.toUpperCase()
+  return Map(unicode.ToTitle, s)
 }
 
+// ToTitleSpecial returns a copy of s with all Unicode letters mapped to their Unicode title case using the case mapping specified by c.
 export function ToTitleSpecial(c: unicode.SpecialCase, s: string): string {
-  if (isTurkishCase(c)) {
-    return mapTurkishCase(s, 'upper')
-  }
-  return ToTitle(s)
-}
-
-function isTurkishCase(c: unicode.SpecialCase): boolean {
-  return c === unicode.TurkishCase || c === unicode.AzeriCase
-}
-
-function mapTurkishCase(s: string, mode: 'upper' | 'lower'): string {
-  let out = ''
-  for (const char of s) {
-    if (mode === 'upper') {
-      if (char === 'i') {
-        out += 'İ'
-        continue
-      }
-      if (char === 'ı') {
-        out += 'I'
-        continue
-      }
-      out += char.toUpperCase()
-      continue
-    }
-    if (char === 'I') {
-      out += 'ı'
-      continue
-    }
-    if (char === 'İ') {
-      out += 'i'
-      continue
-    }
-    out += char.toLowerCase()
-  }
-  return out
+  return Map((r) => c.ToTitle(r), s)
 }
 
 export function ToValidUTF8(s: string, replacement: string): string {
@@ -424,16 +386,30 @@ export function ToValidUTF8(s: string, replacement: string): string {
   return s
 }
 
+// isSeparator reports whether the rune could mark a word boundary.
+function isSeparator(r: number): boolean {
+  if (r <= 0x7f) {
+    if (r >= 0x30 && r <= 0x39) return false
+    if (r >= 0x61 && r <= 0x7a) return false
+    if (r >= 0x41 && r <= 0x5a) return false
+    if (r === 0x5f) return false
+    return true
+  }
+  if (unicode.IsLetter(r) || unicode.IsDigit(r)) return false
+  return unicode.IsSpace(r)
+}
+
 // Title returns a copy of the string s with all Unicode letters that begin words mapped to their Unicode title case.
 export function Title(s: string): string {
-  return s
-    .split(' ')
-    .map((word) =>
-      word.length > 0 ?
-        word[0].toUpperCase() + word.slice(1).toLowerCase()
-      : word,
-    )
-    .join(' ')
+  let prev = 0x20
+  return Map((r) => {
+    if (isSeparator(prev)) {
+      prev = r
+      return unicode.ToTitle(r)
+    }
+    prev = r
+    return r
+  }, s)
 }
 
 // TrimSpace returns a slice of the string s, with all leading and trailing white space removed.
@@ -557,9 +533,35 @@ export function ReplaceAll(s: string, old: string, newStr: string): string {
   return s.split(old).join(newStr)
 }
 
-// EqualFold reports whether s and t, interpreted as UTF-8 strings, are equal under Unicode case-folding.
+// EqualFold reports whether s and t, interpreted as UTF-8 strings, are equal under simple Unicode case-folding.
 export function EqualFold(s: string, t: string): boolean {
-  return s.toLowerCase() === t.toLowerCase()
+  const sr = Array.from(s, (ch) => ch.codePointAt(0)!)
+  const tr = Array.from(t, (ch) => ch.codePointAt(0)!)
+  let i = 0
+  let j = 0
+  while (i < sr.length && j < tr.length) {
+    let a = sr[i++]
+    let b = tr[j++]
+    if (a === b) continue
+    if (b < a) {
+      const tmp = a
+      a = b
+      b = tmp
+    }
+    if (b < 0x80) {
+      // ASCII: a and b match only as the same letter in opposite case.
+      if (a >= 0x41 && a <= 0x5a && b === a + 0x20) continue
+      return false
+    }
+    // Walk the simple-fold orbit of the smaller rune toward the larger.
+    let r = unicode.SimpleFold(a)
+    while (r !== a && r < b) {
+      r = unicode.SimpleFold(r)
+    }
+    if (r === b) continue
+    return false
+  }
+  return i === sr.length && j === tr.length
 }
 
 // Compare returns an integer comparing two strings lexicographically.
