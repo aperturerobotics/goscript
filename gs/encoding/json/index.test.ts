@@ -444,6 +444,50 @@ describe('encoding/json override', () => {
     expect(target.value?.get('f')).toBe('1e+00')
   })
 
+  it('returns a SyntaxError with the Go byte offset for malformed input', () => {
+    const cases: Array<[string, number]> = [
+      ['[1,]', 4],
+      ['{"a":}', 6],
+      ['[1 2]', 4],
+      ['truex', 5],
+      ['123abc', 4],
+    ]
+    for (const [input, offset] of cases) {
+      const target = $.varRef<unknown>(null)
+      const err = Unmarshal($.stringToBytes(input), target)
+      expect(err).toBeInstanceOf(JSONSyntaxError)
+      expect((err as InstanceType<typeof JSONSyntaxError>).Offset).toBe(offset)
+    }
+  })
+
+  it('decodes one value per Decode and buffers the rest of the stream', () => {
+    const decoder = NewDecoder(bytes.NewBufferString('1 2')!)
+    const first = $.varRef<unknown>(null)
+    const second = $.varRef<unknown>(null)
+
+    expect(decoder.Decode(first)).toBeNull()
+    expect(first.value).toBe(1)
+    expect(decoder.Decode(second)).toBeNull()
+    expect(second.value).toBe(2)
+    expect(decoder.Decode($.varRef<unknown>(null))?.Error()).toBe('EOF')
+  })
+
+  it('streams delimiters and values through Token and reports More', () => {
+    const tokens = NewDecoder(bytes.NewBufferString('[1]')!)
+    expect(tokens.Token()).toEqual(['['.charCodeAt(0), null])
+    expect(tokens.Token()).toEqual([1, null])
+    expect(tokens.Token()).toEqual([']'.charCodeAt(0), null])
+    expect(tokens.Token()[1]?.Error()).toBe('EOF')
+
+    const more = NewDecoder(bytes.NewBufferString('[1,2]')!)
+    more.Token() // consume [
+    expect(more.More()).toBe(true)
+    more.Token() // 1
+    expect(more.More()).toBe(true)
+    more.Token() // 2
+    expect(more.More()).toBe(false)
+  })
+
   it('marshals a RawMessage field without normalizing its token spelling', () => {
     class RawHolder {
       public _fields = {

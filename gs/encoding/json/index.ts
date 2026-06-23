@@ -43,6 +43,28 @@ export class SyntaxError extends jsonError {
   }
 }
 
+// Register *json.SyntaxError so a Go `err.(*json.SyntaxError)` assertion in
+// compiled code resolves to this class and exposes the Offset field.
+$.registerStructType(
+  'json.SyntaxError',
+  new SyntaxError(),
+  [
+    {
+      name: 'Error',
+      args: [],
+      returns: [{ type: { kind: $.TypeKind.Basic, name: 'string' } }],
+    },
+  ],
+  SyntaxError,
+  [
+    {
+      name: 'Offset',
+      key: 'Offset',
+      type: { kind: $.TypeKind.Basic, name: 'int64' },
+    },
+  ],
+)
+
 export class InvalidUTF8Error extends jsonError {
   public S: string
 
@@ -145,23 +167,53 @@ export class Decoder {
   private disallowUnknownFields = false
   private inputOffset = 0
   private useNumber = false
+  // buf holds the fully buffered input; pos is the index of the next unread
+  // character, so successive Decode/Token calls consume one value at a time and
+  // leave the remainder buffered, like Go's streaming Decoder.
+  private buf = ''
+  private pos = 0
+  private filled = false
+  private readErr: $.GoError = null
 
   public constructor(private readonly reader: io.Reader) {}
 
-  public Decode(v: unknown): $.GoError {
+  private fill(): void {
+    if (this.filled) {
+      return
+    }
+    this.filled = true
     const [data, err] = readAllSync(this.reader)
     if (err !== null) {
-      return err
+      this.readErr = err
+      return
     }
-    this.inputOffset += $.len(data)
-    return decode(data, v, {
+    this.buf = $.bytesToString(data)
+  }
+
+  public Decode(v: unknown): $.GoError {
+    this.fill()
+    this.pos = skipJSONWhitespace(this.buf, this.pos)
+    if (this.pos >= this.buf.length) {
+      return this.readErr ?? $.newError('EOF')
+    }
+    let end: number
+    try {
+      ;[, end] = scanJSONValue(this.buf, this.pos, this.useNumber)
+    } catch (err) {
+      return goError(err)
+    }
+    const raw = $.stringToBytes(this.buf.slice(this.pos, end))
+    this.pos = end
+    this.inputOffset = jsonByteOffset(this.buf, end)
+    return decode(raw, v, {
       disallowUnknownFields: this.disallowUnknownFields,
       useNumber: this.useNumber,
     })
   }
 
   public Buffered(): io.Reader {
-    return new bytes.Buffer()
+    this.fill()
+    return bytes.NewBufferString(this.buf.slice(this.pos))!
   }
 
   public DisallowUnknownFields(): void {
@@ -173,11 +225,46 @@ export class Decoder {
   }
 
   public More(): boolean {
-    return false
+    this.fill()
+    const next = skipJSONWhitespace(this.buf, this.pos)
+    if (next >= this.buf.length) {
+      return false
+    }
+    const c = this.buf[next]
+    return c !== ']' && c !== '}'
   }
 
   public Token(): [Token, $.GoError] {
-    return [null, $.newError('json: token streaming is unsupported')]
+    this.fill()
+    let cursor = skipJSONWhitespace(this.buf, this.pos)
+    // Object/array separators are implicit in Go's token stream; skip them.
+    while (cursor < this.buf.length) {
+      const sep = this.buf[cursor]
+      if (sep === ',' || sep === ':') {
+        cursor++
+        cursor = skipJSONWhitespace(this.buf, cursor)
+        continue
+      }
+      break
+    }
+    this.pos = cursor
+    if (this.pos >= this.buf.length) {
+      return [null, this.readErr ?? $.newError('EOF')]
+    }
+    const c = this.buf[this.pos]
+    if (c === '{' || c === '[' || c === '}' || c === ']') {
+      this.pos++
+      this.inputOffset = jsonByteOffset(this.buf, this.pos)
+      return [c.charCodeAt(0), null]
+    }
+    try {
+      const [value, end] = scanJSONValue(this.buf, this.pos, this.useNumber)
+      this.pos = end
+      this.inputOffset = jsonByteOffset(this.buf, end)
+      return [value, null]
+    } catch (err) {
+      return [null, goError(err)]
+    }
   }
 
   public UseNumber(): void {
@@ -392,21 +479,43 @@ function encodeJSON(v: unknown): string {
   return JSON.stringify(v)
 }
 
-// parseNumberPreserving parses JSON while keeping number tokens as their exact
-// source literal (json.Number), so values beyond float64 precision such as
-// 9007199254740993 survive Decoder.UseNumber unchanged.
-function parseNumberPreserving(text: string): unknown {
-  let i = 0
-  const skipWs = () => {
-    while (i < text.length && ' \t\n\r'.includes(text[i])) {
-      i++
-    }
+const JSON_WHITESPACE = ' \t\n\r'
+
+// jsonByteOffset returns the Go byte offset (UTF-8) of character index i, so a
+// SyntaxError reports the same Offset Go would for multibyte input.
+function jsonByteOffset(text: string, i: number): number {
+  return $.len($.stringToBytes(text.slice(0, i)))
+}
+
+function jsonSyntaxError(text: string, i: number, msg: string): SyntaxError {
+  return new SyntaxError({ Offset: jsonByteOffset(text, i), Message: msg })
+}
+
+function skipJSONWhitespace(text: string, i: number): number {
+  while (i < text.length && JSON_WHITESPACE.includes(text[i])) {
+    i++
   }
-  const fail = (): never => {
-    throw new SyntaxError({
-      Offset: i,
-      Message: `invalid character at offset ${i}`,
-    })
+  return i
+}
+
+// scanJSONValue parses one JSON value beginning at the first non-whitespace
+// character at or after start, returning the decoded value and the index just
+// past it. Numbers decode to JS numbers, or to their exact json.Number source
+// literal when useNumber is set. Malformed input throws a SyntaxError whose
+// Offset is the Go byte offset of the offending character.
+function scanJSONValue(
+  text: string,
+  start: number,
+  useNumber: boolean,
+): [unknown, number] {
+  let i = start
+  const skipWs = () => {
+    i = skipJSONWhitespace(text, i)
+  }
+  const fail = (msg = 'invalid character'): never => {
+    // Go's Offset counts bytes read up to and including the offending byte.
+    const at = Math.min(i + 1, text.length)
+    throw jsonSyntaxError(text, at, msg)
   }
   const parseString = (): string => {
     let raw = text[i++] // opening quote
@@ -416,13 +525,21 @@ function parseNumberPreserving(text: string): unknown {
       if (c === '\\') {
         raw += text[i++] ?? ''
       } else if (c === '"') {
-        return JSON.parse(raw) as string
+        try {
+          return JSON.parse(raw) as string
+        } catch {
+          i -= raw.length
+          return fail('invalid string literal')
+        }
       }
     }
-    return fail()
+    return fail('unexpected end of JSON input')
   }
   const parseValue = (): unknown => {
     skipWs()
+    if (i >= text.length) {
+      return fail('unexpected end of JSON input')
+    }
     const c = text[i]
     if (c === '{') {
       i++
@@ -440,7 +557,8 @@ function parseNumberPreserving(text: string): unknown {
         const key = parseString()
         skipWs()
         if (text[i++] !== ':') {
-          return fail()
+          i--
+          return fail("expected ':' after object key")
         }
         obj[key] = parseValue()
         skipWs()
@@ -449,7 +567,8 @@ function parseNumberPreserving(text: string): unknown {
           return obj
         }
         if (sep !== ',') {
-          return fail()
+          i--
+          return fail("expected ',' or '}' after object value")
         }
       }
     }
@@ -469,7 +588,8 @@ function parseNumberPreserving(text: string): unknown {
           return arr
         }
         if (sep !== ',') {
-          return fail()
+          i--
+          return fail("expected ',' or ']' after array element")
         }
       }
     }
@@ -488,25 +608,21 @@ function parseNumberPreserving(text: string): unknown {
       i += 4
       return null
     }
-    // Number: capture the exact literal as a json.Number string.
-    const start = i
-    if (text[i] === '-') {
+    const numStart = i
+    if (c === '-') {
       i++
     }
     while (i < text.length && '0123456789.eE+-'.includes(text[i])) {
       i++
     }
-    if (i === start) {
+    if (i === numStart) {
       return fail()
     }
-    return text.slice(start, i)
+    const literal = text.slice(numStart, i)
+    return useNumber ? literal : Number(literal)
   }
   const value = parseValue()
-  skipWs()
-  if (i !== text.length) {
-    return fail()
-  }
-  return value
+  return [value, i]
 }
 
 export function Marshal(v: unknown): [$.Slice<number>, $.GoError] {
@@ -861,13 +977,16 @@ function validUnmarshalTarget(value: unknown): boolean {
 
 function parseJSON(data: $.Slice<number>, opts: decodeOptions): unknown {
   const text = $.bytesToString(data)
-  if (opts.useNumber) {
-    // Preserve the exact source literal as json.Number so values beyond
-    // float64 precision survive (a JSON.parse reviver only sees the already
-    // rounded number).
-    return parseNumberPreserving(text)
+  const [value, end] = scanJSONValue(text, 0, !!opts.useNumber)
+  const rest = skipJSONWhitespace(text, end)
+  if (rest !== text.length) {
+    throw jsonSyntaxError(
+      text,
+      rest + 1,
+      'invalid character after top-level value',
+    )
   }
-  return JSON.parse(text)
+  return value
 }
 
 function assignDecodedValue(

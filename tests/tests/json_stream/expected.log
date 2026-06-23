@@ -1,0 +1,15 @@
+{"n":1e+00,"big":9007199254740993}
+{
+  "a": 1,
+  "b": [
+    2,
+    3
+  ]
+}
+decoded 1
+decoded 2
+decoded 3
+big 9007199254740993
+offset 4
+more true
+more false
