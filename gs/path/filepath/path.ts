@@ -365,11 +365,11 @@ export function EvalSymlinks(path: string): [string, $.GoError] {
   const vol = p.slice(0, volLen)
   let dest = vol
   let linksWalked = 0
-  for (let start = volLen, end = volLen; start < p.length; start = end) {
+  for (let start = volLen; start < p.length; ) {
     while (start < p.length && p[start] === '/') {
       start++
     }
-    end = start
+    let end = start
     while (end < p.length && p[end] !== '/') {
       end++
     }
@@ -378,6 +378,7 @@ export function EvalSymlinks(path: string): [string, $.GoError] {
     if (end === start) {
       break
     } else if (component === '.') {
+      start = end
       continue
     } else if (component === '..') {
       // Back up to the previous component unless it is itself a kept "..".
@@ -395,6 +396,7 @@ export function EvalSymlinks(path: string): [string, $.GoError] {
       } else {
         dest = dest.slice(0, r)
       }
+      start = end
       continue
     }
 
@@ -411,6 +413,7 @@ export function EvalSymlinks(path: string): [string, $.GoError] {
       if (!statIsDir(stat!) && end < p.length) {
         return ['', $.newError('not a directory')]
       }
+      start = end
       continue
     }
 
@@ -436,7 +439,7 @@ export function EvalSymlinks(path: string): [string, $.GoError] {
       }
       dest = r < volLen ? vol : dest.slice(0, r)
     }
-    end = 0
+    start = 0
   }
   return [Clean(dest), null]
 }
