@@ -224,7 +224,7 @@ function absolutePathToFileURL(path: string, isDirectory: boolean): string {
   return new URL(`file://${normalized}${suffix}`).href
 }
 
-function getCurrentWorkingDirectory(): string | null {
+export function getCurrentWorkingDirectory(): string | null {
   const runtime = getHostRuntime()
   try {
     if (typeof runtime.processObj?.cwd === 'function') {

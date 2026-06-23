@@ -1,7 +1,10 @@
 // Package filepath implements utility routines for manipulating filename paths
 // in a way compatible with the target operating system-defined file paths.
 import * as $ from '@goscript/builtin/index.js'
-import { getHostRuntime } from '@goscript/builtin/hostio.js'
+import {
+  getCurrentWorkingDirectory,
+  getHostRuntime,
+} from '@goscript/builtin/hostio.js'
 import type { DirEntry } from '@goscript/io/fs/fs.js'
 import { ValidPath } from '@goscript/io/fs/fs.js'
 import { FileInfoToDirEntry } from '@goscript/io/fs/readdir.js'
@@ -262,16 +265,19 @@ export function HasPrefix(p: string, prefix: string): boolean {
   return false
 }
 
-// Stubs for functions that require filesystem operations
-// These are simplified implementations for compatibility
-
+// Abs returns an absolute representation of path. If the path is not absolute
+// it is joined with the current working directory to turn it into an absolute
+// path, then Cleaned. This mirrors Go's filepath.Abs, which calls os.Getwd for
+// relative inputs rather than fabricating a root.
 export function Abs(path: string): [string, $.GoError] {
   if (IsAbs(path)) {
     return [Clean(path), null]
   }
-  // In a real implementation, this would resolve relative to current working directory
-  // For our purposes, we'll just prepend a fake absolute path
-  return ['/' + Clean(path), null]
+  const wd = getCurrentWorkingDirectory()
+  if (wd === null) {
+    return ['', $.newError('filepath: cannot determine working directory')]
+  }
+  return [Join(wd, path), null]
 }
 
 export function Rel(basepath: string, targpath: string): [string, $.GoError] {
@@ -346,9 +352,93 @@ export function Rel(basepath: string, targpath: string): [string, $.GoError] {
   return [t.slice(t0), null]
 }
 
+// EvalSymlinks returns the path name after the evaluation of any symbolic
+// links. This is a lexical port of Go's path/filepath walkSymlinks: it resolves
+// each component with Lstat and follows symlinks with Readlink, preserving the
+// relative-vs-absolute shape of the input. It deliberately does not use a host
+// realpath, which would always force an absolute result and would not surface
+// Go's per-component ENOTDIR and link-cycle errors. volLen is 0 for a relative
+// input and 1 for an absolute root.
 export function EvalSymlinks(path: string): [string, $.GoError] {
-  // No filesystem support, just return the cleaned path
-  return [Clean(path), null]
+  let p = path
+  const volLen = p.length > 0 && p[0] === '/' ? 1 : 0
+  const vol = p.slice(0, volLen)
+  let dest = vol
+  let linksWalked = 0
+  for (let start = volLen, end = volLen; start < p.length; start = end) {
+    while (start < p.length && p[start] === '/') {
+      start++
+    }
+    end = start
+    while (end < p.length && p[end] !== '/') {
+      end++
+    }
+
+    const component = p.slice(start, end)
+    if (end === start) {
+      break
+    } else if (component === '.') {
+      continue
+    } else if (component === '..') {
+      // Back up to the previous component unless it is itself a kept "..".
+      let r = dest.length - 1
+      for (; r >= volLen; r--) {
+        if (dest[r] === '/') {
+          break
+        }
+      }
+      if (r < volLen || dest.slice(r + 1) === '..') {
+        if (dest.length > volLen) {
+          dest += '/'
+        }
+        dest += '..'
+      } else {
+        dest = dest.slice(0, r)
+      }
+      continue
+    }
+
+    if (dest.length > volLen && dest[dest.length - 1] !== '/') {
+      dest += '/'
+    }
+    dest += component
+
+    const [stat, statErr] = lstatPath(dest)
+    if (statErr !== null) {
+      return ['', statErr]
+    }
+    if (!statIsSymlink(stat!)) {
+      if (!statIsDir(stat!) && end < p.length) {
+        return ['', $.newError('not a directory')]
+      }
+      continue
+    }
+
+    linksWalked++
+    if (linksWalked > 255) {
+      return ['', $.newError('EvalSymlinks: too many links')]
+    }
+    const [link, linkErr] = readlinkPath(dest)
+    if (linkErr !== null) {
+      return ['', linkErr]
+    }
+    p = link! + p.slice(end)
+    if (link!.length > 0 && link![0] === '/') {
+      // Absolute symlink target: restart from the root.
+      dest = '/'
+    } else {
+      // Relative symlink target: replace the last component of dest.
+      let r = dest.length - 1
+      for (; r >= volLen; r--) {
+        if (dest[r] === '/') {
+          break
+        }
+      }
+      dest = r < volLen ? vol : dest.slice(0, r)
+    }
+    end = 0
+  }
+  return [Clean(dest), null]
 }
 
 export function Glob(_pattern: string): [string[], $.GoError] {
@@ -421,6 +511,13 @@ function statIsDir(stat: HostStat): boolean {
   return !!stat.isDirectory
 }
 
+function statIsSymlink(stat: any): boolean {
+  if (typeof stat?.isSymbolicLink === 'function') {
+    return stat.isSymbolicLink()
+  }
+  return !!stat?.isSymlink
+}
+
 function fileInfo(path: string, stat: HostStat): any {
   return {
     IsDir: () => statIsDir(stat),
@@ -436,20 +533,50 @@ function dirEntry(path: string, stat: HostStat): DirEntry {
   return FileInfoToDirEntry(fileInfo(path, stat))
 }
 
-function statPath(path: string): [HostStat | null, $.GoError] {
+// lstatPath stats a path without following a terminal symlink, matching Go's
+// Walk/WalkDir, which Lstat every entry so a symlinked directory is reported as
+// a symlink and is never descended into. Falls back to stat only when the host
+// exposes no lstat.
+function lstatPath(path: string): [HostStat | null, $.GoError] {
   const runtime = getHostRuntime()
-  if (runtime.deno?.statSync) {
+  const deno = runtime.deno
+  const denoStat = deno?.lstatSync ?? deno?.statSync
+  if (denoStat) {
     try {
-      return [runtime.deno.statSync(path), null]
+      return [denoStat.call(deno, path), null]
     } catch (err) {
       return [null, hostError(err)]
     }
   }
 
   const nodeFS = runtime.nodeFS
-  if (nodeFS?.statSync) {
+  const nodeStat = nodeFS?.lstatSync ?? nodeFS?.statSync
+  if (nodeStat) {
     try {
-      return [nodeFS.statSync(path), null]
+      return [nodeStat.call(nodeFS, path), null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  return [null, $.newError('filesystem not supported')]
+}
+
+function readlinkPath(path: string): [string | null, $.GoError] {
+  const runtime = getHostRuntime()
+  const deno = runtime.deno
+  if (deno?.readLinkSync) {
+    try {
+      return [deno.readLinkSync(path), null]
+    } catch (err) {
+      return [null, hostError(err)]
+    }
+  }
+
+  const nodeFS = runtime.nodeFS
+  if (nodeFS?.readlinkSync) {
+    try {
+      return [String(nodeFS.readlinkSync(path)), null]
     } catch (err) {
       return [null, hostError(err)]
     }
@@ -496,7 +623,7 @@ function readDir(path: string): [HostEntry[] | null, $.GoError] {
 }
 
 async function walkHost(path: string, walkFn: WalkFunc): Promise<$.GoError> {
-  const [stat, statErr] = statPath(path)
+  const [stat, statErr] = lstatPath(path)
   if (statErr !== null) {
     return await walkFn(path, null, statErr)
   }
@@ -558,7 +685,7 @@ async function walkDirHost(
   path: string,
   walkFn: WalkDirFunc,
 ): Promise<$.GoError> {
-  const [stat, statErr] = statPath(path)
+  const [stat, statErr] = lstatPath(path)
   if (statErr !== null) {
     return normalizeRootWalkDirErr(await walkFn(path, null, statErr))
   }

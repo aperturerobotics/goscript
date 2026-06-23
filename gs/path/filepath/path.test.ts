@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -178,9 +185,11 @@ describe('path/filepath - Path manipulation functions', () => {
       expect(err1).toBeNull()
       expect(result1).toBe('/absolute/path')
 
+      // A relative path is joined against the real working directory, matching
+      // Go's filepath.Abs (os.Getwd), not a fabricated root.
       const [result2, err2] = Abs('relative/path')
       expect(err2).toBeNull()
-      expect(result2).toBe('/relative/path')
+      expect(result2).toBe(Join(process.cwd(), 'relative/path'))
     })
   })
 
@@ -232,10 +241,28 @@ describe('path/filepath - Path manipulation functions', () => {
   })
 
   describe('EvalSymlinks', () => {
-    it('should return cleaned path (stubbed)', () => {
-      const [result, err] = EvalSymlinks('/path/with/../dots')
-      expect(err).toBeNull()
-      expect(result).toBe('/path/dots')
+    it('should resolve symlinks against the host filesystem', () => {
+      // realpathSync canonicalizes the temp root (macOS /var -> /private/var) so
+      // the expected resolved path uses the same canonical base.
+      const root = realpathSync(
+        mkdtempSync(join(tmpdir(), 'goscript-filepath-eval-')),
+      )
+      try {
+        mkdirSync(join(root, 'real'))
+        writeFileSync(join(root, 'real', 'file.txt'), 'ok')
+        symlinkSync(join(root, 'real'), join(root, 'link'))
+
+        const [result, err] = EvalSymlinks(join(root, 'link', 'file.txt'))
+        expect(err).toBeNull()
+        expect(result).toBe(join(root, 'real', 'file.txt'))
+      } finally {
+        rmSync(root, { force: true, recursive: true })
+      }
+    })
+
+    it('should error when a path component does not exist', () => {
+      const [, err] = EvalSymlinks('/goscript-nonexistent-xyz/file')
+      expect(err).not.toBeNull()
     })
   })
 
@@ -254,6 +281,28 @@ describe('path/filepath - Path manipulation functions', () => {
 
         expect(err).toBeNull()
         expect(visited).toEqual(['.', 'a', 'a/b', 'a/b/file.txt'])
+      } finally {
+        rmSync(root, { force: true, recursive: true })
+      }
+    })
+
+    it('should not descend into a symlinked directory (Lstat walk)', async () => {
+      const root = mkdtempSync(join(tmpdir(), 'goscript-filepath-walklink-'))
+      try {
+        mkdirSync(join(root, 'real'))
+        writeFileSync(join(root, 'real', 'inside.txt'), 'ok')
+        symlinkSync(join(root, 'real'), join(root, 'link'))
+
+        const visited: string[] = []
+        const err = await Walk(root, (path) => {
+          visited.push(path.slice(root.length).replace(/^\/?/, '') || '.')
+          return null
+        })
+
+        expect(err).toBeNull()
+        // The symlink is visited but not traversed, so link/inside.txt never
+        // appears.
+        expect(visited).toEqual(['.', 'link', 'real', 'real/inside.txt'])
       } finally {
         rmSync(root, { force: true, recursive: true })
       }
