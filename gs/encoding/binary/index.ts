@@ -48,8 +48,17 @@ type boxedValue = {
   __goValue?: unknown
 }
 
+// binShape recursively describes a fixed-size value for the struct and complex
+// paths that the flat fixedKind union cannot express.
+type binShape =
+  | { tag: 'scalar'; kind: fixedKind }
+  | { tag: 'complex'; elem: 'float32' | 'float64' }
+  | { tag: 'array'; elem: binShape; count: number }
+  | { tag: 'struct'; fields: { key: string; shape: binShape }[] }
+
 type decodedTarget = {
-  kind: fixedKind
+  kind: fixedKind | null
+  shape?: binShape
   value: unknown
   settable: ((value: unknown) => void) | null
 }
@@ -391,7 +400,7 @@ export async function Read(
   if (target === null) {
     return unsupportedError('Read', data)
   }
-  const size = fixedSize(target.kind, target.value)
+  const size = targetSize(target)
   if (size < 0) {
     return unsupportedError('Read', data)
   }
@@ -414,7 +423,7 @@ export function Decode(
   if (target === null) {
     return [0, unsupportedError('Decode', data)]
   }
-  const size = fixedSize(target.kind, target.value)
+  const size = targetSize(target)
   if (size < 0) {
     return [0, unsupportedError('Decode', data)]
   }
@@ -471,7 +480,14 @@ export function Size(v: unknown): number {
   if (target === null) {
     return -1
   }
-  return fixedSize(target.kind, target.value)
+  return targetSize(target)
+}
+
+function targetSize(target: decodedTarget): number {
+  if (target.shape !== undefined) {
+    return shapeSize(target.shape)
+  }
+  return fixedSize(target.kind as fixedKind, target.value)
 }
 
 function requireByteOrder(order: ByteOrder | null): ByteOrder {
@@ -488,14 +504,36 @@ function decodeFixed(
   order: ByteOrder,
   target: decodedTarget,
 ): void {
-  if (target.kind.startsWith('[]')) {
-    decodeFixedSlice(buf, order, target.kind, target.value)
+  if (target.shape !== undefined) {
+    decodeShapeTarget(buf, order, target)
+    return
+  }
+  const kind = target.kind as fixedKind
+  if (kind.startsWith('[]')) {
+    decodeFixedSlice(buf, order, kind, target.value)
     return
   }
   if (target.settable === null) {
     return
   }
-  target.settable(decodeScalar(buf, order, target.kind))
+  target.settable(decodeScalar(buf, order, kind))
+}
+
+function decodeShapeTarget(
+  buf: $.Slice<number>,
+  order: ByteOrder,
+  target: decodedTarget,
+): void {
+  const shape = target.shape!
+  if (shape.tag === 'struct') {
+    // Populate the existing struct instance's fields in place.
+    shapeDecodeInto(buf, order, shape, target.value)
+    return
+  }
+  if (target.settable === null) {
+    return
+  }
+  target.settable(shapeDecodeValue(buf, order, shape))
 }
 
 function decodeFixedSlice(
@@ -521,12 +559,16 @@ function encodeData(order: ByteOrder, data: unknown): $.Slice<number> | null {
   if (target === null) {
     return null
   }
-  const size = fixedSize(target.kind, target.value)
+  const size = targetSize(target)
   if (size < 0) {
     return null
   }
   const out = $.makeSlice<number>(size, undefined, 'byte')
-  encodeFixed(out, order, target.kind, target.value)
+  if (target.shape !== undefined) {
+    shapeEncode(out, order, target.shape, target.value)
+  } else {
+    encodeFixed(out, order, target.kind as fixedKind, target.value)
+  }
   return out
 }
 
@@ -625,11 +667,22 @@ function decodeTarget(data: unknown): decodedTarget | null {
   const typeName = goTypeName(data)
   const value = goValue(data)
   if (typeName !== '') {
-    const kind =
-      fixedKindFromType(typeName) ?? fixedKindFromTypeInfo(goTypeInfo(data))
+    const info = goTypeInfo(data)
+    const kind = fixedKindFromType(typeName) ?? fixedKindFromTypeInfo(info)
     if (kind !== null) {
       return {
         kind,
+        value: pointerValueForKind(typeName, value),
+        settable: setterFor(typeName, value),
+      }
+    }
+    // Struct and complex types cannot be named by a flat fixedKind; describe
+    // them recursively so Size/Append/Read/Decode handle them like Go.
+    const shape = shapeFromType(info ?? typeName)
+    if (shape !== null && shape.tag !== 'scalar') {
+      return {
+        kind: null,
+        shape,
         value: pointerValueForKind(typeName, value),
         settable: setterFor(typeName, value),
       }
@@ -800,6 +853,201 @@ function fixedSize(kind: fixedKind, value: unknown): number {
       return 8
   }
   return -1
+}
+
+// shapeFromType builds a recursive fixed-size description from type info, or
+// null when any element is variable-size or otherwise unsupported (which makes
+// the whole struct unsupported, as in Go's dataSize).
+function shapeFromType(info: $.TypeInfo | string | undefined): binShape | null {
+  if (info === undefined) {
+    return null
+  }
+  if (typeof info === 'string') {
+    if (info === 'complex64') {
+      return { tag: 'complex', elem: 'float32' }
+    }
+    if (info === 'complex128') {
+      return { tag: 'complex', elem: 'float64' }
+    }
+    const kind = fixedKindFromType(info)
+    return kind !== null && !kind.startsWith('[]') ?
+        { tag: 'scalar', kind }
+      : null
+  }
+  switch (info.kind) {
+    case $.TypeKind.Pointer:
+      return shapeFromType(info.elemType)
+    case $.TypeKind.Basic: {
+      if (info.name === 'complex64') {
+        return { tag: 'complex', elem: 'float32' }
+      }
+      if (info.name === 'complex128') {
+        return { tag: 'complex', elem: 'float64' }
+      }
+      const kind = fixedKindFromBasicName(info.name)
+      return kind !== null ? { tag: 'scalar', kind } : null
+    }
+    case $.TypeKind.Array: {
+      const elem = shapeFromType(info.elemType)
+      return elem === null ? null : (
+          { tag: 'array', elem, count: (info as $.ArrayTypeInfo).length }
+        )
+    }
+    case $.TypeKind.Struct: {
+      const fields: { key: string; shape: binShape }[] = []
+      for (const field of (info as $.StructTypeInfo).fields) {
+        const shape = shapeFromType(field.type)
+        if (shape === null) {
+          return null
+        }
+        fields.push({ key: field.key ?? field.name, shape })
+      }
+      return { tag: 'struct', fields }
+    }
+    default:
+      return null
+  }
+}
+
+function shapeSize(shape: binShape): number {
+  switch (shape.tag) {
+    case 'scalar':
+      return fixedSize(shape.kind, 0)
+    case 'complex':
+      return shape.elem === 'float32' ? 8 : 16
+    case 'array':
+      return shapeSize(shape.elem) * shape.count
+    case 'struct': {
+      let total = 0
+      for (const field of shape.fields) {
+        total += shapeSize(field.shape)
+      }
+      return total
+    }
+  }
+}
+
+function structFieldValue(instance: unknown, key: string): unknown {
+  const ref = (instance as { _fields: Record<string, $.VarRef<unknown>> })
+    ._fields[key]
+  return ref.value
+}
+
+function shapeEncode(
+  buf: $.Slice<number>,
+  order: ByteOrder,
+  shape: binShape,
+  value: unknown,
+): void {
+  switch (shape.tag) {
+    case 'scalar':
+      encodeScalar(buf, order, shape.kind, value)
+      return
+    case 'complex': {
+      const c = value as { real: number; imag: number }
+      if (shape.elem === 'float32') {
+        order.PutUint32($.goSlice(buf, 0, 4), float32Bits(c.real))
+        order.PutUint32($.goSlice(buf, 4, 8), float32Bits(c.imag))
+      } else {
+        order.PutUint64(
+          $.goSlice(buf, 0, 8),
+          float64Bits(c.real) as unknown as number,
+        )
+        order.PutUint64(
+          $.goSlice(buf, 8, 16),
+          float64Bits(c.imag) as unknown as number,
+        )
+      }
+      return
+    }
+    case 'array': {
+      const width = shapeSize(shape.elem)
+      for (let i = 0; i < shape.count; i++) {
+        shapeEncode(
+          $.goSlice(buf, i * width, i * width + width),
+          order,
+          shape.elem,
+          (value as $.Slice<unknown>)![i],
+        )
+      }
+      return
+    }
+    case 'struct': {
+      let offset = 0
+      for (const field of shape.fields) {
+        const width = shapeSize(field.shape)
+        shapeEncode(
+          $.goSlice(buf, offset, offset + width),
+          order,
+          field.shape,
+          structFieldValue(value, field.key),
+        )
+        offset += width
+      }
+      return
+    }
+  }
+}
+
+function shapeDecodeValue(
+  buf: $.Slice<number>,
+  order: ByteOrder,
+  shape: binShape,
+): unknown {
+  switch (shape.tag) {
+    case 'scalar':
+      return decodeScalar(buf, order, shape.kind)
+    case 'complex':
+      if (shape.elem === 'float32') {
+        return {
+          real: float32FromBits(order.Uint32($.goSlice(buf, 0, 4))),
+          imag: float32FromBits(order.Uint32($.goSlice(buf, 4, 8))),
+        }
+      }
+      return {
+        real: float64FromBits(order.Uint64($.goSlice(buf, 0, 8))),
+        imag: float64FromBits(order.Uint64($.goSlice(buf, 8, 16))),
+      }
+    case 'array': {
+      const width = shapeSize(shape.elem)
+      const out: unknown[] = []
+      for (let i = 0; i < shape.count; i++) {
+        out.push(
+          shapeDecodeValue(
+            $.goSlice(buf, i * width, i * width + width),
+            order,
+            shape.elem,
+          ),
+        )
+      }
+      return out
+    }
+    case 'struct':
+      // Nested structs are populated in place by shapeDecodeInto.
+      return null
+  }
+}
+
+function shapeDecodeInto(
+  buf: $.Slice<number>,
+  order: ByteOrder,
+  shape: { tag: 'struct'; fields: { key: string; shape: binShape }[] },
+  instance: unknown,
+): void {
+  const fields = (instance as { _fields: Record<string, $.VarRef<unknown>> })
+    ._fields
+  let offset = 0
+  for (const field of shape.fields) {
+    const width = shapeSize(field.shape)
+    const slice = $.goSlice(buf, offset, offset + width)
+    const ref = fields[field.key]
+    if (field.shape.tag === 'struct') {
+      shapeDecodeInto(slice, order, field.shape, ref.value)
+    } else {
+      ref.value = shapeDecodeValue(slice, order, field.shape)
+    }
+    offset += width
+  }
 }
 
 function unsupportedError(fn: string, data: unknown): $.GoError {

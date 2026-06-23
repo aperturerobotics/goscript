@@ -236,4 +236,108 @@ describe('encoding/binary override', () => {
       BigEndian.PutUint32($.makeSlice<number>(1, undefined, 'byte'), 1),
     ).toThrow('runtime error: index out of range [3] with length 1')
   })
+
+  it('sizes, appends, and decodes complex64 and complex128', () => {
+    const c128 = $.namedValueInterfaceValue<unknown>(
+      { real: 1.5, imag: 2.5 },
+      'complex128',
+      {},
+      { kind: $.TypeKind.Basic, name: 'complex128' },
+    )
+    expect(Size(c128)).toBe(16)
+    const [enc128, err128] = Append(null, BigEndian, c128)
+    expect(err128).toBeNull()
+    expect(Array.from($.bytesToUint8Array(enc128))).toEqual([
+      0x3f, 0xf8, 0, 0, 0, 0, 0, 0, 0x40, 0x04, 0, 0, 0, 0, 0, 0,
+    ])
+
+    const ref128 = $.varRef<unknown>({ real: 0, imag: 0 })
+    const target128 = $.namedValueInterfaceValue<unknown>(
+      ref128,
+      '*complex128',
+      {},
+      {
+        kind: $.TypeKind.Pointer,
+        elemType: { kind: $.TypeKind.Basic, name: 'complex128' },
+      },
+    )
+    expect(Decode(enc128, BigEndian, target128)).toEqual([16, null])
+    expect(ref128.value).toEqual({ real: 1.5, imag: 2.5 })
+
+    const c64 = $.namedValueInterfaceValue<unknown>(
+      { real: 1, imag: -1 },
+      'complex64',
+      {},
+      { kind: $.TypeKind.Basic, name: 'complex64' },
+    )
+    expect(Size(c64)).toBe(8)
+  })
+
+  it('sizes, appends, and decodes fixed-size structs field by field', () => {
+    const structInfo: $.TypeInfo = {
+      kind: $.TypeKind.Struct,
+      name: 'Sample',
+      methods: [],
+      fields: [
+        {
+          name: 'A',
+          key: 'A',
+          type: { kind: $.TypeKind.Basic, name: 'int32' },
+        },
+        {
+          name: 'B',
+          key: 'B',
+          type: { kind: $.TypeKind.Basic, name: 'uint16' },
+        },
+        {
+          name: 'C',
+          key: 'C',
+          type: {
+            kind: $.TypeKind.Array,
+            length: 2,
+            elemType: { kind: $.TypeKind.Basic, name: 'uint8' },
+          },
+        },
+      ],
+    }
+
+    const instance = {
+      _fields: {
+        A: $.varRef(0x01020304),
+        B: $.varRef(0x0506),
+        C: $.varRef([0xaa, 0xbb]),
+      },
+    }
+    const value = $.namedValueInterfaceValue<unknown>(
+      instance,
+      'Sample',
+      {},
+      structInfo,
+    )
+
+    expect(Size(value)).toBe(8)
+    const [encoded, err] = Append(null, BigEndian, value)
+    expect(err).toBeNull()
+    expect(Array.from($.bytesToUint8Array(encoded))).toEqual([
+      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xaa, 0xbb,
+    ])
+
+    const decodedInstance = {
+      _fields: {
+        A: $.varRef(0),
+        B: $.varRef(0),
+        C: $.varRef([0, 0]),
+      },
+    }
+    const target = $.namedValueInterfaceValue<unknown>(
+      $.varRef(decodedInstance),
+      '*Sample',
+      {},
+      { kind: $.TypeKind.Pointer, elemType: structInfo },
+    )
+    expect(Decode(encoded, BigEndian, target)).toEqual([8, null])
+    expect(decodedInstance._fields.A.value).toBe(0x01020304)
+    expect(decodedInstance._fields.B.value).toBe(0x0506)
+    expect(decodedInstance._fields.C.value).toEqual([0xaa, 0xbb])
+  })
 })
