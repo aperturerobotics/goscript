@@ -108,6 +108,11 @@ type loweredFunction struct {
 	result                  string
 	body                    []loweredStmt
 	deferState              *loweredDeferState
+	// recoverReturn is the return statement emitted after a deferred recover()
+	// swallows a panic in a defer+recover function: the named results, the zero
+	// values for unnamed results, or empty for a void function. Only used when
+	// deferState.recover is set.
+	recoverReturn string
 }
 
 type loweredParam struct {
@@ -152,6 +157,10 @@ type loweredRangeBranch struct {
 type loweredDeferState struct {
 	used  bool
 	async bool
+	// recover is set when the function both registers a defer and lexically
+	// contains a recover() call, so it must emit the panic-aware try/catch shape
+	// that lets a deferred recover() stop an unwinding panic.
+	recover bool
 }
 
 type loweredSwitch struct {

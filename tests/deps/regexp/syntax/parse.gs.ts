@@ -1949,382 +1949,388 @@ export async function Parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 export async function parse(s: string, flags: Flags): globalThis.Promise<[__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError]> {
 	let err: $.GoError = null as $.GoError
-	using __defer = new $.DisposableStack()
-	__defer.defer(() => { ((): void => {
-		{
-			let r = $.recover()
-			let __goscriptSwitch0 = r
-			switch (true) {
-				default:
-				{
-					$.panic(r)
-					break
-				}
-				case $.comparableEqual(__goscriptSwitch0, null):
-				{
-					break
-				}
-				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>("expression too large", "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" })):
-				{
-					err = $.interfaceValue<$.GoError>(new Error({Code: "expression too large", Expr: s}), "*syntax.Error")
-					break
-				}
-				case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>("expression nests too deeply", "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" })):
-				{
-					err = $.interfaceValue<$.GoError>(new Error({Code: "expression nests too deeply", Expr: s}), "*syntax.Error")
-					break
-				}
-			}
-		}
-	})() })
-
-	if ($.uint((flags & 2), 16) != $.uint(0, 16)) {
-		// Trivial parser for literal string.
-		{
-			let __goscriptShadow4 = checkUTF8(s)
-			if (__goscriptShadow4 != null) {
-				const __goscriptReturn3: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow4]
-				err = __goscriptReturn3[1]
-				__defer[Symbol.dispose]()
-				return [__goscriptReturn3[0], err]
-			}
-		}
-		const __goscriptReturn4: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [literalRegexp(s, $.uint(flags, 16)), null]
-		err = __goscriptReturn4[1]
-		__defer[Symbol.dispose]()
-		return [__goscriptReturn4[0], err]
-	}
-
-	// Otherwise, must do real work.
-	let p: $.VarRef<parser> = $.varRef($.markAsStructValue(new parser()))
-	let c: number = 0
-	let op: __goscript_regexp.Op = 0
-	let lastRepeat: string = ""
-	p.value.flags = $.uint(flags, 16)
-	p.value.wholeRegexp = s
-	let t = s
-	while (!$.stringEqual(t, "")) {
-		let repeat = ""
-		BigSwitch: {
-			switch ($.indexStringOrBytes(t, 0)) {
-				default:
-				{
+	try {
+		using __defer = new $.DisposableStack()
+		__defer.defer(() => { ((): void => {
+			{
+				let r = $.recover()
+				let __goscriptSwitch0 = r
+				switch (true) {
+					default:
 					{
-						let __goscriptTuple16: any = nextRune(t)
-						c = $.int(__goscriptTuple16[0], 32)
-						t = __goscriptTuple16[1]
-						err = __goscriptTuple16[2]
-						if (err != null) {
-							const __goscriptReturn5: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn5[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn5[0], err]
-						}
-					}
-					p.value.literal($.int(c, 32))
-					break
-				}
-				case 40:
-				{
-					if ((($.uint((p.value.flags & 64), 16) != $.uint(0, 16)) && ($.len(t) >= 2)) && ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(63, 8))) {
-						// Flag changes and non-capturing groups.
-						{
-							let __goscriptTuple17: any = p.value.parsePerlFlags(t)
-							t = __goscriptTuple17[0]
-							err = __goscriptTuple17[1]
-							if (err != null) {
-								const __goscriptReturn6: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-								err = __goscriptReturn6[1]
-								__defer[Symbol.dispose]()
-								return [__goscriptReturn6[0], err]
-							}
-						}
+						$.panic(r)
 						break
 					}
-					p.value.numCap++
-					$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(128, 8))).Cap = p.value.numCap
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 124:
-				{
-					p.value.parseVerticalBar()
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 41:
-				{
+					case $.comparableEqual(__goscriptSwitch0, null):
 					{
-						err = p.value.parseRightParen()
-						if (err != null) {
-							const __goscriptReturn7: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn7[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn7[0], err]
-						}
+						break
 					}
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 94:
-				{
-					if ($.uint((p.value.flags & 16), 16) != $.uint(0, 16)) {
-						p.value.op($.uint(9, 8))
-					} else {
-						p.value.op($.uint(7, 8))
-					}
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 36:
-				{
-					if ($.uint((p.value.flags & 16), 16) != $.uint(0, 16)) {
-						$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags = $.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags | ($.uint(256, 16))
-					} else {
-						p.value.op($.uint(8, 8))
-					}
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 46:
-				{
-					if ($.uint((p.value.flags & 8), 16) != $.uint(0, 16)) {
-						p.value.op($.uint(6, 8))
-					} else {
-						p.value.op($.uint(5, 8))
-					}
-					t = $.sliceStringOrBytes(t, 1, undefined)
-					break
-				}
-				case 91:
-				{
+					case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>("expression too large", "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" })):
 					{
-						let __goscriptTuple18: any = await p.value.parseClass(t)
-						t = __goscriptTuple18[0]
-						err = __goscriptTuple18[1]
-						if (err != null) {
-							const __goscriptReturn8: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn8[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn8[0], err]
-						}
+						err = $.interfaceValue<$.GoError>(new Error({Code: "expression too large", Expr: s}), "*syntax.Error")
+						break
 					}
-					break
+					case $.comparableEqual(__goscriptSwitch0, $.namedValueInterfaceValue<any>("expression nests too deeply", "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" })):
+					{
+						err = $.interfaceValue<$.GoError>(new Error({Code: "expression nests too deeply", Expr: s}), "*syntax.Error")
+						break
+					}
 				}
-				case 42:
-				case 43:
-				case 63:
-				{
-					let before = t
-					switch ($.indexStringOrBytes(t, 0)) {
-						case 42:
+			}
+		})() })
+
+		if ($.uint((flags & 2), 16) != $.uint(0, 16)) {
+			// Trivial parser for literal string.
+			{
+				let __goscriptShadow4 = checkUTF8(s)
+				if (__goscriptShadow4 != null) {
+					const __goscriptReturn3: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow4]
+					err = __goscriptReturn3[1]
+					__defer[Symbol.dispose]()
+					return [__goscriptReturn3[0], err]
+				}
+			}
+			const __goscriptReturn4: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [literalRegexp(s, $.uint(flags, 16)), null]
+			err = __goscriptReturn4[1]
+			__defer[Symbol.dispose]()
+			return [__goscriptReturn4[0], err]
+		}
+
+		// Otherwise, must do real work.
+		let p: $.VarRef<parser> = $.varRef($.markAsStructValue(new parser()))
+		let c: number = 0
+		let op: __goscript_regexp.Op = 0
+		let lastRepeat: string = ""
+		p.value.flags = $.uint(flags, 16)
+		p.value.wholeRegexp = s
+		let t = s
+		while (!$.stringEqual(t, "")) {
+			let repeat = ""
+			BigSwitch: {
+				switch ($.indexStringOrBytes(t, 0)) {
+					default:
+					{
 						{
-							op = $.uint(14, 8)
+							let __goscriptTuple16: any = nextRune(t)
+							c = $.int(__goscriptTuple16[0], 32)
+							t = __goscriptTuple16[1]
+							err = __goscriptTuple16[2]
+							if (err != null) {
+								const __goscriptReturn5: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn5[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn5[0], err]
+							}
+						}
+						p.value.literal($.int(c, 32))
+						break
+					}
+					case 40:
+					{
+						if ((($.uint((p.value.flags & 64), 16) != $.uint(0, 16)) && ($.len(t) >= 2)) && ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(63, 8))) {
+							// Flag changes and non-capturing groups.
+							{
+								let __goscriptTuple17: any = p.value.parsePerlFlags(t)
+								t = __goscriptTuple17[0]
+								err = __goscriptTuple17[1]
+								if (err != null) {
+									const __goscriptReturn6: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+									err = __goscriptReturn6[1]
+									__defer[Symbol.dispose]()
+									return [__goscriptReturn6[0], err]
+								}
+							}
 							break
 						}
-						case 43:
-						{
-							op = $.uint(15, 8)
-							break
-						}
-						case 63:
-						{
-							op = $.uint(16, 8)
-							break
-						}
-					}
-					let after = $.sliceStringOrBytes(t, 1, undefined)
-					{
-						let __goscriptTuple19: any = p.value.repeat($.uint(op, 8), 0, 0, before, after, lastRepeat)
-						after = __goscriptTuple19[0]
-						err = __goscriptTuple19[1]
-						if (err != null) {
-							const __goscriptReturn9: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn9[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn9[0], err]
-						}
-					}
-					repeat = before
-					t = after
-					break
-				}
-				case 123:
-				{
-					op = $.uint(17, 8)
-					let before = t
-					let [min, max, after, ok] = p.value.parseRepeat(t)
-					if (!ok) {
-						// If the repeat cannot be parsed, { is a literal.
-						p.value.literal($.int(123, 32))
+						p.value.numCap++
+						$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(128, 8))).Cap = p.value.numCap
 						t = $.sliceStringOrBytes(t, 1, undefined)
 						break
 					}
-					if ((((min < 0) || (min > 1000)) || (max > 1000)) || ((max >= 0) && (min > max))) {
-						// Numbers were too big, or max is present and min > max.
-						const __goscriptReturn10: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid repeat count", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
-						err = __goscriptReturn10[1]
-						__defer[Symbol.dispose]()
-						return [__goscriptReturn10[0], err]
-					}
+					case 124:
 					{
-						let __goscriptTuple20: any = p.value.repeat($.uint(op, 8), min, max, before, after, lastRepeat)
-						after = __goscriptTuple20[0]
-						err = __goscriptTuple20[1]
-						if (err != null) {
-							const __goscriptReturn11: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn11[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn11[0], err]
-						}
+						p.value.parseVerticalBar()
+						t = $.sliceStringOrBytes(t, 1, undefined)
+						break
 					}
-					repeat = before
-					t = after
-					break
-				}
-				case 92:
-				{
-					if (($.uint((p.value.flags & 64), 16) != $.uint(0, 16)) && ($.len(t) >= 2)) {
-						switch ($.indexStringOrBytes(t, 1)) {
-							case 65:
-							{
-								p.value.op($.uint(9, 8))
-								t = $.sliceStringOrBytes(t, 2, undefined)
-								break BigSwitch
-								break
-							}
-							case 98:
-							{
-								p.value.op($.uint(11, 8))
-								t = $.sliceStringOrBytes(t, 2, undefined)
-								break BigSwitch
-								break
-							}
-							case 66:
-							{
-								p.value.op($.uint(12, 8))
-								t = $.sliceStringOrBytes(t, 2, undefined)
-								break BigSwitch
-								break
-							}
-							case 67:
-							{
-								const __goscriptReturn12: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid escape sequence", Expr: $.sliceStringOrBytes(t, undefined, 2)}), "*syntax.Error")]
-								err = __goscriptReturn12[1]
+					case 41:
+					{
+						{
+							err = p.value.parseRightParen()
+							if (err != null) {
+								const __goscriptReturn7: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn7[1]
 								__defer[Symbol.dispose]()
-								return [__goscriptReturn12[0], err]
+								return [__goscriptReturn7[0], err]
+							}
+						}
+						t = $.sliceStringOrBytes(t, 1, undefined)
+						break
+					}
+					case 94:
+					{
+						if ($.uint((p.value.flags & 16), 16) != $.uint(0, 16)) {
+							p.value.op($.uint(9, 8))
+						} else {
+							p.value.op($.uint(7, 8))
+						}
+						t = $.sliceStringOrBytes(t, 1, undefined)
+						break
+					}
+					case 36:
+					{
+						if ($.uint((p.value.flags & 16), 16) != $.uint(0, 16)) {
+							$.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags = $.pointerValue<__goscript_regexp.Regexp>(p.value.op($.uint(10, 8))).Flags | ($.uint(256, 16))
+						} else {
+							p.value.op($.uint(8, 8))
+						}
+						t = $.sliceStringOrBytes(t, 1, undefined)
+						break
+					}
+					case 46:
+					{
+						if ($.uint((p.value.flags & 8), 16) != $.uint(0, 16)) {
+							p.value.op($.uint(6, 8))
+						} else {
+							p.value.op($.uint(5, 8))
+						}
+						t = $.sliceStringOrBytes(t, 1, undefined)
+						break
+					}
+					case 91:
+					{
+						{
+							let __goscriptTuple18: any = await p.value.parseClass(t)
+							t = __goscriptTuple18[0]
+							err = __goscriptTuple18[1]
+							if (err != null) {
+								const __goscriptReturn8: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn8[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn8[0], err]
+							}
+						}
+						break
+					}
+					case 42:
+					case 43:
+					case 63:
+					{
+						let before = t
+						switch ($.indexStringOrBytes(t, 0)) {
+							case 42:
+							{
+								op = $.uint(14, 8)
 								break
 							}
-							case 81:
+							case 43:
 							{
-								let lit: string = ""
-								let __goscriptTuple21: any = strings.Cut($.sliceStringOrBytes(t, 2, undefined), "\\E")
-								lit = __goscriptTuple21[0]
-								t = __goscriptTuple21[1]
-								while (!$.stringEqual(lit, "")) {
-									let __goscriptTuple22: any = nextRune(lit)
-									let __goscriptShadow5 = $.int(__goscriptTuple22[0], 32)
-									let rest = __goscriptTuple22[1]
-									let __goscriptShadow6 = __goscriptTuple22[2]
-									if (__goscriptShadow6 != null) {
-										const __goscriptReturn13: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow6]
-										err = __goscriptReturn13[1]
-										__defer[Symbol.dispose]()
-										return [__goscriptReturn13[0], err]
-									}
-									p.value.literal($.int(__goscriptShadow5, 32))
-									lit = rest
+								op = $.uint(15, 8)
+								break
+							}
+							case 63:
+							{
+								op = $.uint(16, 8)
+								break
+							}
+						}
+						let after = $.sliceStringOrBytes(t, 1, undefined)
+						{
+							let __goscriptTuple19: any = p.value.repeat($.uint(op, 8), 0, 0, before, after, lastRepeat)
+							after = __goscriptTuple19[0]
+							err = __goscriptTuple19[1]
+							if (err != null) {
+								const __goscriptReturn9: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn9[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn9[0], err]
+							}
+						}
+						repeat = before
+						t = after
+						break
+					}
+					case 123:
+					{
+						op = $.uint(17, 8)
+						let before = t
+						let [min, max, after, ok] = p.value.parseRepeat(t)
+						if (!ok) {
+							// If the repeat cannot be parsed, { is a literal.
+							p.value.literal($.int(123, 32))
+							t = $.sliceStringOrBytes(t, 1, undefined)
+							break
+						}
+						if ((((min < 0) || (min > 1000)) || (max > 1000)) || ((max >= 0) && (min > max))) {
+							// Numbers were too big, or max is present and min > max.
+							const __goscriptReturn10: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid repeat count", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
+							err = __goscriptReturn10[1]
+							__defer[Symbol.dispose]()
+							return [__goscriptReturn10[0], err]
+						}
+						{
+							let __goscriptTuple20: any = p.value.repeat($.uint(op, 8), min, max, before, after, lastRepeat)
+							after = __goscriptTuple20[0]
+							err = __goscriptTuple20[1]
+							if (err != null) {
+								const __goscriptReturn11: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn11[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn11[0], err]
+							}
+						}
+						repeat = before
+						t = after
+						break
+					}
+					case 92:
+					{
+						if (($.uint((p.value.flags & 64), 16) != $.uint(0, 16)) && ($.len(t) >= 2)) {
+							switch ($.indexStringOrBytes(t, 1)) {
+								case 65:
+								{
+									p.value.op($.uint(9, 8))
+									t = $.sliceStringOrBytes(t, 2, undefined)
+									break BigSwitch
+									break
 								}
-								break BigSwitch
-								break
+								case 98:
+								{
+									p.value.op($.uint(11, 8))
+									t = $.sliceStringOrBytes(t, 2, undefined)
+									break BigSwitch
+									break
+								}
+								case 66:
+								{
+									p.value.op($.uint(12, 8))
+									t = $.sliceStringOrBytes(t, 2, undefined)
+									break BigSwitch
+									break
+								}
+								case 67:
+								{
+									const __goscriptReturn12: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid escape sequence", Expr: $.sliceStringOrBytes(t, undefined, 2)}), "*syntax.Error")]
+									err = __goscriptReturn12[1]
+									__defer[Symbol.dispose]()
+									return [__goscriptReturn12[0], err]
+									break
+								}
+								case 81:
+								{
+									let lit: string = ""
+									let __goscriptTuple21: any = strings.Cut($.sliceStringOrBytes(t, 2, undefined), "\\E")
+									lit = __goscriptTuple21[0]
+									t = __goscriptTuple21[1]
+									while (!$.stringEqual(lit, "")) {
+										let __goscriptTuple22: any = nextRune(lit)
+										let __goscriptShadow5 = $.int(__goscriptTuple22[0], 32)
+										let rest = __goscriptTuple22[1]
+										let __goscriptShadow6 = __goscriptTuple22[2]
+										if (__goscriptShadow6 != null) {
+											const __goscriptReturn13: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow6]
+											err = __goscriptReturn13[1]
+											__defer[Symbol.dispose]()
+											return [__goscriptReturn13[0], err]
+										}
+										p.value.literal($.int(__goscriptShadow5, 32))
+										lit = rest
+									}
+									break BigSwitch
+									break
+								}
+								case 122:
+								{
+									p.value.op($.uint(10, 8))
+									t = $.sliceStringOrBytes(t, 2, undefined)
+									break BigSwitch
+									break
+								}
 							}
-							case 122:
-							{
-								p.value.op($.uint(10, 8))
-								t = $.sliceStringOrBytes(t, 2, undefined)
+						}
+
+						let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = p.value.newRegexp($.uint(4, 8))
+						$.pointerValue<__goscript_regexp.Regexp>(re).Flags = $.uint(p.value.flags, 16)
+
+						// Look for Unicode character group like \p{Han}
+						if (($.len(t) >= 2) && (($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(112, 8)) || ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(80, 8)))) {
+							let __goscriptTuple23: any = await p.value.parseUnicodeClass(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+							let r: $.Slice<number> = __goscriptTuple23[0]
+							let rest = __goscriptTuple23[1]
+							let __goscriptShadow7 = __goscriptTuple23[2]
+							if (__goscriptShadow7 != null) {
+								const __goscriptReturn14: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow7]
+								err = __goscriptReturn14[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn14[0], err]
+							}
+							if (r != null) {
+								$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
+								t = rest
+								p.value.push(re)
 								break BigSwitch
-								break
 							}
 						}
-					}
 
-					let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = p.value.newRegexp($.uint(4, 8))
-					$.pointerValue<__goscript_regexp.Regexp>(re).Flags = $.uint(p.value.flags, 16)
+						// Perl character class escape.
+						{
+							let __goscriptTuple24: any = p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+							let r: $.Slice<number> = __goscriptTuple24[0]
+							let rest = __goscriptTuple24[1]
+							if (r != null) {
+								$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
+								t = rest
+								p.value.push(re)
+								break BigSwitch
+							}
+						}
+						p.value.reuse(re)
 
-					// Look for Unicode character group like \p{Han}
-					if (($.len(t) >= 2) && (($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(112, 8)) || ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(80, 8)))) {
-						let __goscriptTuple23: any = await p.value.parseUnicodeClass(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
-						let r: $.Slice<number> = __goscriptTuple23[0]
-						let rest = __goscriptTuple23[1]
-						let __goscriptShadow7 = __goscriptTuple23[2]
-						if (__goscriptShadow7 != null) {
-							const __goscriptReturn14: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow7]
-							err = __goscriptReturn14[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn14[0], err]
+						// Ordinary single-character escape.
+						{
+							let __goscriptTuple25: any = p.value.parseEscape(t)
+							c = $.int(__goscriptTuple25[0], 32)
+							t = __goscriptTuple25[1]
+							err = __goscriptTuple25[2]
+							if (err != null) {
+								const __goscriptReturn15: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
+								err = __goscriptReturn15[1]
+								__defer[Symbol.dispose]()
+								return [__goscriptReturn15[0], err]
+							}
 						}
-						if (r != null) {
-							$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
-							t = rest
-							p.value.push(re)
-							break BigSwitch
-						}
+						p.value.literal($.int(c, 32))
+						break
 					}
-
-					// Perl character class escape.
-					{
-						let __goscriptTuple24: any = p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
-						let r: $.Slice<number> = __goscriptTuple24[0]
-						let rest = __goscriptTuple24[1]
-						if (r != null) {
-							$.pointerValue<__goscript_regexp.Regexp>(re).Rune = r
-							t = rest
-							p.value.push(re)
-							break BigSwitch
-						}
-					}
-					p.value.reuse(re)
-
-					// Ordinary single-character escape.
-					{
-						let __goscriptTuple25: any = p.value.parseEscape(t)
-						c = $.int(__goscriptTuple25[0], 32)
-						t = __goscriptTuple25[1]
-						err = __goscriptTuple25[2]
-						if (err != null) {
-							const __goscriptReturn15: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
-							err = __goscriptReturn15[1]
-							__defer[Symbol.dispose]()
-							return [__goscriptReturn15[0], err]
-						}
-					}
-					p.value.literal($.int(c, 32))
-					break
 				}
 			}
+			lastRepeat = repeat
 		}
-		lastRepeat = repeat
-	}
 
-	p.value.concat()
-	if (p.value.swapVerticalBar()) {
-		// pop vertical bar
-		p.value.stack = $.goSlice(p.value.stack, undefined, $.len(p.value.stack) - 1)
-	}
-	p.value.alternate()
+		p.value.concat()
+		if (p.value.swapVerticalBar()) {
+			// pop vertical bar
+			p.value.stack = $.goSlice(p.value.stack, undefined, $.len(p.value.stack) - 1)
+		}
+		p.value.alternate()
 
-	let n = $.len(p.value.stack)
-	if (n != 1) {
-		const __goscriptReturn16: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "missing closing )", Expr: s}), "*syntax.Error")]
-		err = __goscriptReturn16[1]
+		let n = $.len(p.value.stack)
+		if (n != 1) {
+			const __goscriptReturn16: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "missing closing )", Expr: s}), "*syntax.Error")]
+			err = __goscriptReturn16[1]
+			__defer[Symbol.dispose]()
+			return [__goscriptReturn16[0], err]
+		}
+		const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [p.value.stack![0], null]
+		err = __goscriptReturn17[1]
 		__defer[Symbol.dispose]()
-		return [__goscriptReturn16[0], err]
+		return [__goscriptReturn17[0], err]
+	} catch (e) {
+		if (!$.recovered(e)) {
+			throw e
+		}
 	}
-	const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [p.value.stack![0], null]
-	err = __goscriptReturn17[1]
-	__defer[Symbol.dispose]()
-	return [__goscriptReturn17[0], err]
-	throw new globalThis.Error("goscript: unreachable return")
+	return [null as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, err]
 }
 
 export function isValidCaptureName(name: string): boolean {

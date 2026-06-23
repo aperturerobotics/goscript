@@ -680,9 +680,10 @@ func renderFunction(b *strings.Builder, fn *loweredFunction) {
 	}
 	renderStmts(b, fn.paramBindings, 1)
 	renderNamedResults(b, fn.namedResults, 1)
-	renderDeferStack(b, fn.deferState, 1)
-	renderStmts(b, fn.body, 1)
-	renderUnreachableReturn(b, fn, 1)
+	renderBodyWithDefer(b, fn, 1)
+	if fn.deferState == nil || !fn.deferState.recover {
+		renderUnreachableReturn(b, fn, 1)
+	}
 	b.WriteString("}\n")
 }
 
@@ -724,9 +725,10 @@ func renderMethod(b *strings.Builder, fn *loweredFunction) {
 	}
 	renderStmts(b, fn.paramBindings, 2)
 	renderNamedResults(b, fn.namedResults, 2)
-	renderDeferStack(b, fn.deferState, 2)
-	renderStmts(b, fn.body, 2)
-	renderUnreachableReturn(b, fn, 2)
+	renderBodyWithDefer(b, fn, 2)
+	if fn.deferState == nil || !fn.deferState.recover {
+		renderUnreachableReturn(b, fn, 2)
+	}
 	writeIndent(b, 1)
 	b.WriteString("}\n")
 }
@@ -795,6 +797,40 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 		return
 	}
 	b.WriteString("using __defer = new $.DisposableStack()\n")
+}
+
+// renderBodyWithDefer emits the defer stack, body, and trailing return for a
+// function. When the function uses recover, it wraps the defer stack and body in
+// a try/catch so the deferred functions run during stack unwinding (via the
+// using-declaration's disposal) before the catch decides whether the panic was
+// recovered; an unrecovered panic rethrows, a recovered one falls through to the
+// function's named-result return. Functions without recover keep the plain
+// using-declaration shape.
+func renderBodyWithDefer(b *strings.Builder, fn *loweredFunction, indent int) {
+	if fn.deferState == nil || !fn.deferState.recover {
+		renderDeferStack(b, fn.deferState, indent)
+		renderStmts(b, fn.body, indent)
+		return
+	}
+	writeIndent(b, indent)
+	b.WriteString("try {\n")
+	renderDeferStack(b, fn.deferState, indent+1)
+	renderStmts(b, fn.body, indent+1)
+	writeIndent(b, indent)
+	b.WriteString("} catch (e) {\n")
+	writeIndent(b, indent+1)
+	b.WriteString("if (!$.recovered(e)) {\n")
+	writeIndent(b, indent+2)
+	b.WriteString("throw e\n")
+	writeIndent(b, indent+1)
+	b.WriteString("}\n")
+	writeIndent(b, indent)
+	b.WriteString("}\n")
+	if fn.recoverReturn != "" {
+		writeIndent(b, indent)
+		b.WriteString(fn.recoverReturn)
+		b.WriteString("\n")
+	}
 }
 
 func renderStmts(b *strings.Builder, stmts []loweredStmt, indent int) {

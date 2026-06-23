@@ -41,6 +41,7 @@ const (
 	RuntimeHelperClear     RuntimeHelper = "builtin.clear"
 	RuntimeHelperPanic     RuntimeHelper = "builtin.panic"
 	RuntimeHelperRecover   RuntimeHelper = "builtin.recover"
+	RuntimeHelperRecovered RuntimeHelper = "builtin.recovered"
 	RuntimeHelperMin       RuntimeHelper = "builtin.min"
 	RuntimeHelperMax       RuntimeHelper = "builtin.max"
 	RuntimeHelperComplex   RuntimeHelper = "builtin.complex"
@@ -277,6 +278,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperClear, "clear", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperPanic, "panic", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperRecover, "recover", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperRecovered, "recovered", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperMin, "min", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperMax, "max", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperComplex, "complex", RuntimeHelperCategoryBuiltin),

@@ -3531,8 +3531,13 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		lowered.params, lowered.paramBindings = o.appendLoweredParam(ctx, lowered.params, lowered.paramBindings, param, idx, decl.Body == nil || async)
 	}
 	if decl.Body != nil {
-		body, diagnostics := o.lowerBlock(ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState), decl.Body)
+		bodyCtx := ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState)
+		body, diagnostics := o.lowerBlock(bodyCtx, decl.Body)
 		lowered.body = body
+		if deferState.used && funcBodyUsesRecover(bodyCtx, decl.Body) {
+			deferState.recover = true
+			lowered.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+		}
 		if deferState.async && !lowered.async {
 			lowered.async = true
 			lowered.result = asyncResultType(o.tsSignatureResultFor(ctx.withAsyncFunction(true), signature), true)
@@ -3620,8 +3625,13 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		lowered.params, lowered.paramBindings = o.appendLoweredParam(functionCtx, lowered.params, lowered.paramBindings, param, idx, decl.Body == nil || async)
 	}
 	if decl.Body != nil {
-		body, diagnostics := o.lowerBlock(functionCtx.withAsyncFunction(async).withDeferState(deferState), decl.Body)
+		bodyCtx := functionCtx.withAsyncFunction(async).withDeferState(deferState)
+		body, diagnostics := o.lowerBlock(bodyCtx, decl.Body)
 		lowered.body = body
+		if deferState.used && funcBodyUsesRecover(bodyCtx, decl.Body) {
+			deferState.recover = true
+			lowered.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+		}
 		if deferState.async && !lowered.async {
 			lowered.async = true
 			lowered.result = asyncResultType(o.tsSignatureResultFor(functionCtx.withAsyncFunction(true), signature), true)
@@ -6175,6 +6185,23 @@ func (o *LoweringOwner) lowerNamedResultReturn(ctx lowerFileContext) (string, bo
 	return "[" + strings.Join(parts, ", ") + "]", true
 }
 
+// recoverReturnStmt builds the return statement a defer+recover function runs
+// after its deferred recover() swallows a panic: the named results, the zero
+// values for unnamed results, or an empty string for a void function (which
+// falls through and returns undefined).
+func (o *LoweringOwner) recoverReturnStmt(ctx lowerFileContext, signature *types.Signature) string {
+	if signature == nil || signature.Results() == nil || signature.Results().Len() == 0 {
+		return ""
+	}
+	if expr, ok := o.lowerNamedResultReturn(ctx); ok {
+		return "return " + expr
+	}
+	if zeroReturn, ok := o.lowerBodylessReturnStmt(ctx, signature); ok {
+		return zeroReturn
+	}
+	return ""
+}
+
 func (o *LoweringOwner) lowerForStmt(ctx lowerFileContext, stmt *ast.ForStmt) (loweredStmt, []Diagnostic) {
 	bodyCtx := ctx.withoutRangeLoopBranches().withoutLoopLabel()
 	loopLabel := ""
@@ -7550,11 +7577,15 @@ func (o *LoweringOwner) lowerFuncLitArrowWithAsyncCalls(
 		}
 	}
 	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
+	litFn := &loweredFunction{body: body, deferState: deferState}
+	if deferState.used && funcBodyUsesRecover(bodyCtx, lit.Body) {
+		deferState.recover = true
+		litFn.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+	}
 	var rendered strings.Builder
 	renderStmts(&rendered, paramBindings, 1)
 	renderNamedResults(&rendered, o.lowerNamedResults(ctx, signature), 1)
-	renderDeferStack(&rendered, deferState, 1)
-	renderStmts(&rendered, body, 1)
+	renderBodyWithDefer(&rendered, litFn, 1)
 	async := bodyCtx.asyncFunction || stmtsContainAwait(body) || deferState.async
 	prefix := ""
 	if async {
@@ -8251,6 +8282,34 @@ func isBuiltinCallTarget(ctx lowerFileContext, expr ast.Expr) bool {
 	}
 	_, ok = objectForIdent(ctx, ident).(*types.Builtin)
 	return ok
+}
+
+// funcBodyUsesRecover reports whether body lexically contains a call to the
+// builtin recover. The scan descends into nested function literals because a
+// recover() inside a deferred func literal recovers the enclosing function's
+// panic, so that enclosing function is the one that needs the recover-aware
+// emission.
+func funcBodyUsesRecover(ctx lowerFileContext, body ast.Node) bool {
+	found := false
+	ast.Inspect(body, func(node ast.Node) bool {
+		if found {
+			return false
+		}
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		ident, ok := call.Fun.(*ast.Ident)
+		if !ok || ident.Name != "recover" {
+			return true
+		}
+		if _, ok := objectForIdent(ctx, ident).(*types.Builtin); ok {
+			found = true
+			return false
+		}
+		return true
+	})
+	return found
 }
 
 func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.Expr) bool {

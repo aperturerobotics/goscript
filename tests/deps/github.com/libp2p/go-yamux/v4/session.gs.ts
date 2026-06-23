@@ -1265,68 +1265,74 @@ export class Session {
 	public async recvLoop(): globalThis.Promise<$.GoError> {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
-		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
-			{
-				let rerr = $.recover()
-				if (rerr != null) {
-					await fmt.Fprintf($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "caught panic: %s\n%s\n", rerr, $.interfaceValue<any>(debug.Stack(), "[]byte"))
-					err = fmt.Errorf("panic in yamux receive loop: %s", rerr)
-				}
-			}
-		})() })
-		__defer.defer(() => { $.pointerValue<Session>(s).recvDoneCh!.close() })
-		let hdr: __goscript__const.header = new Uint8Array(12)
-		while (true) {
-			// fmt.Printf("ReadFull from %#v\n", s.reader)
-			// Read the header
-			{
-				let [, __goscriptShadow3] = await io.ReadFull($.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.goSlice(hdr, undefined, undefined))
-				if (__goscriptShadow3 != null) {
-					if (((!$.comparableEqual(__goscriptShadow3, io.EOF)) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "closed")) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "reset by peer")) {
-						await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Failed to read header: %v", $.arrayToSlice<any>([(__goscriptShadow3 as any)]))
+		try {
+			await using __defer = new $.AsyncDisposableStack()
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
+				{
+					let rerr = $.recover()
+					if (rerr != null) {
+						await fmt.Fprintf($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "caught panic: %s\n%s\n", rerr, $.interfaceValue<any>(debug.Stack(), "[]byte"))
+						err = fmt.Errorf("panic in yamux receive loop: %s", rerr)
 					}
-					const __goscriptReturn6: $.GoError = __goscriptShadow3
-					err = __goscriptReturn6
+				}
+			})() })
+			__defer.defer(() => { $.pointerValue<Session>(s).recvDoneCh!.close() })
+			let hdr: __goscript__const.header = new Uint8Array(12)
+			while (true) {
+				// fmt.Printf("ReadFull from %#v\n", s.reader)
+				// Read the header
+				{
+					let [, __goscriptShadow3] = await io.ReadFull($.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.goSlice(hdr, undefined, undefined))
+					if (__goscriptShadow3 != null) {
+						if (((!$.comparableEqual(__goscriptShadow3, io.EOF)) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "closed")) && !strings.Contains($.pointerValue<Exclude<$.GoError, null>>(__goscriptShadow3).Error(), "reset by peer")) {
+							await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Failed to read header: %v", $.arrayToSlice<any>([(__goscriptShadow3 as any)]))
+						}
+						const __goscriptReturn6: $.GoError = __goscriptShadow3
+						err = __goscriptReturn6
+						await __defer[Symbol.asyncDispose]()
+						return err
+					}
+				}
+
+				// Reset the keepalive timer every time we receive data.
+				// There's no reason to keepalive if we're active. Worse, if the
+				// peer is busy sending us stuff, the pong might get stuck
+				// behind a bunch of data.
+				await Session.prototype.extendKeepalive.call(s)
+
+				// Verify the version
+				if ($.uint(__goscript__const.header_Version(hdr), 8) != $.uint(0, 8)) {
+					await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Invalid protocol version: %d", $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(__goscript__const.header_Version(hdr), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" })]))
+					const __goscriptReturn7: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidVersion, "*yamux.Error")
+					err = __goscriptReturn7
 					await __defer[Symbol.asyncDispose]()
 					return err
 				}
-			}
 
-			// Reset the keepalive timer every time we receive data.
-			// There's no reason to keepalive if we're active. Worse, if the
-			// peer is busy sending us stuff, the pong might get stuck
-			// behind a bunch of data.
-			await Session.prototype.extendKeepalive.call(s)
-
-			// Verify the version
-			if ($.uint(__goscript__const.header_Version(hdr), 8) != $.uint(0, 8)) {
-				await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Invalid protocol version: %d", $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(__goscript__const.header_Version(hdr), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" })]))
-				const __goscriptReturn7: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidVersion, "*yamux.Error")
-				err = __goscriptReturn7
-				await __defer[Symbol.asyncDispose]()
-				return err
-			}
-
-			let mt = $.uint(__goscript__const.header_MsgType(hdr), 8)
-			if ((mt < 0) || (mt > 3)) {
-				const __goscriptReturn8: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidMsgType, "*yamux.Error")
-				err = __goscriptReturn8
-				await __defer[Symbol.asyncDispose]()
-				return err
-			}
-
-			{
-				let __goscriptShadow4 = await __goscript_get_handlers()![mt]!(s, hdr)
-				if (__goscriptShadow4 != null) {
-					const __goscriptReturn9: $.GoError = __goscriptShadow4
-					err = __goscriptReturn9
+				let mt = $.uint(__goscript__const.header_MsgType(hdr), 8)
+				if ((mt < 0) || (mt > 3)) {
+					const __goscriptReturn8: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidMsgType, "*yamux.Error")
+					err = __goscriptReturn8
 					await __defer[Symbol.asyncDispose]()
 					return err
 				}
+
+				{
+					let __goscriptShadow4 = await __goscript_get_handlers()![mt]!(s, hdr)
+					if (__goscriptShadow4 != null) {
+						const __goscriptReturn9: $.GoError = __goscriptShadow4
+						err = __goscriptReturn9
+						await __defer[Symbol.asyncDispose]()
+						return err
+					}
+				}
+			}
+		} catch (e) {
+			if (!$.recovered(e)) {
+				throw e
 			}
 		}
-		throw new globalThis.Error("goscript: unreachable return")
+		return err
 	}
 
 	public async send(): globalThis.Promise<void> {
@@ -1342,188 +1348,194 @@ export class Session {
 	public async sendLoop(): globalThis.Promise<$.GoError> {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
-		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
-			{
-				let rerr = $.recover()
-				if (rerr != null) {
-					await fmt.Fprintf($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "caught panic: %s\n%s\n", rerr, $.interfaceValue<any>(debug.Stack(), "[]byte"))
-					err = fmt.Errorf("panic in yamux send loop: %s", rerr)
-				}
-			}
-		})() })
-
-		__defer.defer(() => { $.pointerValue<Session>(s).sendDoneCh!.close() })
-
-		// Extend the write deadline if we've passed the halfway point. This can
-		// be expensive so this ensures we only have to do this once every
-		// ConnectionWriteTimeout/2 (usually 5s).
-		let lastWriteDeadline: time.Time = $.markAsStructValue(new time.Time())
-		let extendWriteDeadline: (() => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue(async (): globalThis.Promise<$.GoError> => {
-			let now = $.markAsStructValue($.cloneStructValue(time.Now()))
-			// If over half of the deadline has elapsed, extend it.
-			if ($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Div($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout, 2)))).After($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))) {
-				lastWriteDeadline = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout)))
-				return await $.pointerValue<Exclude<net.Conn, null>>($.pointerValue<Session>(s).conn).SetWriteDeadline($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))
-			}
-			return null
-		}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo))
-
-		let writer = $.pointerValue<Session>(s).conn
-
-		// FIXME: https://github.com/libp2p/go-libp2p/issues/644
-		// Write coalescing is disabled for now.
-
-		// writer := pool.Writer{W: s.conn}
-
-		// var writeTimeout *time.Timer
-		// var writeTimeoutCh <-chan time.Time
-		// if s.config.WriteCoalesceDelay > 0 {
-		//	writeTimeout = time.NewTimer(s.config.WriteCoalesceDelay)
-		//	defer writeTimeout.Stop()
-
-		//	writeTimeoutCh = writeTimeout.C
-		// } else {
-		//	ch := make(chan time.Time)
-		//	close(ch)
-		//	writeTimeoutCh = ch
-		// }
-
-		while (true) {
-			// yield after processing the last message, if we've shutdown.
-			// s.sendCh is a buffered channel and Go doesn't guarantee select order.
-			const [__goscriptSelect11HasReturn, __goscriptSelect11Value] = await $.selectStatement<any, $.GoError>([
+		try {
+			await using __defer = new $.AsyncDisposableStack()
+			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				{
-					id: 0,
-					isSend: false,
-					channel: $.pointerValue<Session>(s).shutdownCh,
-					onSelected: async (__goscriptSelect11Result) => {
-						const __goscriptReturn10: $.GoError = null
-						err = __goscriptReturn10
+					let rerr = $.recover()
+					if (rerr != null) {
+						await fmt.Fprintf($.pointerValueOrNil($.interfaceValue<io.Writer | null>(os.Stderr, "*os.File"))!, "caught panic: %s\n%s\n", rerr, $.interfaceValue<any>(debug.Stack(), "[]byte"))
+						err = fmt.Errorf("panic in yamux send loop: %s", rerr)
+					}
+				}
+			})() })
+
+			__defer.defer(() => { $.pointerValue<Session>(s).sendDoneCh!.close() })
+
+			// Extend the write deadline if we've passed the halfway point. This can
+			// be expensive so this ensures we only have to do this once every
+			// ConnectionWriteTimeout/2 (usually 5s).
+			let lastWriteDeadline: time.Time = $.markAsStructValue(new time.Time())
+			let extendWriteDeadline: (() => $.GoError | globalThis.Promise<$.GoError>) | null = $.functionValue(async (): globalThis.Promise<$.GoError> => {
+				let now = $.markAsStructValue($.cloneStructValue(time.Now()))
+				// If over half of the deadline has elapsed, extend it.
+				if ($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Div($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout, 2)))).After($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))) {
+					lastWriteDeadline = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout)))
+					return await $.pointerValue<Exclude<net.Conn, null>>($.pointerValue<Session>(s).conn).SetWriteDeadline($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))
+				}
+				return null
+			}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo))
+
+			let writer = $.pointerValue<Session>(s).conn
+
+			// FIXME: https://github.com/libp2p/go-libp2p/issues/644
+			// Write coalescing is disabled for now.
+
+			// writer := pool.Writer{W: s.conn}
+
+			// var writeTimeout *time.Timer
+			// var writeTimeoutCh <-chan time.Time
+			// if s.config.WriteCoalesceDelay > 0 {
+			//	writeTimeout = time.NewTimer(s.config.WriteCoalesceDelay)
+			//	defer writeTimeout.Stop()
+
+			//	writeTimeoutCh = writeTimeout.C
+			// } else {
+			//	ch := make(chan time.Time)
+			//	close(ch)
+			//	writeTimeoutCh = ch
+			// }
+
+			while (true) {
+				// yield after processing the last message, if we've shutdown.
+				// s.sendCh is a buffered channel and Go doesn't guarantee select order.
+				const [__goscriptSelect11HasReturn, __goscriptSelect11Value] = await $.selectStatement<any, $.GoError>([
+					{
+						id: 0,
+						isSend: false,
+						channel: $.pointerValue<Session>(s).shutdownCh,
+						onSelected: async (__goscriptSelect11Result) => {
+							const __goscriptReturn10: $.GoError = null
+							err = __goscriptReturn10
+							await __defer[Symbol.asyncDispose]()
+							return err
+						}
+					},
+					{
+						id: -1,
+						isSend: false,
+						channel: null,
+						onSelected: async (__goscriptSelect11Result) => {
+						}
+					}
+				], true)
+				if (__goscriptSelect11HasReturn) {
+					return __goscriptSelect11Value
+				}
+
+				let buf: $.Slice<number> = null as $.Slice<number>
+				// Make sure to send any pings & pongs first so they don't get stuck behind writes.
+				const [__goscriptSelect12HasReturn, __goscriptSelect12Value] = await $.selectStatement<any, $.GoError>([
+					{
+						id: 0,
+						isSend: false,
+						channel: $.pointerValue<Session>(s).pingCh,
+						onSelected: async (__goscriptSelect12Result) => {
+							let pingID = __goscriptSelect12Result.value
+							buf = await pool.Get(12)
+							let hdr = __goscript__const.encode($.uint(2, 8), $.uint(1, 16), $.uint(0, 32), $.uint(pingID, 32))
+							$.copy(buf, $.goSlice(hdr, undefined, undefined))
+						}
+					},
+					{
+						id: 1,
+						isSend: false,
+						channel: $.pointerValue<Session>(s).pongCh,
+						onSelected: async (__goscriptSelect12Result) => {
+							let pingID = __goscriptSelect12Result.value
+							buf = await pool.Get(12)
+							let hdr = __goscript__const.encode($.uint(2, 8), $.uint(2, 16), $.uint(0, 32), $.uint(pingID, 32))
+							$.copy(buf, $.goSlice(hdr, undefined, undefined))
+						}
+					},
+					{
+						id: -1,
+						isSend: false,
+						channel: null,
+						onSelected: async (__goscriptSelect12Result) => {
+							const [__goscriptSelect13HasReturn, __goscriptSelect13Value] = await $.selectStatement<any, $.GoError>([
+								{
+									id: 0,
+									isSend: false,
+									channel: $.pointerValue<Session>(s).sendCh,
+									onSelected: async (__goscriptSelect13Result) => {
+										buf = __goscriptSelect13Result.value
+									}
+								},
+								{
+									id: 1,
+									isSend: false,
+									channel: $.pointerValue<Session>(s).pingCh,
+									onSelected: async (__goscriptSelect13Result) => {
+										let pingID = __goscriptSelect13Result.value
+										buf = await pool.Get(12)
+										let hdr = __goscript__const.encode($.uint(2, 8), $.uint(1, 16), $.uint(0, 32), $.uint(pingID, 32))
+										$.copy(buf, $.goSlice(hdr, undefined, undefined))
+									}
+								},
+								{
+									id: 2,
+									isSend: false,
+									channel: $.pointerValue<Session>(s).pongCh,
+									onSelected: async (__goscriptSelect13Result) => {
+										let pingID = __goscriptSelect13Result.value
+										buf = await pool.Get(12)
+										let hdr = __goscript__const.encode($.uint(2, 8), $.uint(2, 16), $.uint(0, 32), $.uint(pingID, 32))
+										$.copy(buf, $.goSlice(hdr, undefined, undefined))
+									}
+								},
+								{
+									id: 3,
+									isSend: false,
+									channel: $.pointerValue<Session>(s).shutdownCh,
+									onSelected: async (__goscriptSelect13Result) => {
+										const __goscriptReturn11: $.GoError = null
+										err = __goscriptReturn11
+										await __defer[Symbol.asyncDispose]()
+										return err
+									}
+								}
+							], false)
+							if (__goscriptSelect13HasReturn) {
+								return __goscriptSelect13Value
+							}
+						}
+					}
+				], true)
+				if (__goscriptSelect12HasReturn) {
+					return __goscriptSelect12Value
+				}
+
+				{
+					let __goscriptShadow5 = await extendWriteDeadline!()
+					if (__goscriptShadow5 != null) {
+						await pool.Put(buf)
+						const __goscriptReturn12: $.GoError = __goscriptShadow5
+						err = __goscriptReturn12
 						await __defer[Symbol.asyncDispose]()
 						return err
 					}
-				},
-				{
-					id: -1,
-					isSend: false,
-					channel: null,
-					onSelected: async (__goscriptSelect11Result) => {
-					}
 				}
-			], true)
-			if (__goscriptSelect11HasReturn) {
-				return __goscriptSelect11Value
-			}
 
-			let buf: $.Slice<number> = null as $.Slice<number>
-			// Make sure to send any pings & pongs first so they don't get stuck behind writes.
-			const [__goscriptSelect12HasReturn, __goscriptSelect12Value] = await $.selectStatement<any, $.GoError>([
-				{
-					id: 0,
-					isSend: false,
-					channel: $.pointerValue<Session>(s).pingCh,
-					onSelected: async (__goscriptSelect12Result) => {
-						let pingID = __goscriptSelect12Result.value
-						buf = await pool.Get(12)
-						let hdr = __goscript__const.encode($.uint(2, 8), $.uint(1, 16), $.uint(0, 32), $.uint(pingID, 32))
-						$.copy(buf, $.goSlice(hdr, undefined, undefined))
-					}
-				},
-				{
-					id: 1,
-					isSend: false,
-					channel: $.pointerValue<Session>(s).pongCh,
-					onSelected: async (__goscriptSelect12Result) => {
-						let pingID = __goscriptSelect12Result.value
-						buf = await pool.Get(12)
-						let hdr = __goscript__const.encode($.uint(2, 8), $.uint(2, 16), $.uint(0, 32), $.uint(pingID, 32))
-						$.copy(buf, $.goSlice(hdr, undefined, undefined))
-					}
-				},
-				{
-					id: -1,
-					isSend: false,
-					channel: null,
-					onSelected: async (__goscriptSelect12Result) => {
-						const [__goscriptSelect13HasReturn, __goscriptSelect13Value] = await $.selectStatement<any, $.GoError>([
-							{
-								id: 0,
-								isSend: false,
-								channel: $.pointerValue<Session>(s).sendCh,
-								onSelected: async (__goscriptSelect13Result) => {
-									buf = __goscriptSelect13Result.value
-								}
-							},
-							{
-								id: 1,
-								isSend: false,
-								channel: $.pointerValue<Session>(s).pingCh,
-								onSelected: async (__goscriptSelect13Result) => {
-									let pingID = __goscriptSelect13Result.value
-									buf = await pool.Get(12)
-									let hdr = __goscript__const.encode($.uint(2, 8), $.uint(1, 16), $.uint(0, 32), $.uint(pingID, 32))
-									$.copy(buf, $.goSlice(hdr, undefined, undefined))
-								}
-							},
-							{
-								id: 2,
-								isSend: false,
-								channel: $.pointerValue<Session>(s).pongCh,
-								onSelected: async (__goscriptSelect13Result) => {
-									let pingID = __goscriptSelect13Result.value
-									buf = await pool.Get(12)
-									let hdr = __goscript__const.encode($.uint(2, 8), $.uint(2, 16), $.uint(0, 32), $.uint(pingID, 32))
-									$.copy(buf, $.goSlice(hdr, undefined, undefined))
-								}
-							},
-							{
-								id: 3,
-								isSend: false,
-								channel: $.pointerValue<Session>(s).shutdownCh,
-								onSelected: async (__goscriptSelect13Result) => {
-									const __goscriptReturn11: $.GoError = null
-									err = __goscriptReturn11
-									await __defer[Symbol.asyncDispose]()
-									return err
-								}
-							}
-						], false)
-						if (__goscriptSelect13HasReturn) {
-							return __goscriptSelect13Value
-						}
-					}
-				}
-			], true)
-			if (__goscriptSelect12HasReturn) {
-				return __goscriptSelect12Value
-			}
+				let [, __goscriptShadow6] = await $.pointerValue<Exclude<net.Conn, null>>(writer).Write(buf)
+				await pool.Put(buf)
 
-			{
-				let __goscriptShadow5 = await extendWriteDeadline!()
-				if (__goscriptShadow5 != null) {
-					await pool.Put(buf)
-					const __goscriptReturn12: $.GoError = __goscriptShadow5
-					err = __goscriptReturn12
+				if (__goscriptShadow6 != null) {
+					if (os.IsTimeout($.pointerValueOrNil(__goscriptShadow6)!)) {
+						__goscriptShadow6 = $.interfaceValue<$.GoError>(__goscript__const.ErrConnectionWriteTimeout, "*yamux.Error")
+					}
+					const __goscriptReturn13: $.GoError = __goscriptShadow6
+					err = __goscriptReturn13
 					await __defer[Symbol.asyncDispose]()
 					return err
 				}
 			}
-
-			let [, __goscriptShadow6] = await $.pointerValue<Exclude<net.Conn, null>>(writer).Write(buf)
-			await pool.Put(buf)
-
-			if (__goscriptShadow6 != null) {
-				if (os.IsTimeout($.pointerValueOrNil(__goscriptShadow6)!)) {
-					__goscriptShadow6 = $.interfaceValue<$.GoError>(__goscript__const.ErrConnectionWriteTimeout, "*yamux.Error")
-				}
-				const __goscriptReturn13: $.GoError = __goscriptShadow6
-				err = __goscriptReturn13
-				await __defer[Symbol.asyncDispose]()
-				return err
+		} catch (e) {
+			if (!$.recovered(e)) {
+				throw e
 			}
 		}
-		throw new globalThis.Error("goscript: unreachable return")
+		return err
 	}
 
 	public async sendMsg(hdr: __goscript__const.header, body: $.Slice<number>, deadline: $.Channel<{}> | null): globalThis.Promise<$.GoError> {
