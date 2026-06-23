@@ -7,6 +7,7 @@ import * as context from '../../context/index.js'
 import * as io from '../../io/index.js'
 import * as strings from '../../strings/index.js'
 import {
+  AllowQuerySemicolons,
   CanonicalHeaderKey,
   Client,
   Cookie,
@@ -25,6 +26,7 @@ import {
   FS,
   Get,
   Handle,
+  HandleFunc,
   Header,
   Header_Add,
   Header_Clone,
@@ -39,6 +41,7 @@ import {
   MaxBytesHandler,
   MaxBytesReader,
   NewFileTransport,
+  NewFileTransportFS,
   MethodGet,
   MethodHead,
   MethodOptions,
@@ -50,6 +53,7 @@ import {
   NewRequest,
   NewRequestWithContext,
   NewResponseController,
+  NewServeMux,
   NoBody,
   NotFound,
   NotFoundHandler,
@@ -59,9 +63,13 @@ import {
   ParseTime,
   PostForm,
   Protocols,
+  ProxyFromEnvironment,
+  ProxyURL,
   RegisterInProcessServer,
   ReadRequest,
   ReadResponse,
+  Redirect,
+  RedirectHandler,
   SameSiteStrictMode,
   SetCookie,
   StatusBadGateway,
@@ -70,9 +78,11 @@ import {
   ResponseWriter,
   ServeContent,
   ServeFile,
+  ServeFileFS,
   Server,
   StatusCreated,
   StatusForbidden,
+  StatusFound,
   StatusMethodNotAllowed,
   StatusNotFound,
   StatusOK,
@@ -86,7 +96,9 @@ import {
   StatusUnsupportedMediaType,
   StatusNetworkAuthenticationRequired,
   TimeFormat,
+  TimeoutHandler,
   TrailerPrefix,
+  StripPrefix,
   Transport,
   UnregisterInProcessServer,
 } from './index.js'
@@ -1392,6 +1404,148 @@ describe('net/http override', () => {
       'status:404',
       '404 page not found\n',
     ])
+  })
+
+  it('covers remaining handler, proxy, redirect, timeout, and FS helpers', async () => {
+    const mux = NewServeMux()
+    const muxWriter = new testResponseWriter()
+    const [muxReq] = NewRequest(MethodGet, 'http://example.invalid/local', null)
+    mux.HandleFunc('/local', (w) => {
+      w?.WriteHeader(StatusOK)
+      w?.Write($.stringToBytes('local mux'))
+    })
+
+    mux.ServeHTTP(muxWriter, muxReq)
+
+    expect(muxWriter.Code).toBe(StatusOK)
+    expect(muxWriter.Body.String()).toBe('local mux')
+
+    const defaultWriter = new testResponseWriter()
+    const [defaultReq] = NewRequest(
+      MethodGet,
+      'http://example.invalid/phase10-handlefunc',
+      null,
+    )
+    HandleFunc('/phase10-handlefunc', (w) => {
+      w?.WriteHeader(StatusOK)
+      w?.Write($.stringToBytes('default handlefunc'))
+    })
+
+    DefaultServeMux.ServeHTTP(defaultWriter, defaultReq)
+
+    expect(defaultWriter.Code).toBe(StatusOK)
+    expect(defaultWriter.Body.String()).toBe('default handlefunc')
+
+    let strippedPath = ''
+    const [stripReq] = NewRequest(
+      MethodGet,
+      'http://example.invalid/static/app.js',
+      null,
+    )
+    const stripWriter = new testResponseWriter()
+
+    StripPrefix('/static', {
+      ServeHTTP(_w, r) {
+        strippedPath = $.pointerValue<Request>(r).URL.Path
+      },
+    }).ServeHTTP(stripWriter, stripReq)
+
+    expect(strippedPath).toBe('/app.js')
+    expect(stripReq!.URL.Path).toBe('/static/app.js')
+
+    let rewrittenQuery = ''
+    const [semicolonReq] = NewRequest(
+      MethodGet,
+      'http://example.invalid/search?a=1;b=2',
+      null,
+    )
+
+    AllowQuerySemicolons({
+      ServeHTTP(_w, r) {
+        rewrittenQuery = $.pointerValue<Request>(r).URL.RawQuery
+      },
+    }).ServeHTTP(null, semicolonReq)
+
+    expect(rewrittenQuery).toBe('a=1&b=2')
+    expect(semicolonReq!.URL.RawQuery).toBe('a=1;b=2')
+
+    const fixedProxy = { href: 'http://proxy.invalid' }
+    expect(ProxyURL(fixedProxy)(null)).toEqual([fixedProxy, null])
+    expect(ProxyFromEnvironment(null)).toEqual([null, null])
+
+    const redirectWriter = new testResponseWriter()
+    const [redirectReq] = NewRequest(
+      MethodGet,
+      'http://example.invalid/dir/page',
+      null,
+    )
+
+    await RedirectHandler('next?x=1', StatusFound).ServeHTTP(
+      redirectWriter,
+      redirectReq,
+    )
+
+    expect(redirectWriter.Code).toBe(StatusFound)
+    expect(Header_Get(redirectWriter.Header(), 'Location')).toBe(
+      '/dir/next?x=1',
+    )
+    expect(redirectWriter.Body.String()).toContain('Found')
+
+    const directRedirectWriter = new testResponseWriter()
+    await Redirect(directRedirectWriter, redirectReq, '/abs', StatusFound)
+
+    expect(Header_Get(directRedirectWriter.Header(), 'Location')).toBe('/abs')
+
+    const timeoutWriter = new testResponseWriter()
+    TimeoutHandler(null, 1, 'timed out').ServeHTTP(timeoutWriter, redirectReq)
+
+    expect(timeoutWriter.Code).toBe(StatusServiceUnavailable)
+    expect(timeoutWriter.Body.String()).toBe('timed out\n')
+
+    const makeFSFile = () => {
+      const data = $.stringToBytes('fs-body')
+      const reader = bytes.NewReader(data)
+      return {
+        Close: () => null,
+        Read: (p: $.Slice<number>) => reader.Read(p),
+        Stat: () =>
+          [
+            {
+              Name: () => 'asset.txt',
+              Size: () => data.length,
+              Mode: () => 0,
+              ModTime: () => new time.Time(),
+              IsDir: () => false,
+              Sys: () => null,
+            },
+            null,
+          ] as const,
+      }
+    }
+    const fsys = {
+      Open: (name: string) =>
+        name === 'asset.txt' ?
+          [makeFSFile(), null]
+        : [null, new Error('missing')],
+    }
+    const serveFileWriter = new testResponseWriter()
+
+    await ServeFileFS(serveFileWriter, redirectReq, fsys, 'asset.txt')
+
+    expect(serveFileWriter.Code).toBe(StatusOK)
+    expect(serveFileWriter.Body.String()).toBe('fs-body')
+
+    const [fileReq] = NewRequest(
+      MethodGet,
+      'file:///asset.txt',
+      io.NopCloser(bytes.NewReader($.stringToBytes('request'))),
+    )
+    const [fileResp, fileErr] =
+      await NewFileTransportFS(fsys).RoundTrip(fileReq)
+
+    expect(fileErr).toBeNull()
+    expect(fileResp?.StatusCode).toBe(StatusOK)
+    expect(fileResp?.Body).not.toBeNull()
   })
 
   it('formats Set-Cookie headers for browser bootstrap routes', async () => {
