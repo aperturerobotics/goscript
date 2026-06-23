@@ -152,9 +152,11 @@ export function ParseUint(s: string, base: number, bitSize: number): [bigint, $.
 		return [0n, bitSizeError("ParseUint", s0, bitSize)];
 	}
 
-	// Check for underscores only if base0 (auto-detected base)
+	// Underscores are permitted only when the base was auto-detected, and only
+	// between digits. Validate against the original string so the base prefix
+	// and hex-digit context are visible to underscoreOK.
 	if (base0 && s.includes('_')) {
-		if (!underscoreOK(s)) {
+		if (!underscoreOK(s0)) {
 			return [0n, syntaxError("ParseUint", s0)];
 		}
 		s = s.replace(/_/g, '');
@@ -228,25 +230,47 @@ export function Atoi(s: string): [number, $.GoError] {
 	return [Number(i64), err];
 }
 
-// underscoreOK reports whether the underscores in s are allowed.
-function underscoreOK(s: string): boolean {
-	// Simplified validation for underscores
-	if (s.length === 0) {
-		return false;
+// underscoreOK reports whether the underscores in s are allowed, matching Go's
+// strconv.underscoreOK: an underscore must sit directly between two digits (or
+// between a base prefix and a digit), never adjacent to a sign, prefix letter,
+// dot, exponent marker, or another underscore. Used by ParseUint and ParseFloat.
+export function underscoreOK(s: string): boolean {
+	// saw tracks the previous character class: '^' start, '0' digit or prefix,
+	// '_' underscore, '!' anything else.
+	let saw = '^';
+	let i = 0;
+	if (s.length >= 1 && (s[0] === '-' || s[0] === '+')) {
+		s = s.slice(1);
 	}
-	
-	// Can't start or end with underscore
-	if (s[0] === '_' || s[s.length - 1] === '_') {
-		return false;
+	let hex = false;
+	if (
+		s.length >= 2 &&
+		s[0] === '0' &&
+		(s[1].toLowerCase() === 'b' || s[1].toLowerCase() === 'o' || s[1].toLowerCase() === 'x')
+	) {
+		i = 2;
+		saw = '0';
+		hex = s[1].toLowerCase() === 'x';
 	}
-	
-	// Can't have consecutive underscores
-	for (let i = 0; i < s.length - 1; i++) {
-		if (s[i] === '_' && s[i + 1] === '_') {
+	for (; i < s.length; i++) {
+		const c = s[i];
+		const lc = c.toLowerCase();
+		if ((c >= '0' && c <= '9') || (hex && lc >= 'a' && lc <= 'f')) {
+			saw = '0';
+			continue;
+		}
+		if (c === '_') {
+			if (saw !== '0') {
+				return false;
+			}
+			saw = '_';
+			continue;
+		}
+		if (saw === '_') {
 			return false;
 		}
+		saw = '!';
 	}
-	
-	return true;
+	return saw !== '_';
 }
 
