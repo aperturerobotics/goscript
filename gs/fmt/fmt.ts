@@ -25,19 +25,58 @@ export interface State {
   Write(b: $.Bytes): [number, $.GoError | null]
 }
 
+// formatInt renders an integer value in the given radix, applying Go's # flag
+// (0x/0X/0 base prefix) and +/space sign flags. The sign precedes the prefix,
+// matching fmt's "%+#x" ordering.
+function formatInt(
+  value: any,
+  radix: number,
+  flags: string,
+  upper: boolean,
+): string {
+  const big = typeof value === 'bigint'
+  const neg = big ? (value as bigint) < 0n : Number(value) < 0
+  let digits = big
+    ? (neg ? -(value as bigint) : (value as bigint)).toString(radix)
+    : Math.abs(Math.trunc(Number(value))).toString(radix)
+  if (upper) {
+    digits = digits.toUpperCase()
+  }
+  let prefix = ''
+  if (flags.includes('#')) {
+    if (radix === 16) {
+      prefix = upper ? '0X' : '0x'
+    } else if (radix === 8 && !digits.startsWith('0')) {
+      prefix = '0'
+    }
+  }
+  let sign = ''
+  if (neg) {
+    sign = '-'
+  } else if (flags.includes('+')) {
+    sign = '+'
+  } else if (flags.includes(' ')) {
+    sign = ' '
+  }
+  return sign + prefix + digits
+}
+
 // Simple printf-style formatting implementation
-function formatValue(value: any, verb: string): string {
+function formatValue(value: any, verb: string, flags = ''): string {
   if (value === null || value === undefined) {
     return '<nil>'
   }
 
   switch (verb) {
     case 'v': // default format
+      if (flags.includes('#') && hasGoString(value)) {
+        return defaultFormat(value.GoString())
+      }
       return defaultFormat(value)
     case 'w': // wrapped error
       return defaultFormat(value)
     case 'd': // decimal integer
-      return String(Math.trunc(Number(value)))
+      return formatInt(value, 10, flags, false)
     case 'f': // decimal point, no exponent
       return Number(value).toString()
     case 's': // string
@@ -60,13 +99,13 @@ function formatValue(value: any, verb: string): string {
       // the Go string(rune) rule (astral intact, invalid -> U+FFFD, no throw).
       return $.runeToString(Number(value))
     case 'x': // hexadecimal lowercase
-      return Number(value).toString(16)
+      return formatInt(value, 16, flags, false)
     case 'X': // hexadecimal uppercase
-      return Number(value).toString(16).toUpperCase()
+      return formatInt(value, 16, flags, true)
     case 'o': // octal
-      return Number(value).toString(8)
+      return formatInt(value, 8, flags, false)
     case 'b': // binary
-      return Number(value).toString(2)
+      return formatInt(value, 2, flags, false)
     case 'e': // scientific notation lowercase
       return Number(value).toExponential()
     case 'E': // scientific notation uppercase
@@ -98,6 +137,16 @@ function hasGoTypeName(value: unknown): value is { __goType: string } {
     value !== null &&
     typeof value === 'object' &&
     typeof (value as { __goType?: unknown }).__goType === 'string'
+  )
+}
+
+// hasGoString reports whether value implements the GoStringer interface. Go
+// invokes GoString only for the %#v verb, never for %v, %s, or Sprint.
+function hasGoString(value: unknown): value is { GoString: () => string } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as { GoString?: unknown }).GoString === 'function'
   )
 }
 
@@ -148,17 +197,9 @@ function defaultFormatMaybe(value: any): MaybeString {
   if (Array.isArray(value))
     return joinMaybe(value.map(defaultFormatMaybe), ' ', '[', ']')
   if (typeof value === 'object') {
-    // Prefer GoStringer if present
-    if (
-      (value as any).GoString &&
-      typeof (value as any).GoString === 'function'
-    ) {
-      try {
-        return toMaybeString((value as any).GoString())
-      } catch {
-        // Ignore error by continuing to next case.
-      }
-    }
+    // GoStringer is intentionally not consulted here: Go calls GoString only
+    // for the %#v verb, which formatValue handles before reaching this default
+    // path. %v, %s, Sprint, and Print use Error then Stringer.
     // Prefer error interface if present
     if ((value as any).Error && typeof (value as any).Error === 'function') {
       try {
@@ -236,18 +277,21 @@ function parseFormat(format: string, args: any[]): string {
   return formatted
 }
 
-function formatValueMaybe(value: any, verb: string): MaybeString {
+function formatValueMaybe(value: any, verb: string, flags = ''): MaybeString {
   switch (verb) {
     case 'v':
-    case 'w':
-    case 's':
-      if (verb === 's') {
-        if (typeof value === 'string') return value
-        if (value instanceof Uint8Array) return $.bytesToString(value)
+      if (flags.includes('#') && hasGoString(value)) {
+        return toMaybeString(value.GoString())
       }
       return defaultFormatMaybe(value)
+    case 'w':
+      return defaultFormatMaybe(value)
+    case 's':
+      if (typeof value === 'string') return value
+      if (value instanceof Uint8Array) return $.bytesToString(value)
+      return defaultFormatMaybe(value)
     default:
-      return formatValue(value, verb)
+      return formatValue(value, verb, flags)
   }
 }
 
@@ -354,8 +398,8 @@ function parseFormatMaybe(
             if (formatted === null) {
               formatted =
                 allowAsync ?
-                  formatValueMaybe(arg, verb)
-                : formatValue(arg, verb)
+                  formatValueMaybe(arg, verb, flags)
+                : formatValue(arg, verb, flags)
             }
 
             parts.push(
@@ -724,12 +768,15 @@ export function Sscanf(
 function buildScanPattern(
   format: string,
 ): { pattern: RegExp; verbs: string[] } | null {
+  // Anchor at the start only: Go's Sscanf consumes a prefix and allows trailing
+  // input to remain, so no end anchor. A run of whitespace in the format matches
+  // spaces and tabs but not a newline, which Go treats as a record boundary.
   let source = '^'
   const verbs: string[] = []
   for (let i = 0; i < format.length; i++) {
     const ch = format[i]
     if (ch !== '%') {
-      source += /\s/.test(ch) ? '\\s+' : escapeRegExp(ch)
+      source += /\s/.test(ch) ? '[ \\t]+' : escapeRegExp(ch)
       continue
     }
     const verb = format[++i]
@@ -738,18 +785,17 @@ function buildScanPattern(
       continue
     }
     if (verb === 'd') {
-      source += '([+-]?\\d+)'
+      source += '\\s*([+-]?\\d+)' // verbs skip leading whitespace, incl. newlines
       verbs.push(verb)
       continue
     }
     if (verb === 's') {
-      source += '(\\S+)'
+      source += '\\s*(\\S+)'
       verbs.push(verb)
       continue
     }
     return null
   }
-  source += '$'
   return { pattern: new RegExp(source), verbs }
 }
 

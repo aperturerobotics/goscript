@@ -143,8 +143,33 @@ describe('fmt basic value formatting', () => {
         return '<go stringer>'
       },
     }
-    // We prefer GoString() first
-    expect(fmt.Sprintf('%v', goStringer)).toBe('<go stringer>')
+    // Go consults GoString only for %#v, never plain %v / Sprint.
+    expect(fmt.Sprintf('%#v', goStringer)).toBe('<go stringer>')
+    expect(fmt.Sprintf('%v', goStringer)).not.toBe('<go stringer>')
+    expect(fmt.Sprint(goStringer)).not.toBe('<go stringer>')
+  })
+
+  it('applies # base prefixes and +/space sign flags (Go parity)', () => {
+    expect(fmt.Sprintf('%#x', 15)).toBe('0xf')
+    expect(fmt.Sprintf('%#X', 15)).toBe('0XF')
+    expect(fmt.Sprintf('%#o', 15)).toBe('017')
+    expect(fmt.Sprintf('%#x', 0)).toBe('0x0')
+    expect(fmt.Sprintf('%+d', 15)).toBe('+15')
+    expect(fmt.Sprintf('% d', 15)).toBe(' 15')
+    expect(fmt.Sprintf('%+d', -15)).toBe('-15')
+  })
+
+  it('%v prefers Stringer while %#v prefers GoStringer', () => {
+    const g = {
+      String() {
+        return 'G(7)'
+      },
+      GoString() {
+        return 'main.G{n:7}'
+      },
+    }
+    expect(fmt.Sprintf('%v|%#v', g, g)).toBe('G(7)|main.G{n:7}')
+    expect(fmt.Sprint(g)).toBe('G(7)')
   })
 
   it('%w formats errors by Error method', () => {
@@ -327,5 +352,17 @@ describe('fmt scanning', () => {
     expect(n).toBe(2)
     expect(start.value).toBe(12)
     expect(end.value).toBe(34)
+  })
+
+  it('allows trailing input after the matched verbs (Go parity)', () => {
+    const v = $.varRef(0)
+    const [n, err] = fmt.Sscanf(
+      '123 trailing',
+      '%d',
+      $.interfaceValue(v, '*int64'),
+    )
+    expect(err).toBeNull()
+    expect(n).toBe(1)
+    expect(v.value).toBe(123)
   })
 })
