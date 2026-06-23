@@ -30,7 +30,9 @@ describe('Copysign', () => {
   it('should handle NaN values', () => {
     expect(Number.isNaN(Copysign(Number.NaN, 1))).toBe(true)
     expect(Number.isNaN(Copysign(Number.NaN, -1))).toBe(true)
-    expect(Copysign(5, Number.NaN)).toBe(5) // NaN is positive
+    expect(Copysign(5, Number.NaN)).toBe(5) // quiet NaN sign bit is 0
+    // A negative NaN sign bit is honored, matching Go.
+    expect(Copysign(1, -Number.NaN)).toBe(-1)
   })
 
   it('should handle fractional values', () => {

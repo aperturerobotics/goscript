@@ -31,12 +31,15 @@ export function LeadingZeros(x: Word64): number {
   return LeadingZeros64(x)
 }
 
+// LeadingZeros8 derives from Len8 so that zero yields the full width (8), as in
+// Go. Math.clz32 counts over 32 bits and returns 32 for zero, which would be
+// wrong for the 8-bit width.
 export function LeadingZeros8(x: number): number {
-  return Math.clz32((x & 0xff) << 24)
+  return 8 - Len8(x)
 }
 
 export function LeadingZeros16(x: number): number {
-  return Math.clz32((x & 0xffff) << 16)
+  return 16 - Len16(x)
 }
 
 export function LeadingZeros32(x: number): number {
@@ -285,12 +288,26 @@ export function Len(x: Word64): number {
   return Len64(x)
 }
 
+// Len8 is the bit-length primitive (Go uses a len8tab lookup): the minimum
+// number of bits to represent the low 8 bits of x, and 0 for x == 0.
 export function Len8(x: number): number {
-  return 8 - LeadingZeros8(x)
+  x &= 0xff
+  let n = 0
+  while (x > 0) {
+    x >>= 1
+    n++
+  }
+  return n
 }
 
 export function Len16(x: number): number {
-  return 16 - LeadingZeros16(x)
+  x &= 0xffff
+  let n = 0
+  while (x > 0) {
+    x >>= 1
+    n++
+  }
+  return n
 }
 
 export function Len32(x: number): number {

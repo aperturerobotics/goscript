@@ -28,6 +28,7 @@ describe('Signbit', () => {
 
   it('should handle NaN correctly', () => {
     expect(Signbit(Number.NaN)).toBe(false)
-    expect(Signbit(-Number.NaN)).toBe(false) // NaN doesn't have a sign
+    // Go reads the IEEE sign bit, so negative NaN reports true.
+    expect(Signbit(-Number.NaN)).toBe(true)
   })
 })

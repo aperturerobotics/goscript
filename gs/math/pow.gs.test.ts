@@ -16,11 +16,10 @@ describe('Pow', () => {
     expect(Pow(0, -2)).toBe(Number.POSITIVE_INFINITY)
     expect(Pow(1, 100)).toBe(1)
     expect(Pow(1, -100)).toBe(1)
-    // For 1^infinity, JavaScript may return NaN due to indeterminate form
-    const result1PosInf = Pow(1, Number.POSITIVE_INFINITY)
-    expect(result1PosInf === 1 || Number.isNaN(result1PosInf)).toBe(true)
-    const result1NegInf = Pow(1, Number.NEGATIVE_INFINITY)
-    expect(result1NegInf === 1 || Number.isNaN(result1NegInf)).toBe(true)
+    // Go: Pow(1, y) == 1 for any y, including NaN and the infinities.
+    expect(Pow(1, Number.NaN)).toBe(1)
+    expect(Pow(1, Number.POSITIVE_INFINITY)).toBe(1)
+    expect(Pow(1, Number.NEGATIVE_INFINITY)).toBe(1)
   })
 
   it('should handle zero base', () => {

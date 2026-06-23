@@ -1,8 +1,11 @@
 import * as $ from "@goscript/builtin/index.js";
-import { Float64bits } from "./unsafe.gs.js";
 
-// Signbit reports whether x is negative or negative zero.
+// Signbit reports whether x is negative or negative zero. It reads the IEEE-754
+// sign bit directly so that negative NaN (sign bit set) reports true, matching
+// Go; a value comparison would miss it because -NaN < 0 is false.
 export function Signbit(x: number): boolean {
-	return x < 0 || Object.is(x, -0)
+	const dv = new DataView(new ArrayBuffer(8))
+	dv.setFloat64(0, x)
+	return (dv.getUint8(0) & 0x80) !== 0
 }
 

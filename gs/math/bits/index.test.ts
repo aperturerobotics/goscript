@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  LeadingZeros16,
+  LeadingZeros8,
+  Len16,
+  Len8,
   Mul64,
   Rem,
   Rem32,
@@ -25,6 +29,20 @@ describe('math/bits override', () => {
       0x3ffffffffff,
       0xffc0000000000001n,
     ])
+  })
+
+  it('counts leading zeros over the 8/16-bit width, not 32', () => {
+    // Zero must yield the full width, and Len of zero is 0 (Go len8tab[0]).
+    expect(LeadingZeros8(0)).toBe(8)
+    expect(LeadingZeros16(0)).toBe(16)
+    expect(Len8(0)).toBe(0)
+    expect(Len16(0)).toBe(0)
+    // Non-zero values keep their width-relative counts.
+    expect(LeadingZeros8(1)).toBe(7)
+    expect(LeadingZeros8(0xff)).toBe(0)
+    expect(Len8(0xff)).toBe(8)
+    expect(LeadingZeros16(1)).toBe(15)
+    expect(Len16(0x8000)).toBe(16)
   })
 
   it('returns remainders from double-word division helpers', () => {
