@@ -60,6 +60,8 @@ import {
   PostForm,
   Protocols,
   RegisterInProcessServer,
+  ReadRequest,
+  ReadResponse,
   SameSiteStrictMode,
   SetCookie,
   StatusBadGateway,
@@ -157,6 +159,181 @@ describe('net/http override', () => {
     expect(TimeFormat).toBe('Mon, 02 Jan 2006 15:04:05 GMT')
     expect(TrailerPrefix).toBe('Trailer:')
     expect(ErrServerClosed.Error()).toBe('http: Server closed')
+  })
+
+  it('parses HTTP/1 request and response wire format like Go', async () => {
+    const requestCases = [
+      {
+        wire:
+          'GET /alpha?x=1 HTTP/1.1\r\n' +
+          'Host: example.com\r\n' +
+          'User-Agent: probe\r\n' +
+          'X-Test: one\r\n' +
+          'X-Test: two\r\n' +
+          'Content-Length: 0\r\n' +
+          '\r\n',
+        want: {
+          method: 'GET',
+          requestURI: '/alpha?x=1',
+          path: '/alpha',
+          rawQuery: 'x=1',
+          protoMajor: 1,
+          protoMinor: 1,
+          host: 'example.com',
+          userAgent: 'probe',
+          xTestValues: 2,
+          contentLength: 0,
+          close: false,
+          transferEncoding: [],
+          body: '',
+        },
+      },
+      {
+        wire:
+          'POST /submit HTTP/1.0\r\n' +
+          'Host: example.com\r\n' +
+          'Content-Length: 4\r\n' +
+          'Connection: close\r\n' +
+          '\r\n' +
+          'body',
+        want: {
+          method: 'POST',
+          requestURI: '/submit',
+          path: '/submit',
+          rawQuery: '',
+          protoMajor: 1,
+          protoMinor: 0,
+          host: 'example.com',
+          userAgent: '',
+          xTestValues: 0,
+          contentLength: 4,
+          close: true,
+          transferEncoding: [],
+          body: 'body',
+        },
+      },
+      {
+        wire:
+          'POST /chunk HTTP/1.1\r\n' +
+          'Host: example.com\r\n' +
+          'Transfer-Encoding: chunked\r\n' +
+          '\r\n' +
+          '5\r\nhello\r\n0\r\n\r\n',
+        want: {
+          method: 'POST',
+          requestURI: '/chunk',
+          path: '/chunk',
+          rawQuery: '',
+          protoMajor: 1,
+          protoMinor: 1,
+          host: 'example.com',
+          userAgent: '',
+          xTestValues: 0,
+          contentLength: -1,
+          close: false,
+          transferEncoding: ['chunked'],
+          body: 'hello',
+        },
+      },
+    ]
+
+    for (const { wire, want } of requestCases) {
+      const [req, err] = await ReadRequest(strings.NewReader(wire))
+      const [body, bodyErr] = await io.ReadAll(req!.Body!)
+
+      expect(err).toBeNull()
+      expect(req!.Method).toBe(want.method)
+      expect(req!.RequestURI).toBe(want.requestURI)
+      expect(req!.URL.Path).toBe(want.path)
+      expect(req!.URL.RawQuery).toBe(want.rawQuery)
+      expect(req!.ProtoMajor).toBe(want.protoMajor)
+      expect(req!.ProtoMinor).toBe(want.protoMinor)
+      expect(req!.Host).toBe(want.host)
+      expect(req!.UserAgent()).toBe(want.userAgent)
+      expect(
+        Array.from(Header_Values(req!.Header, 'X-Test') ?? []),
+      ).toHaveLength(want.xTestValues)
+      expect(req!.ContentLength).toBe(want.contentLength)
+      expect(req!.Close).toBe(want.close)
+      expect(Array.from(req!.TransferEncoding ?? [])).toEqual(
+        want.transferEncoding,
+      )
+      expect($.bytesToString(body)).toBe(want.body)
+      expect(bodyErr).toBeNull()
+    }
+
+    const responseCases = [
+      {
+        wire:
+          'HTTP/1.1 201 Created\r\n' +
+          'Content-Type: text/plain\r\n' +
+          'Content-Length: 5\r\n' +
+          '\r\n' +
+          'hello',
+        want: {
+          status: '201 Created',
+          statusCode: 201,
+          protoMajor: 1,
+          protoMinor: 1,
+          contentType: 'text/plain',
+          contentLength: 5,
+          close: false,
+          transferEncoding: [],
+          body: 'hello',
+        },
+      },
+      {
+        wire: 'HTTP/1.0 204 No Content\r\nConnection: close\r\n\r\n',
+        want: {
+          status: '204 No Content',
+          statusCode: 204,
+          protoMajor: 1,
+          protoMinor: 0,
+          contentType: '',
+          contentLength: 0,
+          close: true,
+          transferEncoding: [],
+          body: '',
+        },
+      },
+      {
+        wire:
+          'HTTP/1.1 200 OK\r\n' +
+          'Transfer-Encoding: chunked\r\n' +
+          '\r\n' +
+          '5\r\nhello\r\n0\r\n\r\n',
+        want: {
+          status: '200 OK',
+          statusCode: 200,
+          protoMajor: 1,
+          protoMinor: 1,
+          contentType: '',
+          contentLength: -1,
+          close: false,
+          transferEncoding: ['chunked'],
+          body: 'hello',
+        },
+      },
+    ]
+
+    for (const { wire, want } of responseCases) {
+      const [resp, err] = await ReadResponse(strings.NewReader(wire), null)
+      const [body, bodyErr] = await io.ReadAll(resp!.Body!)
+
+      expect(err).toBeNull()
+      expect(resp!.Status).toBe(want.status)
+      expect(resp!.StatusCode).toBe(want.statusCode)
+      expect(resp!.ProtoMajor).toBe(want.protoMajor)
+      expect(resp!.ProtoMinor).toBe(want.protoMinor)
+      expect(Header_Get(resp!.Header, 'Content-Type')).toBe(want.contentType)
+      expect(resp!.ContentLength).toBe(want.contentLength)
+      expect(resp!.Close).toBe(want.close)
+      expect(Array.from(resp!.TransferEncoding ?? [])).toEqual(
+        want.transferEncoding,
+      )
+      expect($.bytesToString(body)).toBe(want.body)
+      expect(bodyErr).toBeNull()
+    }
   })
 
   it('exports common header and protocol utility surfaces', () => {

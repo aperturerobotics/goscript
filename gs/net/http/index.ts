@@ -1628,13 +1628,45 @@ export function ServeFile(
   NotFound(w, req)
 }
 
-export function ServeFileFS(
+export async function ServeFileFS(
   w: ResponseWriter | null,
   r: Request | $.VarRef<Request> | null,
-  _fsys: fs.FS,
+  fsys: fs.FS,
   name: string,
-): void {
-  ServeFile(w, r, name)
+): Promise<void> {
+  const req = $.pointerValue<Request | null>(r)
+  if (w == null || req == null) {
+    return
+  }
+  if (req.Method !== MethodGet && req.Method !== MethodHead) {
+    Error(w, 'method not allowed', StatusMethodNotAllowed)
+    return
+  }
+  const [file, err] = (await FS(fsys).Open(name)) ?? [null, fs.ErrInvalid]
+  if (err != null || file == null) {
+    NotFound(w, req)
+    return
+  }
+  try {
+    const [info, statErr] = await file.Stat()
+    if (statErr != null) {
+      Error(w, statErr.Error(), StatusInternalServerError)
+      return
+    }
+    if (info?.IsDir?.() === true) {
+      NotFound(w, req)
+      return
+    }
+    await serveContent(
+      w,
+      req,
+      info?.Name?.() || name,
+      file as io.Reader,
+      typeof info?.Size === 'function' ? Number(info.Size()) : null,
+    )
+  } finally {
+    await file.Close()
+  }
 }
 
 function cleanFileServerPath(name: string): string {
@@ -2106,23 +2138,58 @@ export function HandleFunc(pattern: string, handler: HandlerFunc): void {
 }
 
 export function StripPrefix(prefix: string, handler: Handler | null): Handler {
+  if (prefix === '') {
+    return handler ?? NotFoundHandler()
+  }
   return {
     ServeHTTP(w, r) {
       const req = $.pointerValue<Request | null>(r)
+      const urlPath = req?.URL?.Path
+      const rawPath = req?.URL?.RawPath ?? ''
+      const strippedPath =
+        typeof urlPath === 'string' && urlPath.startsWith(prefix) ?
+          urlPath.slice(prefix.length)
+        : urlPath
+      const strippedRawPath =
+        rawPath !== '' && rawPath.startsWith(prefix) ?
+          rawPath.slice(prefix.length)
+        : rawPath
       if (
-        req?.URL != null &&
-        typeof req.URL.Path === 'string' &&
-        req.URL.Path.startsWith(prefix)
+        req != null &&
+        req.URL != null &&
+        typeof urlPath === 'string' &&
+        strippedPath.length < urlPath.length &&
+        (rawPath === '' || strippedRawPath.length < rawPath.length)
       ) {
-        req.URL = { ...req.URL, Path: req.URL.Path.slice(prefix.length) || '/' }
+        const reqCopy = req.Clone(req.Context())
+        reqCopy.URL = {
+          ...reqCopy.URL,
+          Path: strippedPath,
+          RawPath: strippedRawPath,
+        }
+        return handler?.ServeHTTP(w, reqCopy)
       }
-      return handler?.ServeHTTP(w, req)
+      NotFound(w, req)
     },
   }
 }
 
 export function AllowQuerySemicolons(handler: Handler | null): Handler {
-  return handler ?? NotFoundHandler()
+  const target = handler ?? NotFoundHandler()
+  return {
+    ServeHTTP(w, r) {
+      const req = $.pointerValue<Request | null>(r)
+      if (req?.URL?.RawQuery?.includes(';') === true) {
+        const reqCopy = req.Clone(req.Context())
+        reqCopy.URL = {
+          ...reqCopy.URL,
+          RawQuery: req.URL.RawQuery.replaceAll(';', '&'),
+        }
+        return target.ServeHTTP(w, reqCopy)
+      }
+      return target.ServeHTTP(w, r)
+    },
+  }
 }
 
 export function MaxBytesHandler(handler: Handler | null, n: number): Handler {
@@ -2189,18 +2256,54 @@ export function NotFound(
 
 export async function Redirect(
   w: ResponseWriter | null,
-  _r: Request | $.VarRef<Request> | null,
+  r: Request | $.VarRef<Request> | null,
   url: string,
   code: number,
 ): Promise<void> {
   if (w == null) {
     return
   }
+  const req = $.pointerValue<Request | null>(r)
+  url = redirectLocation(req, url)
   const header = await w.Header()
+  const hadContentType = Header_Get(header, 'Content-Type') !== ''
   if (header != null) {
     Header_Set(header, 'Location', url)
+    if (!hadContentType && req?.Method === MethodGet) {
+      Header_Set(header, 'Content-Type', 'text/html; charset=utf-8')
+    }
   }
   await w.WriteHeader(code)
+  if (!hadContentType && req?.Method === MethodGet) {
+    await w.Write(
+      $.stringToBytes(`<a href="${url}">${StatusText(code)}</a>.\n\n`),
+    )
+  }
+}
+
+function redirectLocation(req: Request | null, url: string): string {
+  if (
+    req?.URL == null ||
+    url === '' ||
+    url.startsWith('/') ||
+    /^[A-Za-z][A-Za-z0-9+.-]*:/.test(url)
+  ) {
+    return url
+  }
+  const [dir] = path.Split(req.URL.Path || '/')
+  let pathPart = dir + url
+  let query = ''
+  const queryIndex = pathPart.indexOf('?')
+  if (queryIndex >= 0) {
+    query = pathPart.slice(queryIndex)
+    pathPart = pathPart.slice(0, queryIndex)
+  }
+  const trailingSlash = pathPart.endsWith('/')
+  pathPart = path.Clean(pathPart)
+  if (trailingSlash && !pathPart.endsWith('/')) {
+    pathPart += '/'
+  }
+  return pathPart + query
 }
 
 export function ParseTime(text: string): [time.Time, $.GoError] {
@@ -2693,27 +2796,326 @@ export async function PostForm(
   return await DefaultClient.PostForm(_url, data)
 }
 
-export function ProxyFromEnvironment(
-  _req: Request | $.VarRef<Request> | null,
-): [any, $.GoError] {
-  return [null, null]
-}
-
 export function ProxyURL(
   fixedURL: any,
 ): (req: Request | $.VarRef<Request> | null) => [any, $.GoError] {
   return () => [fixedURL, null]
 }
 
-export function ReadRequest(_reader: any): [Request | null, $.GoError] {
-  return [null, ErrNotSupported]
+export function ProxyFromEnvironment(
+  _req: Request | $.VarRef<Request> | null,
+): [any, $.GoError] {
+  return [null, null]
 }
 
-export function ReadResponse(
-  _reader: any,
-  _req: Request | $.VarRef<Request> | null,
-): [Response | null, $.GoError] {
-  return [null, ErrNotSupported]
+export async function ReadRequest(
+  reader: any,
+): Promise<[Request | null, $.GoError]> {
+  const [wire, readErr] = await readHTTPWire(reader)
+  if (readErr != null) {
+    return [null, readErr]
+  }
+  const parsed = parseHTTPWire(wire)
+  if (parsed.error != null) {
+    return [null, parsed.error]
+  }
+  const [method, requestURI, proto] = splitRequestLine(parsed.startLine)
+  if (method === '' || requestURI === '' || proto === '') {
+    return [null, badHTTPMessageError('malformed HTTP request')]
+  }
+  if (!isToken(method)) {
+    return [null, badHTTPMessageError(`invalid method ${method}`)]
+  }
+  const [protoMajor, protoMinor, protoOK] = ParseHTTPVersion(proto)
+  if (!protoOK) {
+    return [null, badHTTPMessageError(`malformed HTTP version ${proto}`)]
+  }
+  const [url, urlErr] = parseRequestURL(requestURI)
+  if (urlErr != null || url == null) {
+    return [null, urlErr]
+  }
+  const host = Header_Get(parsed.header, 'Host')
+  Header_Del(parsed.header, 'Host')
+  const bodyInfo = parseHTTPBody(parsed.header, parsed.body)
+  if (bodyInfo.error != null) {
+    return [null, bodyInfo.error]
+  }
+  return [
+    new Request({
+      Method: method,
+      URL: url,
+      Proto: proto,
+      ProtoMajor: protoMajor,
+      ProtoMinor: protoMinor,
+      Body: bodyInfo.body,
+      Header: parsed.header,
+      ContentLength: bodyInfo.contentLength,
+      TransferEncoding: bodyInfo.transferEncoding,
+      Close: shouldClose(protoMajor, protoMinor, parsed.header),
+      Host: host,
+      RequestURI: requestURI,
+    }),
+    null,
+  ]
+}
+
+export async function ReadResponse(
+  reader: any,
+  req: Request | $.VarRef<Request> | null,
+): Promise<[Response | null, $.GoError]> {
+  const [wire, readErr] = await readHTTPWire(reader)
+  if (readErr != null) {
+    return [null, readErr]
+  }
+  const parsed = parseHTTPWire(wire)
+  if (parsed.error != null) {
+    return [null, parsed.error]
+  }
+  const match = /^(HTTP\/\d+\.\d+) ([0-9]{3})(?: (.*))?$/.exec(parsed.startLine)
+  if (match == null) {
+    return [null, badHTTPMessageError('malformed HTTP response')]
+  }
+  const [, proto, statusCodeText, statusText = ''] = match
+  const [protoMajor, protoMinor, protoOK] = ParseHTTPVersion(proto)
+  if (!protoOK) {
+    return [null, badHTTPMessageError(`malformed HTTP version ${proto}`)]
+  }
+  const statusCode = Number(statusCodeText)
+  const noBody =
+    statusCode === StatusNoContent || statusCode === StatusNotModified
+  const bodyInfo =
+    noBody ?
+      {
+        body: NoBody,
+        contentLength: 0,
+        transferEncoding: null,
+        error: null,
+      }
+    : parseHTTPBody(parsed.header, parsed.body)
+  if (bodyInfo.error != null) {
+    return [null, bodyInfo.error]
+  }
+  return [
+    new Response({
+      Status: `${statusCodeText}${statusText === '' ? '' : ` ${statusText}`}`,
+      StatusCode: statusCode,
+      Proto: proto,
+      ProtoMajor: protoMajor,
+      ProtoMinor: protoMinor,
+      Body: bodyInfo.body,
+      Header: parsed.header,
+      ContentLength: bodyInfo.contentLength,
+      TransferEncoding: bodyInfo.transferEncoding,
+      Close: shouldClose(protoMajor, protoMinor, parsed.header),
+      Request: req,
+    }),
+    null,
+  ]
+}
+
+async function readHTTPWire(reader: any): Promise<[string, $.GoError]> {
+  const r = $.pointerValueOrNil<any>(reader)
+  if (r == null || typeof r.Read !== 'function') {
+    return ['', errors.New('malformed HTTP message')]
+  }
+  const [data, err] = await io.ReadAll(r)
+  if (err != null) {
+    return ['', err]
+  }
+  return [$.bytesToString(data), null]
+}
+
+function splitRequestLine(line: string): [string, string, string] {
+  const first = line.indexOf(' ')
+  const last = line.lastIndexOf(' ')
+  if (first <= 0 || last <= first) {
+    return ['', '', '']
+  }
+  return [
+    line.slice(0, first),
+    line.slice(first + 1, last),
+    line.slice(last + 1),
+  ]
+}
+
+function parseHTTPWire(wire: string): {
+  startLine: string
+  header: Header
+  body: string
+  error: $.GoError
+} {
+  const headerEnd = wire.indexOf('\r\n\r\n')
+  const separatorLength = headerEnd >= 0 ? 4 : 2
+  const fallbackHeaderEnd = headerEnd >= 0 ? headerEnd : wire.indexOf('\n\n')
+  if (fallbackHeaderEnd < 0) {
+    return {
+      startLine: '',
+      header: new Header(),
+      body: '',
+      error: badHTTPMessageError('malformed HTTP message'),
+    }
+  }
+  const head = wire.slice(0, fallbackHeaderEnd).replace(/\r\n/g, '\n')
+  const lines = head.split('\n')
+  const startLine = lines.shift() ?? ''
+  const header = new Header()
+  let lastKey = ''
+  for (const rawLine of lines) {
+    if (rawLine === '') {
+      continue
+    }
+    if ((rawLine[0] === ' ' || rawLine[0] === '\t') && lastKey !== '') {
+      const values = Array.from(header.get(lastKey) ?? [])
+      values[values.length - 1] =
+        `${values[values.length - 1]} ${rawLine.trim()}`
+      header.set(lastKey, $.arrayToSlice(values))
+      continue
+    }
+    const colon = rawLine.indexOf(':')
+    if (colon <= 0) {
+      return {
+        startLine: '',
+        header: new Header(),
+        body: '',
+        error: badHTTPMessageError('malformed MIME header line'),
+      }
+    }
+    lastKey = canonicalMIMEHeaderKey(rawLine.slice(0, colon).trim())
+    Header_Add(header, lastKey, rawLine.slice(colon + 1).trim())
+  }
+  return {
+    startLine,
+    header,
+    body: wire.slice(fallbackHeaderEnd + separatorLength),
+    error: null,
+  }
+}
+
+function parseHTTPBody(
+  header: Header,
+  rawBody: string,
+): {
+  body: io.ReadCloser
+  contentLength: number
+  transferEncoding: $.Slice<string>
+  error: $.GoError
+} {
+  const transferEncoding = Header_Get(header, 'Transfer-Encoding')
+  if (transferEncoding.toLowerCase() === 'chunked') {
+    const chunked = decodeChunkedBody(rawBody)
+    if (chunked.error != null) {
+      return {
+        body: NoBody,
+        contentLength: -1,
+        transferEncoding: $.arrayToSlice(['chunked']),
+        error: chunked.error,
+      }
+    }
+    return {
+      body: bodyFromString(chunked.body),
+      contentLength: -1,
+      transferEncoding: $.arrayToSlice(['chunked']),
+      error: null,
+    }
+  }
+  const contentLength = Header_Get(header, 'Content-Length')
+  if (contentLength !== '') {
+    const parsedLength = Number.parseInt(contentLength, 10)
+    if (
+      !/^[0-9]+$/.test(contentLength) ||
+      !Number.isSafeInteger(parsedLength)
+    ) {
+      return {
+        body: NoBody,
+        contentLength: 0,
+        transferEncoding: null,
+        error: badHTTPMessageError(`bad Content-Length ${contentLength}`),
+      }
+    }
+    return {
+      body: bodyFromString(rawBody.slice(0, parsedLength)),
+      contentLength: parsedLength,
+      transferEncoding: null,
+      error: null,
+    }
+  }
+  if (rawBody === '') {
+    return {
+      body: NoBody,
+      contentLength: 0,
+      transferEncoding: null,
+      error: null,
+    }
+  }
+  return {
+    body: bodyFromString(rawBody),
+    contentLength: -1,
+    transferEncoding: null,
+    error: null,
+  }
+}
+
+function decodeChunkedBody(rawBody: string): {
+  body: string
+  error: $.GoError
+} {
+  let offset = 0
+  let body = ''
+  while (true) {
+    const lineEnd = rawBody.indexOf('\r\n', offset)
+    if (lineEnd < 0) {
+      return { body: '', error: io.ErrUnexpectedEOF }
+    }
+    const sizeText = rawBody.slice(offset, lineEnd).split(';', 1)[0].trim()
+    const size = Number.parseInt(sizeText, 16)
+    if (!/^[0-9A-Fa-f]+$/.test(sizeText) || !Number.isSafeInteger(size)) {
+      return { body: '', error: badHTTPMessageError('invalid chunk length') }
+    }
+    offset = lineEnd + 2
+    if (size === 0) {
+      return { body, error: null }
+    }
+    if (offset + size + 2 > rawBody.length) {
+      return { body: '', error: io.ErrUnexpectedEOF }
+    }
+    body += rawBody.slice(offset, offset + size)
+    offset += size
+    if (rawBody.slice(offset, offset + 2) !== '\r\n') {
+      return { body: '', error: badHTTPMessageError('malformed chunk') }
+    }
+    offset += 2
+  }
+}
+
+function bodyFromString(body: string): io.ReadCloser {
+  return body === '' ? NoBody : new responseBody($.stringToBytes(body))
+}
+
+function shouldClose(
+  protoMajor: number,
+  protoMinor: number,
+  header: Header,
+): boolean {
+  const connection = Header_Get(header, 'Connection').toLowerCase()
+  if (
+    connection
+      .split(',')
+      .map((part) => part.trim())
+      .includes('close')
+  ) {
+    return true
+  }
+  if (protoMajor < 1 || (protoMajor === 1 && protoMinor === 0)) {
+    return !connection
+      .split(',')
+      .map((part) => part.trim())
+      .includes('keep-alive')
+  }
+  return false
+}
+
+function badHTTPMessageError(message: string): $.GoError {
+  return errors.New(message)
 }
 
 export async function ServeContent(

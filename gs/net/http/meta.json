@@ -4,8 +4,11 @@
     "Head": true,
     "Post": true,
     "PostForm": true,
+    "ReadRequest": true,
+    "ReadResponse": true,
     "Redirect": true,
     "ServeContent": true,
+    "ServeFileFS": true,
     "SetCookie": true
   },
   "asyncMethods": {
