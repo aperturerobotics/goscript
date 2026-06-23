@@ -2,7 +2,18 @@ import { describe, expect, it } from 'vitest'
 
 import * as $ from '@goscript/builtin/index.js'
 
-import { Cond, Map, Mutex, Pool, RWMutex, WaitGroup } from './sync.js'
+import {
+  Cond,
+  Map,
+  Mutex,
+  Once,
+  OnceFunc,
+  OnceValue,
+  OnceValues,
+  Pool,
+  RWMutex,
+  WaitGroup,
+} from './sync.js'
 
 describe('sync.WaitGroup', () => {
   it('Go tracks scheduled work and unblocks Wait after completion', async () => {
@@ -43,6 +54,103 @@ describe('sync.RWMutex', () => {
 
     await locker.Lock()
     locker.Unlock()
+  })
+
+  it('blocks new readers while a writer is waiting', async () => {
+    const rw = new RWMutex()
+    const events: string[] = []
+
+    await rw.RLock()
+    const writer = rw.Lock().then(() => {
+      events.push('writer')
+    })
+    const reader = rw.RLock().then(() => {
+      events.push('reader')
+    })
+    await Promise.resolve()
+
+    expect(events).toEqual([])
+    expect(rw.TryRLock()).toBe(false)
+
+    rw.RUnlock()
+    await writer
+    expect(events).toEqual(['writer'])
+
+    rw.Unlock()
+    await reader
+    expect(events).toEqual(['writer', 'reader'])
+    rw.RUnlock()
+  })
+})
+
+describe('sync.Once', () => {
+  it('marks Do complete even when f panics', async () => {
+    const once = new Once()
+    let calls = 0
+
+    await expect(
+      once.Do(() => {
+        calls++
+        throw new Error('boom')
+      }),
+    ).rejects.toThrow('boom')
+    await once.Do(() => {
+      calls++
+    })
+
+    expect(calls).toBe(1)
+  })
+
+  it('OnceFunc and OnceValue helpers replay the first panic', () => {
+    let funcCalls = 0
+    const fn = OnceFunc(() => {
+      funcCalls++
+      throw new Error('func panic')
+    })
+
+    expect(fn).toThrow('func panic')
+    expect(fn).toThrow('func panic')
+    expect(funcCalls).toBe(1)
+
+    let valueCalls = 0
+    const value = OnceValue(() => {
+      valueCalls++
+      throw new Error('value panic')
+    })
+
+    expect(value).toThrow('value panic')
+    expect(value).toThrow('value panic')
+    expect(valueCalls).toBe(1)
+
+    let valuesCalls = 0
+    const values = OnceValues(() => {
+      valuesCalls++
+      throw new Error('values panic')
+    })
+
+    expect(values).toThrow('values panic')
+    expect(values).toThrow('values panic')
+    expect(valuesCalls).toBe(1)
+  })
+
+  it('OnceValue helpers return the first successful result', () => {
+    let valueCalls = 0
+    const value = OnceValue(() => {
+      valueCalls++
+      return 'first'
+    })
+    let valuesCalls = 0
+    const values = OnceValues(() => {
+      valuesCalls++
+      return ['left', 'right'] as [string, string]
+    })
+
+    expect(value()).toBe('first')
+    expect(value()).toBe('first')
+    expect(valueCalls).toBe(1)
+    expect(values()).toEqual(['left', 'right'])
+    expect(values()).toEqual(['left', 'right'])
+    expect(valuesCalls).toBe(1)
   })
 })
 

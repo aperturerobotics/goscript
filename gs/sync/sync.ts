@@ -28,8 +28,7 @@ export class Mutex implements Locker {
       return
     }
 
-    // In a real implementation, this would block the goroutine
-    // Use Promise to simulate blocking behavior like channels
+    // GoScript lowers goroutine blocking to async suspension.
     return new Promise<void>((resolve) => {
       this._waitQueue.push(resolve)
     })
@@ -56,7 +55,6 @@ export class Mutex implements Locker {
     if (this._waitQueue.length > 0) {
       const next = this._waitQueue.shift()!
       this._locked = true
-      // Use queueMicrotask to simulate goroutine scheduling
       queueMicrotask(() => next())
     }
   }
@@ -111,7 +109,7 @@ export class RWMutex {
 
   // RLock locks rw for reading
   public async RLock(): Promise<void> {
-    if (!this._writer) {
+    if (!this._writer && this._writerWaitQueue.length === 0) {
       this._readers++
       return
     }
@@ -126,7 +124,7 @@ export class RWMutex {
 
   // TryRLock tries to lock rw for reading and reports whether it succeeded
   public TryRLock(): boolean {
-    if (!this._writer) {
+    if (!this._writer && this._writerWaitQueue.length === 0) {
       this._readers++
       return true
     }
@@ -254,8 +252,8 @@ export class Once {
     await this._m.Lock()
     try {
       if (!this._done) {
-        await f()
         this._done = true
+        await f()
       }
     } finally {
       this._m.Unlock()
@@ -512,10 +510,22 @@ export class Pool {
 // OnceFunc returns a function that invokes f only once
 export function OnceFunc(f: () => void): () => void {
   let called = false
+  let panicked = false
+  let panicValue: unknown
   return () => {
-    if (!called) {
-      called = true
+    if (called) {
+      if (panicked) {
+        throw panicValue
+      }
+      return
+    }
+    called = true
+    try {
       f()
+    } catch (err) {
+      panicked = true
+      panicValue = err
+      throw err
     }
   }
 }
@@ -524,10 +534,22 @@ export function OnceFunc(f: () => void): () => void {
 export function OnceValue<T>(f: () => T): () => T {
   let value: T
   let called = false
+  let panicked = false
+  let panicValue: unknown
   return () => {
-    if (!called) {
-      called = true
+    if (called) {
+      if (panicked) {
+        throw panicValue
+      }
+      return value
+    }
+    called = true
+    try {
       value = f()
+    } catch (err) {
+      panicked = true
+      panicValue = err
+      throw err
     }
     return value
   }
@@ -538,10 +560,22 @@ export function OnceValues<T1, T2>(f: () => [T1, T2]): () => [T1, T2] {
   let value1: T1
   let value2: T2
   let called = false
+  let panicked = false
+  let panicValue: unknown
   return () => {
-    if (!called) {
-      called = true
+    if (called) {
+      if (panicked) {
+        throw panicValue
+      }
+      return [value1, value2]
+    }
+    called = true
+    try {
       ;[value1, value2] = f()
+    } catch (err) {
+      panicked = true
+      panicValue = err
+      throw err
     }
     return [value1, value2]
   }
