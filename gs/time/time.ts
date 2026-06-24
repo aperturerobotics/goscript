@@ -579,8 +579,11 @@ export class Time {
   public Sub(u: Time): Duration {
     // If both times have monotonic readings, use them for more accurate duration calculation
     if (this._monotonic !== undefined && u._monotonic !== undefined) {
+      // Duration is int64 nanoseconds. Truncate defensively: BigInt() throws a
+      // RangeError on any fractional input, and this Sub/Since path is a hard
+      // crash boundary the browser asset reader hits during startup.
       const diffNs = this._monotonic - u._monotonic
-      return BigInt(diffNs)
+      return BigInt(Math.trunc(diffNs))
     }
 
     // Fallback to Date-based calculation
@@ -1116,9 +1119,11 @@ export function Now(): Time {
 
   // Use performance.now() for high-resolution monotonic timing if available
   if (typeof performance !== 'undefined' && performance.now) {
-    // performance.now() returns milliseconds with sub-millisecond precision
-    // Convert to nanoseconds for consistency with Go's time package
-    monotonic = performance.now() * 1000000
+    // performance.now() returns milliseconds with sub-millisecond precision.
+    // Convert to nanoseconds and floor: the monotonic field is integer
+    // nanoseconds, matching Go's int64 monotonic clock. A fractional value here
+    // reaches Sub/BigInt and throws a RangeError ("not an integer").
+    monotonic = Math.floor(performance.now() * 1000000)
   }
 
   return Time.create(date, 0, monotonic)
