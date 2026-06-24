@@ -38,6 +38,7 @@ import {
   Header_Write,
   HandlerFunc_ServeHTTP,
   ListenAndServe,
+  ListenAndServeTLS,
   MaxBytesError,
   MaxBytesHandler,
   MaxBytesReader,
@@ -724,6 +725,9 @@ describe('net/http override', () => {
     expect(controller.Hijack()[2]).toBe(ErrNotSupported)
     expect(controller.SetReadDeadline({} as any)).toBe(ErrNotSupported)
     expect(ListenAndServe(':0', null)).toBe(ErrNotSupported)
+    expect(ListenAndServeTLS(':0', 'cert.pem', 'key.pem', null)).toBe(
+      ErrNotSupported,
+    )
     expect(Serve(null, null)).toBe(ErrNotSupported)
     expect(ServeTLS(null, null, 'cert.pem', 'key.pem')).toBe(ErrNotSupported)
     expect(new Transport().Clone()).toBeInstanceOf(Transport)

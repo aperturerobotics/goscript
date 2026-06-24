@@ -21,7 +21,11 @@ import (
 	gs "github.com/s4wave/goscript"
 )
 
-var overrideBehaviorTestIdentifierPattern = regexp.MustCompile(`\b[A-Za-z_][A-Za-z0-9_]*\b`)
+var (
+	overrideBehaviorTestIdentifierPattern      = regexp.MustCompile(`\b[A-Za-z_$][A-Za-z0-9_$]*\b`)
+	overrideBehaviorTestNamedImportPattern     = regexp.MustCompile(`(?s)import\s+(type\s+)?\{([^}]*)\}\s+from\s+['"]\.[^'"]*['"]`)
+	overrideBehaviorTestNamespaceImportPattern = regexp.MustCompile(`import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]\.[^'"]*['"]`)
+)
 
 // OverrideFacts is the immutable compiler-visible view of GoScript overrides.
 type OverrideFacts struct {
@@ -387,15 +391,162 @@ func loadOverrideBehaviorTests(
 		if readErr != nil {
 			return readErr
 		}
-		for _, match := range overrideBehaviorTestIdentifierPattern.FindAllString(string(data), -1) {
-			symbols[match] = true
-		}
+		maps.Copy(symbols, scanOverrideBehaviorTestSymbols(string(data)))
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	return symbols, nil
+}
+
+func scanOverrideBehaviorTestSymbols(data string) map[string]bool {
+	body := stripTypeScriptCommentsAndStrings(typeScriptBodyWithoutImports(data))
+	bodyIdentifiers := make(map[string]bool)
+	for _, match := range overrideBehaviorTestIdentifierPattern.FindAllString(body, -1) {
+		bodyIdentifiers[match] = true
+	}
+
+	symbols := make(map[string]bool)
+	for _, match := range overrideBehaviorTestNamedImportPattern.FindAllStringSubmatch(data, -1) {
+		if match[1] != "" {
+			continue
+		}
+		for _, namedImport := range parseNamedTypeScriptExports(match[2], false) {
+			if bodyIdentifiers[namedImport.target] {
+				symbols[namedImport.source] = true
+			}
+		}
+	}
+	for _, match := range overrideBehaviorTestNamespaceImportPattern.FindAllStringSubmatch(data, -1) {
+		namespaceSelectorPattern := regexp.MustCompile(`\b` + regexp.QuoteMeta(match[1]) + `\.([A-Za-z_$][A-Za-z0-9_$]*)\b`)
+		for _, selector := range namespaceSelectorPattern.FindAllStringSubmatch(body, -1) {
+			symbols[selector[1]] = true
+		}
+	}
+	return symbols
+}
+
+func typeScriptBodyWithoutImports(data string) string {
+	var body strings.Builder
+	inImport := false
+	for line := range strings.SplitAfterSeq(data, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if !inImport && strings.HasPrefix(trimmed, "import ") {
+			if !strings.Contains(trimmed, " from ") &&
+				!strings.HasPrefix(trimmed, `import "`) &&
+				!strings.HasPrefix(trimmed, `import '`) {
+				inImport = true
+			}
+			body.WriteByte('\n')
+			continue
+		}
+		if inImport {
+			if strings.Contains(trimmed, " from ") {
+				inImport = false
+			}
+			body.WriteByte('\n')
+			continue
+		}
+		body.WriteString(line)
+	}
+	return body.String()
+}
+
+func stripTypeScriptCommentsAndStrings(data string) string {
+	var body strings.Builder
+	const (
+		modeCode = iota
+		modeLineComment
+		modeBlockComment
+		modeSingleString
+		modeDoubleString
+		modeTemplateString
+	)
+	mode := modeCode
+	escaped := false
+	for i := 0; i < len(data); i++ {
+		ch := data[i]
+		next := byte(0)
+		if i+1 < len(data) {
+			next = data[i+1]
+		}
+		switch mode {
+		case modeCode:
+			switch {
+			case ch == '/' && next == '/':
+				body.WriteByte(' ')
+				body.WriteByte(' ')
+				i++
+				mode = modeLineComment
+			case ch == '/' && next == '*':
+				body.WriteByte(' ')
+				body.WriteByte(' ')
+				i++
+				mode = modeBlockComment
+			case ch == '\'':
+				body.WriteByte(' ')
+				mode = modeSingleString
+			case ch == '"':
+				body.WriteByte(' ')
+				mode = modeDoubleString
+			case ch == '`':
+				body.WriteByte(' ')
+				mode = modeTemplateString
+			default:
+				body.WriteByte(ch)
+			}
+		case modeLineComment:
+			if ch == '\n' {
+				body.WriteByte(ch)
+				mode = modeCode
+				continue
+			}
+			body.WriteByte(' ')
+		case modeBlockComment:
+			if ch == '*' && next == '/' {
+				body.WriteByte(' ')
+				body.WriteByte(' ')
+				i++
+				mode = modeCode
+				continue
+			}
+			if ch == '\n' {
+				body.WriteByte(ch)
+				continue
+			}
+			body.WriteByte(' ')
+		case modeSingleString, modeDoubleString, modeTemplateString:
+			quote := byte('\'')
+			if mode == modeDoubleString {
+				quote = '"'
+			}
+			if mode == modeTemplateString {
+				quote = '`'
+			}
+			if ch == '\n' {
+				body.WriteByte(ch)
+				escaped = false
+				if mode != modeTemplateString {
+					mode = modeCode
+				}
+				continue
+			}
+			body.WriteByte(' ')
+			if escaped {
+				escaped = false
+				continue
+			}
+			if ch == '\\' {
+				escaped = true
+				continue
+			}
+			if ch == quote {
+				mode = modeCode
+			}
+		}
+	}
+	return body.String()
 }
 
 func loadGoldenBehaviorTests() map[string]map[string]bool {
