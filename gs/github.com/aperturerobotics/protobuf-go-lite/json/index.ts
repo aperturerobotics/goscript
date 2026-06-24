@@ -14,6 +14,11 @@ export interface Unmarshaler {
 }
 
 type JSONRecord = Record<string, unknown>
+type Integer64Value = number | bigint
+
+function integer64String(value: Integer64Value): string {
+  return typeof value === 'bigint' ? value.toString() : String(Math.trunc(value))
+}
 
 export class JsonStream {
   private chunks: string[] = []
@@ -302,11 +307,11 @@ export class MarshalState {
     this.writeArray(vs, (v) => this.WriteInt32(v))
   }
 
-  public WriteInt64(v: number): void {
-    this.WriteString(String(Math.trunc(v)))
+  public WriteInt64(v: Integer64Value): void {
+    this.WriteString(integer64String(v))
   }
 
-  public WriteInt64Array(vs: $.Slice<number>): void {
+  public WriteInt64Array(vs: $.Slice<Integer64Value>): void {
     this.writeArray(vs, (v) => this.WriteInt64(v))
   }
 
@@ -349,8 +354,8 @@ export class MarshalState {
     this.WriteObjectField(String(Math.trunc(field)))
   }
 
-  public WriteObjectInt64Field(field: number): void {
-    this.WriteObjectField(String(Math.trunc(field)))
+  public WriteObjectInt64Field(field: Integer64Value): void {
+    this.WriteObjectField(integer64String(field))
   }
 
   public WriteObjectStart(): void {
@@ -365,8 +370,8 @@ export class MarshalState {
     this.WriteObjectField(String(Math.trunc(field)))
   }
 
-  public WriteObjectUint64Field(field: number): void {
-    this.WriteObjectField(String(Math.trunc(field)))
+  public WriteObjectUint64Field(field: Integer64Value): void {
+    this.WriteObjectField(integer64String(field))
   }
 
   public WriteString(v: string): void {
@@ -389,11 +394,11 @@ export class MarshalState {
     this.writeArray(vs, (v) => this.WriteUint32(v))
   }
 
-  public WriteUint64(v: number): void {
-    this.WriteString(String(Math.trunc(v)))
+  public WriteUint64(v: Integer64Value): void {
+    this.WriteString(integer64String(v))
   }
 
-  public WriteUint64Array(vs: $.Slice<number>): void {
+  public WriteUint64Array(vs: $.Slice<Integer64Value>): void {
     this.writeArray(vs, (v) => this.WriteUint64(v))
   }
 

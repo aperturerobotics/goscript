@@ -9,7 +9,10 @@ type Word64 = number | bigint
 const uint64Mask = (1n << 64n) - 1n
 
 function toUint64(x: Word64): bigint {
-  return BigInt(x) & uint64Mask
+  if (typeof x === 'bigint') {
+    return x & uint64Mask
+  }
+  return BigInt(Math.trunc(x)) & uint64Mask
 }
 
 function useBigIntResult(...values: Word64[]): boolean {

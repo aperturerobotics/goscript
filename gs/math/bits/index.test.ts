@@ -108,6 +108,13 @@ describe('math/bits override', () => {
     expect(Sub(0n, 1n, 0n)).toEqual([18446744073709551615n, 1n])
   })
 
+  it('truncates fractional JS-number operands before 64-bit arithmetic', () => {
+    expect(Add64(1.5, 2, 0)).toEqual([3, 0])
+    expect(Sub64(111899999.97615814, 1, 0)).toEqual([111899998, 0])
+    expect(Mul64(1.5, 2)).toEqual([0, 2])
+    expect(Div64(0, 5.75, 2)).toEqual([2, 1])
+  })
+
   it('Mul returns the full double-word product (Go Mul/Mul32/Mul64)', () => {
     expect(Mul32(0xffffffff, 0xffffffff)).toEqual([4294967294, 1])
     expect(Mul(0xffffffffffffffffn, 0xffffffffffffffffn)).toEqual([

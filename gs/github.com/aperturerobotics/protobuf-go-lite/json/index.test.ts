@@ -72,6 +72,31 @@ describe('protobuf-go-lite/json override', () => {
     )
   })
 
+  it('marshals bigint int64 and uint64 values', () => {
+    const [data, err] = DefaultMarshalerConfig.Marshal({
+      MarshalProtoJSON(s) {
+        s?.WriteObjectStart()
+        s?.WriteObjectField('int64')
+        s?.WriteInt64(-9223372036854775808n)
+        s?.WriteMore()
+        s?.WriteObjectField('uint64')
+        s?.WriteUint64(18446744073709551615n)
+        s?.WriteMore()
+        s?.WriteObjectInt64Field(-1n)
+        s?.WriteString('negative')
+        s?.WriteMore()
+        s?.WriteObjectUint64Field(2n)
+        s?.WriteString('positive')
+        s?.WriteObjectEnd()
+      },
+    })
+
+    expect(err).toBeNull()
+    expect(new TextDecoder().decode(new Uint8Array(data ?? []))).toBe(
+      '{"int64":"-9223372036854775808","uint64":"18446744073709551615","-1":"negative","2":"positive"}',
+    )
+  })
+
   it('marshals map and slice containers', () => {
     const [mapData, mapErr] = MarshalMap(undefined, DefaultMarshalerConfig, {
       c: new TestMessage('three', 3),
