@@ -1,12 +1,5 @@
 <div align="center">
-  <h1>GoScript</h1>
-
-  <h3>Readable TypeScript output for Go packages</h3>
-
-  <p>
-    Compile Go packages into TypeScript modules for shared application logic.<br/>
-    Performance-optimized for fast package builds, Bun, modern bundlers, and browser demos.<br/>
-  </p>
+  <h3>GoScript: Fast Go to TypeScript transpiler</h3>
 
   <p>
     <a href="https://godoc.org/github.com/s4wave/goscript">
