@@ -30,21 +30,20 @@
   </g>
 
   <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" xml:space="preserve">
-    <text x="768" y="166"><tspan fill="#fb7185">import</tspan><tspan fill="#93c5fd"> * </tspan><tspan fill="#fb7185">as</tspan><tspan fill="#e2e8f0"> $ </tspan><tspan fill="#fb7185">from</tspan></text>
-    <text x="768" y="194"><tspan fill="#bae6fd">  "@goscript/builtin/index.js"</tspan></text>
+    <text x="768" y="166"><tspan fill="#fb7185">import</tspan><tspan fill="#93c5fd"> * </tspan><tspan fill="#fb7185">as</tspan><tspan fill="#e2e8f0"> $ </tspan><tspan fill="#fb7185">from</tspan><tspan fill="#e2e8f0"> </tspan><tspan fill="#bae6fd">"@goscript/builtin"</tspan></text>
 
-    <text x="768" y="244"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> send(</tspan></text>
-    <text x="768" y="272"><tspan fill="#e2e8f0">  ch: $.Channel&lt;string&gt; | null</tspan></text>
-    <text x="768" y="300"><tspan fill="#e2e8f0">) {</tspan></text>
-    <text x="768" y="328"><tspan fill="#fb7185">  await</tspan><tspan fill="#e2e8f0"> $.chanSend(ch, </tspan><tspan fill="#bae6fd">"ready"</tspan><tspan fill="#e2e8f0">)</tspan></text>
-    <text x="768" y="356" fill="#e2e8f0">}</text>
+    <text x="768" y="216"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> send(</tspan></text>
+    <text x="768" y="244"><tspan fill="#e2e8f0">  ch: $.Channel&lt;string&gt; | null</tspan></text>
+    <text x="768" y="272"><tspan fill="#e2e8f0">) {</tspan></text>
+    <text x="768" y="300"><tspan fill="#fb7185">  await</tspan><tspan fill="#e2e8f0"> $.chanSend(ch, </tspan><tspan fill="#bae6fd">"ready"</tspan><tspan fill="#e2e8f0">)</tspan></text>
+    <text x="768" y="328" fill="#e2e8f0">}</text>
 
-    <text x="768" y="406"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
-    <text x="768" y="434"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> ch = $.makeChannel&lt;string&gt;(1, </tspan><tspan fill="#bae6fd">""</tspan><tspan fill="#e2e8f0">, </tspan><tspan fill="#bae6fd">"both"</tspan><tspan fill="#e2e8f0">)</tspan></text>
-    <text x="768" y="462"><tspan fill="#c084fc">  queueMicrotask</tspan><tspan fill="#e2e8f0">(</tspan><tspan fill="#fb7185">async</tspan><tspan fill="#e2e8f0"> () =&gt; { </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> send(ch) })</tspan></text>
-    <text x="768" y="518"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
-    <text x="768" y="546"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
-    <text x="768" y="574" fill="#e2e8f0">}</text>
+    <text x="768" y="378"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
+    <text x="768" y="406"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> ch = $.makeChannel&lt;string&gt;(1, </tspan><tspan fill="#bae6fd">""</tspan><tspan fill="#e2e8f0">, </tspan><tspan fill="#bae6fd">"both"</tspan><tspan fill="#e2e8f0">)</tspan></text>
+    <text x="768" y="434"><tspan fill="#c084fc">  queueMicrotask</tspan><tspan fill="#e2e8f0">(</tspan><tspan fill="#fb7185">async</tspan><tspan fill="#e2e8f0"> () =&gt; { </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> send(ch) })</tspan></text>
+    <text x="768" y="490"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
+    <text x="768" y="518"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
+    <text x="768" y="546" fill="#e2e8f0">}</text>
   </g>
   </g>
 </svg>
