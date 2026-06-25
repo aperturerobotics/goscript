@@ -27,9 +27,10 @@ TypeScript packages under `@goscript/<go-package>/`. The compiler keeps package
 loading, semantic modeling, lowering, TypeScript emission, runtime helpers, and
 handwritten override packages as explicit pipeline stages so generated output is
 readable and semantic decisions have one owner. The compiler is also
-performance-tuned through real package dogfooding, so large package sets can be
-rebuilt quickly instead of treating Go-to-TypeScript generation as an offline
-batch step.
+performance-tuned against [a real Go project](https://github.com/s4wave/spacewave)
+with complex database and app workloads, so GoScript can rebuild large targets
+quickly enough for normal development instead of pushing Go-to-TypeScript
+generation into a separate offline batch.
 
 > "Right now goscript looks pretty cool if [your] problem is 'I want this
 > self-sufficient algorithm [to] be available in Go and JS runtimes.'"

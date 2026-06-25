@@ -18,15 +18,15 @@
 
   <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22" xml:space="preserve">
     <text x="78" y="174"><tspan fill="#fb7185">package</tspan><tspan fill="#e2e8f0"> main</tspan></text>
-    <text x="78" y="208"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> send(ch </tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string) {</tspan></text>
-    <text x="78" y="242"><tspan fill="#e2e8f0">    ch </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#bae6fd"> "ready"</tspan></text>
-    <text x="78" y="276" fill="#e2e8f0">}</text>
-    <text x="78" y="330"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
-    <text x="78" y="364"><tspan fill="#e2e8f0">    ch := make(</tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string, 1)</tspan></text>
-    <text x="78" y="398"><tspan fill="#fb7185">    go</tspan><tspan fill="#e2e8f0"> send(ch)</tspan></text>
-    <text x="78" y="452"><tspan fill="#e2e8f0">    msg := </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#e2e8f0">ch</tspan></text>
-    <text x="78" y="486"><tspan fill="#e2e8f0">    println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
-    <text x="78" y="520" fill="#e2e8f0">}</text>
+    <text x="78" y="242"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> send(ch </tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string) {</tspan></text>
+    <text x="78" y="276"><tspan fill="#e2e8f0">    ch </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#bae6fd"> "ready"</tspan></text>
+    <text x="78" y="310" fill="#e2e8f0">}</text>
+    <text x="78" y="364"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
+    <text x="78" y="398"><tspan fill="#e2e8f0">    ch := make(</tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string, 1)</tspan></text>
+    <text x="78" y="432"><tspan fill="#fb7185">    go</tspan><tspan fill="#e2e8f0"> send(ch)</tspan></text>
+    <text x="78" y="486"><tspan fill="#e2e8f0">    msg := </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#e2e8f0">ch</tspan></text>
+    <text x="78" y="520"><tspan fill="#e2e8f0">    println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
+    <text x="78" y="554" fill="#e2e8f0">}</text>
   </g>
 
   <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" xml:space="preserve">
@@ -42,9 +42,9 @@
     <text x="768" y="406"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
     <text x="768" y="434"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> ch = $.makeChannel&lt;string&gt;(1, </tspan><tspan fill="#bae6fd">""</tspan><tspan fill="#e2e8f0">, </tspan><tspan fill="#bae6fd">"both"</tspan><tspan fill="#e2e8f0">)</tspan></text>
     <text x="768" y="462"><tspan fill="#c084fc">  queueMicrotask</tspan><tspan fill="#e2e8f0">(</tspan><tspan fill="#fb7185">async</tspan><tspan fill="#e2e8f0"> () =&gt; { </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> send(ch) })</tspan></text>
-    <text x="768" y="490"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
-    <text x="768" y="518"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
-    <text x="768" y="546" fill="#e2e8f0">}</text>
+    <text x="768" y="518"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
+    <text x="768" y="546"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
+    <text x="768" y="574" fill="#e2e8f0">}</text>
   </g>
   </g>
 </svg>
