@@ -30,11 +30,11 @@ code with TypeScript projects. It loads packages from a Go module, type-checks
 them with the Go toolchain, and emits deterministic TypeScript packages under
 `@goscript/<go-package>/`.
 
-The project has grown past simple algorithm demos. GoScript now handles package
-graphs, generics, interfaces, pointer and value semantics, goroutines, channels,
-`select`, `defer`, async call propagation, package tests, and a practical
-standard-library override surface. The generated TypeScript stays readable
-enough to inspect, bundle, and debug like normal application code.
+GoScript handles package graphs, generics, interfaces, pointer and value
+semantics, goroutines, channels, `select`, `defer`, async call propagation,
+package tests, and a practical standard-library override surface. The generated
+TypeScript stays readable enough to inspect, bundle, and debug like normal
+application code.
 
 GoScript is performance-tuned against
 [Spacewave](https://github.com/s4wave/spacewave), a large Go and TypeScript app
@@ -48,10 +48,11 @@ application code instead of toy examples.
 > - [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719),
 >   developer of [GopherJS](https://github.com/gopherjs/gopherjs)
 
-That contrast is still the project shape. GopherJS aims to make any valid Go
-program run in a browser. GoScript starts from the narrower but common product
-need: move Go packages into TypeScript projects without maintaining a second
-implementation.
+GoScript shares GopherJS's long-term browser goal: make ordinary Go programs
+run in JavaScript environments. The difference is the runtime strategy.
+GopherJS models a Go runtime with its own goroutine scheduler. GoScript emits
+readable TypeScript modules and maps concurrency onto JavaScript async work and
+runtime channel helpers instead of implementing a full goroutine scheduler.
 
 ### Why GoScript?
 
