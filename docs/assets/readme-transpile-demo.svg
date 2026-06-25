@@ -1,24 +1,8 @@
-<svg width="1400" height="650" viewBox="0 0 1400 650" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="1400" height="552" viewBox="0 0 1400 552" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">GoScript Go to TypeScript comparison</title>
   <desc id="desc">A side-by-side code comparison showing Go goroutine channel input and generated TypeScript async channel output.</desc>
-  <defs>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity="0.38"/>
-    </filter>
-    <linearGradient id="panel" x1="0" y1="0" x2="1400" y2="650" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0b1220"/>
-      <stop offset="1" stop-color="#111827"/>
-    </linearGradient>
-  </defs>
 
-  <rect width="1400" height="650" rx="22" fill="#020617"/>
-  <rect x="24" y="24" width="1352" height="602" rx="18" fill="url(#panel)" stroke="#334155" filter="url(#shadow)"/>
-
-  <circle cx="58" cy="54" r="7" fill="#fb7185"/>
-  <circle cx="82" cy="54" r="7" fill="#fbbf24"/>
-  <circle cx="106" cy="54" r="7" fill="#34d399"/>
-  <text x="128" y="60" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">goscript-demo</text>
-
+  <g transform="translate(0 -62)">
   <rect x="54" y="86" width="600" height="504" rx="14" fill="#0f172a" stroke="#334155"/>
   <rect x="744" y="86" width="602" height="504" rx="14" fill="#0f172a" stroke="#334155"/>
   <path d="M684 331H708" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
@@ -61,5 +45,6 @@
     <text x="768" y="490"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
     <text x="768" y="518"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
     <text x="768" y="546" fill="#e2e8f0">}</text>
+  </g>
   </g>
 </svg>
