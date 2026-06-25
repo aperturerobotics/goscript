@@ -15,7 +15,7 @@
 </div>
 
 <div align="center">
-  <img src="./docs/assets/readme-transpile-demo.svg?cachebuster=3" alt="GoScript side-by-side Go source and generated TypeScript output showing a channel send, goroutine scheduling, and awaited channel receive." />
+  <img src="./docs/assets/readme-transpile-demo.svg?cachebuster=4" alt="GoScript side-by-side Go source and generated TypeScript output showing a channel send, goroutine scheduling, and awaited channel receive." />
 </div>
 
 ## Overview
