@@ -965,15 +965,21 @@ export function bytesCount(bytes: Bytes | null, sep: Bytes | null): number {
 // the Go builtins min/max work for int64/uint64 operands as well; number keeps
 // Math.min/Math.max NaN semantics.
 export function min<T extends number | bigint>(a: T, b: T): T {
-  if (typeof a === 'bigint') {
-    return a < (b as bigint) ? a : b
+  // Check both operands: Math.min throws on any bigint argument, so a mixed
+  // number/bigint pair (from inconsistent int64/uint64 lowering of the same Go
+  // type) must take the relational path. JS relational operators compare bigint
+  // and number across types, and integers have no NaN to preserve.
+  if (typeof a === 'bigint' || typeof b === 'bigint') {
+    return (a as bigint) < (b as bigint) ? a : b
   }
   return Math.min(a as number, b as number) as T
 }
 
 export function max<T extends number | bigint>(a: T, b: T): T {
-  if (typeof a === 'bigint') {
-    return a > (b as bigint) ? a : b
+  // See min: route any bigint operand through relational comparison; keep
+  // Math.max only for the pure-number case so Go float NaN semantics survive.
+  if (typeof a === 'bigint' || typeof b === 'bigint') {
+    return (a as bigint) > (b as bigint) ? a : b
   }
   return Math.max(a as number, b as number) as T
 }
