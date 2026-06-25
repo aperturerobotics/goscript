@@ -21,54 +21,9 @@
   </p>
 </div>
 
-## Go To TypeScript
-
-Goroutines and channels lower into scheduled async work and awaited runtime
-channel operations.
-
-<table>
-  <tr>
-    <th align="left">Input <code>main.go</code></th>
-    <th align="left">Output <code>main.ts</code></th>
-  </tr>
-  <tr>
-    <td valign="top">
-      <pre lang="go"><code>package main
-
-func main() {
-    messages := make(chan string)
-
-    go func() {
-        messages &lt;- "ping"
-    }()
-
-    msg := &lt;-messages
-    println(msg)
-}</code></pre>
-    </td>
-    <td valign="top">
-      <pre lang="typescript"><code>import * as $ from "@goscript/builtin/index.js"
-
-export async function main(): globalThis.Promise&lt;void&gt; {
-  let messages: $.Channel&lt;string&gt; | null =
-    $.makeChannel&lt;string&gt;(0, "", "both")
-
-  queueMicrotask(async () =&gt; {
-    await (async (): globalThis.Promise&lt;void&gt; =&gt; {
-      await $.chanSend(messages, "ping")
-    })()
-  })
-
-  let msg = await $.chanRecv(messages)
-  $.println(msg)
-}
-
-if ($.isMainScript(import.meta)) {
-  await main()
-}</code></pre>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./docs/assets/readme-transpile-demo.svg" alt="GoScript side-by-side Go source and generated TypeScript output showing a channel send, goroutine scheduling, and awaited channel receive." />
+</div>
 
 ## Overview
 

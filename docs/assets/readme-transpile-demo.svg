@@ -1,0 +1,65 @@
+<svg width="1400" height="650" viewBox="0 0 1400 650" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">GoScript Go to TypeScript comparison</title>
+  <desc id="desc">A side-by-side code comparison showing Go goroutine channel input and generated TypeScript async channel output.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity="0.38"/>
+    </filter>
+    <linearGradient id="panel" x1="0" y1="0" x2="1400" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1400" height="650" rx="22" fill="#020617"/>
+  <rect x="24" y="24" width="1352" height="602" rx="18" fill="url(#panel)" stroke="#334155" filter="url(#shadow)"/>
+
+  <circle cx="58" cy="54" r="7" fill="#fb7185"/>
+  <circle cx="82" cy="54" r="7" fill="#fbbf24"/>
+  <circle cx="106" cy="54" r="7" fill="#34d399"/>
+  <text x="128" y="60" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">goscript-demo</text>
+
+  <rect x="54" y="86" width="600" height="504" rx="14" fill="#0f172a" stroke="#334155"/>
+  <rect x="744" y="86" width="602" height="504" rx="14" fill="#0f172a" stroke="#334155"/>
+  <path d="M684 331H708" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M700 323L708 331L700 339" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="78" y="125" fill="#f8fafc" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700">Input</text>
+  <rect x="152" y="102" width="100" height="34" rx="9" fill="#1e293b"/>
+  <text x="168" y="125" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">main.go</text>
+
+  <text x="768" y="125" fill="#f8fafc" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700">Output</text>
+  <rect x="864" y="102" width="100" height="34" rx="9" fill="#1e293b"/>
+  <text x="880" y="125" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">main.ts</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22" xml:space="preserve">
+    <text x="78" y="174"><tspan fill="#fb7185">package</tspan><tspan fill="#e2e8f0"> main</tspan></text>
+    <text x="78" y="208"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> send(ch </tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string) {</tspan></text>
+    <text x="78" y="242"><tspan fill="#e2e8f0">    ch </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#bae6fd"> "ready"</tspan></text>
+    <text x="78" y="276" fill="#e2e8f0">}</text>
+    <text x="78" y="330"><tspan fill="#fb7185">func</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
+    <text x="78" y="364"><tspan fill="#e2e8f0">    ch := make(</tspan><tspan fill="#fb7185">chan</tspan><tspan fill="#e2e8f0"> string, 1)</tspan></text>
+    <text x="78" y="398"><tspan fill="#fb7185">    go</tspan><tspan fill="#e2e8f0"> send(ch)</tspan></text>
+    <text x="78" y="452"><tspan fill="#e2e8f0">    msg := </tspan><tspan fill="#93c5fd">&lt;-</tspan><tspan fill="#e2e8f0">ch</tspan></text>
+    <text x="78" y="486"><tspan fill="#e2e8f0">    println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
+    <text x="78" y="520" fill="#e2e8f0">}</text>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" xml:space="preserve">
+    <text x="768" y="166"><tspan fill="#fb7185">import</tspan><tspan fill="#93c5fd"> * </tspan><tspan fill="#fb7185">as</tspan><tspan fill="#e2e8f0"> $ </tspan><tspan fill="#fb7185">from</tspan></text>
+    <text x="768" y="194"><tspan fill="#bae6fd">  "@goscript/builtin/index.js"</tspan></text>
+
+    <text x="768" y="244"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> send(</tspan></text>
+    <text x="768" y="272"><tspan fill="#e2e8f0">  ch: $.Channel&lt;string&gt; | null</tspan></text>
+    <text x="768" y="300"><tspan fill="#e2e8f0">) {</tspan></text>
+    <text x="768" y="328"><tspan fill="#fb7185">  await</tspan><tspan fill="#e2e8f0"> $.chanSend(ch, </tspan><tspan fill="#bae6fd">"ready"</tspan><tspan fill="#e2e8f0">)</tspan></text>
+    <text x="768" y="356" fill="#e2e8f0">}</text>
+
+    <text x="768" y="406"><tspan fill="#fb7185">export async function</tspan><tspan fill="#e2e8f0"> main() {</tspan></text>
+    <text x="768" y="434"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> ch = $.makeChannel&lt;string&gt;(1, </tspan><tspan fill="#bae6fd">""</tspan><tspan fill="#e2e8f0">, </tspan><tspan fill="#bae6fd">"both"</tspan><tspan fill="#e2e8f0">)</tspan></text>
+    <text x="768" y="462"><tspan fill="#c084fc">  queueMicrotask</tspan><tspan fill="#e2e8f0">(</tspan><tspan fill="#fb7185">async</tspan><tspan fill="#e2e8f0"> () =&gt; { </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> send(ch) })</tspan></text>
+    <text x="768" y="490"><tspan fill="#fb7185">  let</tspan><tspan fill="#e2e8f0"> msg = </tspan><tspan fill="#fb7185">await</tspan><tspan fill="#e2e8f0"> $.chanRecv(ch)</tspan></text>
+    <text x="768" y="518"><tspan fill="#e2e8f0">  $.println(</tspan><tspan fill="#bae6fd">"received:"</tspan><tspan fill="#e2e8f0">, msg)</tspan></text>
+    <text x="768" y="546" fill="#e2e8f0">}</text>
+  </g>
+</svg>
