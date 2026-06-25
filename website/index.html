@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GoScript - Go to TypeScript Compiler</title>
+    <title>GoScript - Go packages as TypeScript</title>
     <meta
       name="description"
-      content="GoScript is an experimental Go to TypeScript compiler that translates Go code at the AST level."
+      content="GoScript compiles real Go packages into readable TypeScript for Bun, browsers, and modern bundlers."
     />
     <link rel="stylesheet" href="assets/css/style.css" />
     <link
@@ -67,11 +67,12 @@
     <main>
       <section class="hero">
         <div class="container">
-          <h2>Go to TypeScript compiler</h2>
+          <h2>Run Go packages in TypeScript</h2>
           <p class="hero-description">
-            GoScript compiles Go to TypeScript at the AST level. Share
-            algorithms and business logic between your Go backend and TypeScript
-            frontend.
+            GoScript compiles real Go packages into readable TypeScript, so
+            your Go algorithms, data structures, and selected runtime code can
+            run in Bun, browsers, plugins, and modern app builds without a
+            handwritten port.
           </p>
           <div class="hero-actions">
             <a href="playground/" class="btn btn-primary">Playground</a>
@@ -104,18 +105,16 @@
                 <div class="code-content">
                   <pre><code class="language-go">package main
 
-type Counter struct {
-    value int
-}
-
-func (c *Counter) Increment() {
-    c.value++
+func send(ch chan string) {
+    ch &lt;- "ready"
 }
 
 func main() {
-    c := &Counter{}
-    c.Increment()
-    println("Count:", c.value)
+    ch := make(chan string, 1)
+    go send(ch)
+
+    msg := &lt;-ch
+    println("received:", msg)
 }</code></pre>
                 </div>
               </div>
@@ -126,19 +125,21 @@ func main() {
                   <span>main.ts</span>
                 </div>
                 <div class="code-content">
-                  <pre><code class="language-typescript">import * as $ from "@goscript/builtin"
+                  <pre><code class="language-typescript">import * as $ from "@goscript/builtin/index.js"
 
-export class Counter {
-  public value: number = 0
-
-  public Increment(): void {
-    this.value++
-  }
+export async function send(
+  ch: $.Channel&lt;string&gt; | null
+): globalThis.Promise&lt;void&gt; {
+  await $.chanSend(ch, "ready")
 }
 
-const c = new Counter()
-c.Increment()
-$.println("Count:", c.value)</code></pre>
+export async function main(): globalThis.Promise&lt;void&gt; {
+  let ch = $.makeChannel&lt;string&gt;(1, "", "both")
+  queueMicrotask(async () =&gt; { await send(ch) })
+
+  let msg = await $.chanRecv(ch)
+  $.println("received:", msg)
+}</code></pre>
                 </div>
               </div>
             </div>
@@ -148,44 +149,49 @@ $.println("Count:", c.value)</code></pre>
 
       <section class="features">
         <div class="container">
-          <h3 class="section-title">Status</h3>
+          <h3 class="section-title">What GoScript does</h3>
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-icon">🎯</div>
-              <h4>Goal</h4>
+              <h4>One source of truth</h4>
               <p>
-                Share algorithms and business logic between Go and TypeScript
-                without maintaining separate implementations.
+                Keep core logic in Go and publish generated TypeScript packages
+                for frontends, plugins, browser demos, and Bun-based tooling.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">✅</div>
-              <h4>What works</h4>
+              <h4>Complex Go semantics</h4>
               <p>
                 Structs, interfaces, methods, generics, channels, goroutines,
-                pointers, slices, maps, closures, control flow, reflection,
-                encoding/json, and most of the standard library.
+                select, defer, pointers, slices, maps, closures, package
+                initialization, and async call propagation.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🌊</div>
+              <h4>Spacewave dogfooding</h4>
+              <p>
+                Optimized against Spacewave, a large Go and TypeScript app
+                framework with database, sync, plugin, and browser-runtime
+                workloads.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">🧪</div>
-              <h4>Tests</h4>
+              <h4>Package tests</h4>
               <p>
-                Verified by a compliance suite that compiles Go code and
-                executes the generated TypeScript.
+                <code>goscript test</code> compiles selected Go package tests to
+                TypeScript, typechecks the workspace, and runs it with Bun.
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon">🚧</div>
-              <h4>In progress</h4>
-              <p>Reflection edge cases, full standard library coverage.</p>
-            </div>
-            <div class="feature-card">
               <div class="feature-icon">⚠️</div>
-              <h4>Limitations</h4>
+              <h4>Intentional limits</h4>
               <p>
-                Uses JS <code>number</code> (64-bit float). No
-                <code>unsafe</code>, <code>uintptr</code>, or complex numbers.
+                The browser playground is import-free and single-file. Package
+                imports, standard-library coverage, and larger apps use the CLI
+                package workflow.
               </p>
             </div>
             <div class="feature-card">
@@ -193,16 +199,16 @@ $.println("Count:", c.value)</code></pre>
               <h4>Docs</h4>
               <div class="doc-links">
                 <a
-                  href="https://github.com/s4wave/goscript/blob/master/design/DESIGN.md"
+                  href="https://github.com/s4wave/goscript#readme"
                   target="_blank"
                   rel="noopener"
-                  >Design</a
+                  >README</a
                 >
                 <a
-                  href="https://github.com/s4wave/goscript/blob/master/design/GENERICS.md"
+                  href="https://github.com/s4wave/goscript/tree/master/example/simple"
                   target="_blank"
                   rel="noopener"
-                  >Generics</a
+                  >Example</a
                 >
                 <a
                   href="https://github.com/s4wave/goscript/blob/master/docs/explainer.md"

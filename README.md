@@ -1,5 +1,10 @@
 <div align="center">
-  <h3>GoScript: Fast Go to TypeScript transpiler</h3>
+  <h3>GoScript: Go packages as TypeScript</h3>
+
+  <p>
+    Compile real Go packages into readable TypeScript for apps that need one
+    implementation across Go, Bun, browsers, and modern bundlers.
+  </p>
 
   <p>
     <a href="https://godoc.org/github.com/s4wave/goscript">
@@ -20,17 +25,22 @@
 
 ## Overview
 
-**GoScript** is an experimental Go-to-TypeScript compiler.
+**GoScript** is an experimental Go-to-TypeScript compiler for sharing real Go
+code with TypeScript projects. It loads packages from a Go module, type-checks
+them with the Go toolchain, and emits deterministic TypeScript packages under
+`@goscript/<go-package>/`.
 
-GoScript compiles Go packages from inside a Go module and writes deterministic
-TypeScript packages under `@goscript/<go-package>/`. The compiler keeps package
-loading, semantic modeling, lowering, TypeScript emission, runtime helpers, and
-handwritten override packages as explicit pipeline stages so generated output is
-readable and semantic decisions have one owner. The compiler is also
-performance-tuned against [a real Go project](https://github.com/s4wave/spacewave)
-with complex database and app workloads, so GoScript can rebuild large targets
-quickly enough for normal development instead of pushing Go-to-TypeScript
-generation into a separate offline batch.
+The project has grown past simple algorithm demos. GoScript now handles package
+graphs, generics, interfaces, pointer and value semantics, goroutines, channels,
+`select`, `defer`, async call propagation, package tests, and a practical
+standard-library override surface. The generated TypeScript stays readable
+enough to inspect, bundle, and debug like normal application code.
+
+GoScript is performance-tuned against
+[Spacewave](https://github.com/s4wave/spacewave), a large Go and TypeScript app
+framework with database, sync, plugin, and browser-runtime workloads. That
+dogfooding keeps build speed and runtime compatibility tied to complex
+application code instead of toy examples.
 
 > "Right now goscript looks pretty cool if [your] problem is 'I want this
 > self-sufficient algorithm [to] be available in Go and JS runtimes.'"
@@ -38,26 +48,26 @@ generation into a separate offline batch.
 > - [nevkontakte](https://gophers.slack.com/archives/C039C0R2T/p1745870396945719),
 >   developer of [GopherJS](https://github.com/gopherjs/gopherjs)
 
-That contrast is the project shape. GopherJS aims to make any valid Go program
-run in a browser. GoScript starts from the narrower but common product need:
-move self-contained Go logic into TypeScript projects without maintaining a
-second implementation.
+That contrast is still the project shape. GopherJS aims to make any valid Go
+program run in a browser. GoScript starts from the narrower but common product
+need: move Go packages into TypeScript projects without maintaining a second
+implementation.
 
 ### Why GoScript?
 
-Use GoScript when you want to share Go algorithms, data structures, validation
-logic, or selected runtime code with TypeScript and browser environments without
-maintaining a second implementation by hand. The first supported target is a
-useful, well-defined subset of Go that produces readable TypeScript and avoids
-unsafe-heavy runtime behavior. The long-term goal is to expand that subset until
-ordinary Go programs can run through GoScript, but that is not the first
-compatibility bar.
+Use GoScript when your Go code is the source of truth, but part of your product
+needs to run in a TypeScript runtime. The current target is a useful,
+well-defined Go subset that produces readable TypeScript and avoids unsafe-heavy
+runtime behavior. The long-term goal is to expand that subset until ordinary Go
+programs can run through GoScript, but the first compatibility bar is product
+code that can be tested, bundled, and shipped today.
 
 Good fits today include:
 
 - Sharing validation, formatting, parsing, and business rules between Go services and TypeScript applications
 - Publishing TypeScript packages from Go data structures and algorithms
 - Running selected Go runtime code in Bun, browser demos, and modern bundlers
+- Moving Go framework code into browser/plugin paths without rewriting it in TypeScript
 - Building package-level test workflows that exercise generated TypeScript instead of handwritten ports
 
 GoScript is not currently a drop-in browser runtime for every valid Go program.
@@ -76,7 +86,7 @@ Useful docs:
 
 ### Works Today
 
-The package compiler currently supports:
+The package compiler currently supports enough Go to run complex package graphs:
 
 - Go package loading through `go/packages` with `GOOS=js` and `GOARCH=wasm`
 - Go build tags through CLI build flags, including `goscript`-selected code paths
@@ -93,7 +103,7 @@ The package compiler currently supports:
   browser/WASM-oriented subset
 - `goscript test`, which compiles selected Go package tests to TypeScript,
   typechecks the generated workspace, runs it with Bun, and reports package
-  failures with owner classifications
+  failures with compiler-stage classifications
 - Browser/WASM compilation for import-free single-file demos
 
 ### Intentional Limits
@@ -216,8 +226,8 @@ the generated workspace, and runs it with Bun. Useful options:
 - `--workdir <dir>`: generated test workspace directory.
 - `--output <dir>`: generated TypeScript output root.
 
-The output is shaped like `go test` where possible and adds an `owner=...`
-classification for failures that occur before the generated tests run.
+The output is shaped like `go test` where possible and classifies failures that
+occur before the generated tests run.
 
 ## APIs
 
@@ -286,7 +296,7 @@ structured diagnostic; compile imported code with the package workflow.
 
 ## Architecture
 
-GoScript v2 uses a linear compiler pipeline:
+GoScript uses a linear compiler pipeline:
 
 ```text
 public adapter
@@ -298,18 +308,18 @@ public adapter
   -> runtime/override package copy
 ```
 
-Each step owns one durable rule boundary:
+Each stage has a small, testable job:
 
-- `CompileRequestOwner` validates adapter input, module roots, output paths, and build flags.
-- `PackageGraphOwner` loads Go packages and records dependency edges.
-- `SemanticModelOwner` computes type, value, import, addressability, interface, and async facts.
-- `LoweringOwner` turns Go syntax plus semantic facts into compiler-owned IR.
-- `TypeScriptEmitOwner` renders deterministic, semicolon-free TypeScript from IR only.
-- `RuntimeContractOwner` owns generated helper names and `@goscript/builtin` import policy.
-- `OverrideRegistryOwner` discovers and copies handwritten runtime and standard-library packages.
+- Request validation normalizes CLI, Go API, Node/Bun API, and WASM inputs.
+- Package loading records Go package identities, dependency edges, build tags, and diagnostics.
+- Semantic modeling computes type, value, import, addressability, interface, and async facts.
+- Lowering turns Go syntax plus semantic facts into a compiler IR.
+- TypeScript emission renders deterministic, semicolon-free TypeScript from that IR.
+- Runtime contracts keep generated helper names and `@goscript/builtin` imports stable.
+- Override discovery copies handwritten runtime and standard-library packages when direct transpilation is not the right runtime shape.
 
-This keeps semantic decisions out of the text emitter and makes generated output
-changes easier to trace back to the owner that made the decision.
+This separation keeps type and runtime decisions out of string rendering, so
+generated output changes are easier to explain, test, and debug.
 
 ## Running from Source
 
@@ -352,8 +362,9 @@ website build.
 ## Contributing
 
 GoScript is experimental. Small compatibility shims are usually the wrong fix;
-prefer adding focused compiler or compliance tests that name the missing semantic
-owner, then implement the owner-level behavior.
+prefer adding focused compiler or compliance tests that name the missing Go
+behavior, then implement the behavior in the compiler or runtime stage that
+actually owns it.
 
 Use the repo scripts rather than direct package-manager commands:
 
