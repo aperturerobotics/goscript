@@ -28,6 +28,8 @@ import {
   Month_String,
   NewTicker,
   NewTimer,
+  Now,
+  Since,
   RFC1123,
   RFC3339,
   RFC3339Nano,
@@ -224,5 +226,38 @@ describe('time location loading', () => {
 
     expect(err).toBeNull()
     expect(loc?.String()).toBe('Custom/Zone')
+  })
+})
+
+describe('time monotonic fractional-nanosecond Sub', () => {
+  // performance.now() returns fractional milliseconds, so the monotonic field
+  // can carry a fractional nanosecond value (performance.now() * 1e6). Sub/Since
+  // must not pass that into BigInt(), which throws RangeError on non-integers.
+  // Regression for the staging crash: BigInt(50099999.90463257) at Time.Sub.
+  it('Sub does not throw on fractional monotonic readings', () => {
+    const base = new globalThis.Date(0)
+    const start = Time.create(base, 0, 1000.5)
+    const end = Time.create(base, 0, 50099999.90463257)
+    let d: bigint
+    expect(() => {
+      d = end.Sub(start)
+    }).not.toThrow()
+    expect(typeof d!).toBe('bigint')
+    expect(d!).toBe(BigInt(Math.trunc(50099999.90463257 - 1000.5)))
+  })
+
+  it('Now stores an integer monotonic reading and Since stays integral', () => {
+    const realNow = performance.now
+    // Force a fractional sub-millisecond reading like a real browser clock.
+    performance.now = () => 50.09999990463257
+    try {
+      const t0 = Now()
+      performance.now = () => 60.1234567
+      expect(() => Since(t0)).not.toThrow()
+      const d = Since(t0)
+      expect(typeof d).toBe('bigint')
+    } finally {
+      performance.now = realNow
+    }
   })
 })
