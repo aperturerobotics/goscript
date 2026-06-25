@@ -7412,6 +7412,15 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 					"(" + left + ", " + right + ", " + strconv.Itoa(bits) + ")", append(leftDiagnostics, rightDiagnostics...)
 			}
 		}
+		if (typed.Op == token.SHL || typed.Op == token.SHR) && isBigIntBackedType(ctx.semPkg.source.TypesInfo.TypeOf(typed.Y)) {
+			// Go decouples a shift's result type from its count type, so a number
+			// result can be shifted by an int64/uint64 count. That count lowers to
+			// bigint while the base stays a number, and a raw JS << / >> on the
+			// pair throws "Cannot mix BigInt and other types". The wide-result and
+			// uintShr paths above already ran, so the base here is number-backed:
+			// coerce the bigint count to Number to match Go's count semantics.
+			right = "Number(" + right + ")"
+		}
 		if value, diagnostics, ok := o.lowerStringOrderExpr(ctx, typed, left, right, leftDiagnostics, rightDiagnostics); ok {
 			return value, diagnostics
 		}

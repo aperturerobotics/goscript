@@ -1,0 +1,3 @@
+byte-shl-by-uint64 17
+byte-shr-by-uint64 1
+uint16-shlassign 16
