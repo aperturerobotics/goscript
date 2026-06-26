@@ -306,7 +306,12 @@ func (o *LoweringOwner) lowerFile(
 			!localRefs.implicitRuntime[pkgPath],
 		)
 	}
+	importSourcePaths := make([]string, 0, len(relevantImportFiles))
 	for importSourcePath := range relevantImportFiles {
+		importSourcePaths = append(importSourcePaths, importSourcePath)
+	}
+	slices.Sort(importSourcePaths)
+	for _, importSourcePath := range importSourcePaths {
 		o.addGeneratedTypeImports(model, semPkg, importSourcePath, loweredFile, importAliases, importPaths, reservedImportAliases, seenImport)
 	}
 	localImports := make([]loweredImport, 0, len(localRefs.aliases))
