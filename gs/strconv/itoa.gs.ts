@@ -23,8 +23,8 @@ export function FormatInt(i: number | bigint, base: number): string {
 }
 
 // Itoa is equivalent to FormatInt(i, 10).
-export function Itoa(i: number): string {
-	return FormatInt(BigInt(Math.trunc(i)), 10);
+export function Itoa(i: number | bigint): string {
+	return FormatInt(i, 10);
 }
 
 // AppendInt appends the string form of the integer i,
