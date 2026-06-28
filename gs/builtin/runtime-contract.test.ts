@@ -19,6 +19,7 @@ import {
   indexAddress,
   indexByteAddress,
   indexRef,
+  int64AndNot,
   interfaceValue,
   len,
   makeSlice,
@@ -52,6 +53,7 @@ import {
   uint,
   uint64Add,
   uint64And,
+  uint64AndNot,
   uint64Div,
   uint64Mod,
   uint64Mul,
@@ -146,6 +148,13 @@ describe('builtin runtime contract helpers', () => {
     expect(uint(uint64And(0xf0n, 0x3cn), 32)).toBe(0x30)
     expect(uint(uint64Or(0xf0n, 0x0fn), 32)).toBe(0xff)
     expect(uint(uint64Xor(0xf0n, 0xffn), 32)).toBe(0x0f)
+    expect(uint64AndNot(0xffn, 0x0fn)).toBe(0xf0n)
+    // A constant right operand lowers to a JS number; the helper coerces it so a
+    // bigint left operand never mixes with number (the Rand.Int64 1<<63 crash).
+    expect(uint64AndNot(0xffffffffffffffffn, 9223372036854775808)).toBe(
+      9223372036854775807n,
+    )
+    expect(int64AndNot(-1n, 4611686018427387904n)).toBe(-4611686018427387905n)
     expect(
       uint64And(
         uint('18446744073709551615', 64),

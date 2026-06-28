@@ -29,45 +29,47 @@ const (
 type RuntimeHelper string
 
 const (
-	RuntimeHelperPrintln   RuntimeHelper = "builtin.println"
-	RuntimeHelperPrint     RuntimeHelper = "builtin.print"
-	RuntimeHelperInt       RuntimeHelper = "builtin.int"
-	RuntimeHelperUint      RuntimeHelper = "builtin.uint"
-	RuntimeHelperInt64     RuntimeHelper = "builtin.int64"
-	RuntimeHelperUint64    RuntimeHelper = "builtin.uint64"
-	RuntimeHelperByte      RuntimeHelper = "builtin.byte"
-	RuntimeHelperLen       RuntimeHelper = "builtin.len"
-	RuntimeHelperCap       RuntimeHelper = "builtin.cap"
-	RuntimeHelperClear     RuntimeHelper = "builtin.clear"
-	RuntimeHelperPanic     RuntimeHelper = "builtin.panic"
-	RuntimeHelperRecover   RuntimeHelper = "builtin.recover"
-	RuntimeHelperRecovered RuntimeHelper = "builtin.recovered"
-	RuntimeHelperMin       RuntimeHelper = "builtin.min"
-	RuntimeHelperMax       RuntimeHelper = "builtin.max"
-	RuntimeHelperComplex   RuntimeHelper = "builtin.complex"
-	RuntimeHelperReal      RuntimeHelper = "builtin.real"
-	RuntimeHelperImag      RuntimeHelper = "builtin.imag"
-	RuntimeHelperUint64Shl RuntimeHelper = "builtin.uint64Shl"
-	RuntimeHelperUint64Shr RuntimeHelper = "builtin.uint64Shr"
-	RuntimeHelperInt64Shl  RuntimeHelper = "builtin.int64Shl"
-	RuntimeHelperInt64Shr  RuntimeHelper = "builtin.int64Shr"
-	RuntimeHelperUintShr   RuntimeHelper = "builtin.uintShr"
-	RuntimeHelperUint64Div RuntimeHelper = "builtin.uint64Div"
-	RuntimeHelperUint64Mod RuntimeHelper = "builtin.uint64Mod"
-	RuntimeHelperUint64Mul RuntimeHelper = "builtin.uint64Mul"
-	RuntimeHelperUint64Add RuntimeHelper = "builtin.uint64Add"
-	RuntimeHelperUint64Sub RuntimeHelper = "builtin.uint64Sub"
-	RuntimeHelperUint64And RuntimeHelper = "builtin.uint64And"
-	RuntimeHelperUint64Or  RuntimeHelper = "builtin.uint64Or"
-	RuntimeHelperUint64Xor RuntimeHelper = "builtin.uint64Xor"
-	RuntimeHelperInt64Div  RuntimeHelper = "builtin.int64Div"
-	RuntimeHelperInt64Mod  RuntimeHelper = "builtin.int64Mod"
-	RuntimeHelperInt64Mul  RuntimeHelper = "builtin.int64Mul"
-	RuntimeHelperInt64Add  RuntimeHelper = "builtin.int64Add"
-	RuntimeHelperInt64Sub  RuntimeHelper = "builtin.int64Sub"
-	RuntimeHelperInt64And  RuntimeHelper = "builtin.int64And"
-	RuntimeHelperInt64Or   RuntimeHelper = "builtin.int64Or"
-	RuntimeHelperInt64Xor  RuntimeHelper = "builtin.int64Xor"
+	RuntimeHelperPrintln      RuntimeHelper = "builtin.println"
+	RuntimeHelperPrint        RuntimeHelper = "builtin.print"
+	RuntimeHelperInt          RuntimeHelper = "builtin.int"
+	RuntimeHelperUint         RuntimeHelper = "builtin.uint"
+	RuntimeHelperInt64        RuntimeHelper = "builtin.int64"
+	RuntimeHelperUint64       RuntimeHelper = "builtin.uint64"
+	RuntimeHelperByte         RuntimeHelper = "builtin.byte"
+	RuntimeHelperLen          RuntimeHelper = "builtin.len"
+	RuntimeHelperCap          RuntimeHelper = "builtin.cap"
+	RuntimeHelperClear        RuntimeHelper = "builtin.clear"
+	RuntimeHelperPanic        RuntimeHelper = "builtin.panic"
+	RuntimeHelperRecover      RuntimeHelper = "builtin.recover"
+	RuntimeHelperRecovered    RuntimeHelper = "builtin.recovered"
+	RuntimeHelperMin          RuntimeHelper = "builtin.min"
+	RuntimeHelperMax          RuntimeHelper = "builtin.max"
+	RuntimeHelperComplex      RuntimeHelper = "builtin.complex"
+	RuntimeHelperReal         RuntimeHelper = "builtin.real"
+	RuntimeHelperImag         RuntimeHelper = "builtin.imag"
+	RuntimeHelperUint64Shl    RuntimeHelper = "builtin.uint64Shl"
+	RuntimeHelperUint64Shr    RuntimeHelper = "builtin.uint64Shr"
+	RuntimeHelperInt64Shl     RuntimeHelper = "builtin.int64Shl"
+	RuntimeHelperInt64Shr     RuntimeHelper = "builtin.int64Shr"
+	RuntimeHelperUintShr      RuntimeHelper = "builtin.uintShr"
+	RuntimeHelperUint64Div    RuntimeHelper = "builtin.uint64Div"
+	RuntimeHelperUint64Mod    RuntimeHelper = "builtin.uint64Mod"
+	RuntimeHelperUint64Mul    RuntimeHelper = "builtin.uint64Mul"
+	RuntimeHelperUint64Add    RuntimeHelper = "builtin.uint64Add"
+	RuntimeHelperUint64Sub    RuntimeHelper = "builtin.uint64Sub"
+	RuntimeHelperUint64And    RuntimeHelper = "builtin.uint64And"
+	RuntimeHelperUint64AndNot RuntimeHelper = "builtin.uint64AndNot"
+	RuntimeHelperUint64Or     RuntimeHelper = "builtin.uint64Or"
+	RuntimeHelperUint64Xor    RuntimeHelper = "builtin.uint64Xor"
+	RuntimeHelperInt64Div     RuntimeHelper = "builtin.int64Div"
+	RuntimeHelperInt64Mod     RuntimeHelper = "builtin.int64Mod"
+	RuntimeHelperInt64Mul     RuntimeHelper = "builtin.int64Mul"
+	RuntimeHelperInt64Add     RuntimeHelper = "builtin.int64Add"
+	RuntimeHelperInt64Sub     RuntimeHelper = "builtin.int64Sub"
+	RuntimeHelperInt64And     RuntimeHelper = "builtin.int64And"
+	RuntimeHelperInt64AndNot  RuntimeHelper = "builtin.int64AndNot"
+	RuntimeHelperInt64Or      RuntimeHelper = "builtin.int64Or"
+	RuntimeHelperInt64Xor     RuntimeHelper = "builtin.int64Xor"
 
 	RuntimeHelperAssignStruct      RuntimeHelper = "value.assignStruct"
 	RuntimeHelperMarkAsStructValue RuntimeHelper = "value.markAsStructValue"
@@ -296,6 +298,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperUint64Add, "uint64Add", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Sub, "uint64Sub", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64And, "uint64And", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperUint64AndNot, "uint64AndNot", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Or, "uint64Or", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperUint64Xor, "uint64Xor", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt64Div, "int64Div", RuntimeHelperCategoryBuiltin),
@@ -304,6 +307,7 @@ func runtimeHelperContracts() []RuntimeHelperContract {
 		runtimeHelper(RuntimeHelperInt64Add, "int64Add", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt64Sub, "int64Sub", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt64And, "int64And", RuntimeHelperCategoryBuiltin),
+		runtimeHelper(RuntimeHelperInt64AndNot, "int64AndNot", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt64Or, "int64Or", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperInt64Xor, "int64Xor", RuntimeHelperCategoryBuiltin),
 		runtimeHelper(RuntimeHelperAssignStruct, "assignStruct", RuntimeHelperCategoryValue),

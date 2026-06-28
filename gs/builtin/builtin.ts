@@ -580,6 +580,20 @@ export function int64And(
   return int64Result(int64Value(left) & int64Value(right))
 }
 
+export function uint64AndNot(
+  left: number | bigint,
+  right: number | bigint,
+): bigint {
+  return uint64Result(uint64Value(left) & ~uint64Value(right))
+}
+
+export function int64AndNot(
+  left: number | bigint,
+  right: number | bigint,
+): bigint {
+  return int64Result(int64Value(left) & ~int64Value(right))
+}
+
 export function uint64Or(
   left: number | bigint,
   right: number | bigint,

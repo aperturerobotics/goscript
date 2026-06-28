@@ -121,7 +121,7 @@ export class fdMutex {
 				$.panic("too many concurrent operations on a single file or socket (max 1048575)")
 			}
 			// Remove all read and write waiters.
-			_new = _new & ~((9223372036846387200n))
+			_new = $.uint64AndNot(_new, 9223372036846387200n)
 			if (atomic.CompareAndSwapUint64($.pointerValue<fdMutex>(mu)._fields.state, old, _new)) {
 				// Wake all read and write waiters,
 				// they will observe closed flag after wakeup.
@@ -208,7 +208,7 @@ export class fdMutex {
 				$.panic("inconsistent poll.fdMutex")
 			}
 			// Drop lock, drop reference and wake read waiter if present.
-			let _new = $.uint64Sub((old & ~(mutexBit)), 8)
+			let _new = $.uint64Sub(($.uint64AndNot(old, mutexBit)), 8)
 			if (($.uint64And(old, mutexMask)) != 0n) {
 				_new = $.uint64Sub(_new, mutexWait)
 			}

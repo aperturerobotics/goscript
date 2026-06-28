@@ -5135,6 +5135,8 @@ func wideIntegerAssignHelper(targetType types.Type, tok token.Token) (RuntimeHel
 		return wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub), true
 	case token.AND_ASSIGN:
 		return wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And), true
+	case token.AND_NOT_ASSIGN:
+		return wideIntegerHelper(signed, RuntimeHelperUint64AndNot, RuntimeHelperInt64AndNot), true
 	case token.OR_ASSIGN:
 		return wideIntegerHelper(signed, RuntimeHelperUint64Or, RuntimeHelperInt64Or), true
 	case token.XOR_ASSIGN:
@@ -7385,6 +7387,13 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 			right = "(" + right + ")"
 		}
 		if typed.Op == token.AND_NOT {
+			// Wide (int64/uint64) operands lower to bigint, and a Go constant like
+			// 1<<63 lowers to a JS number whose raw ~ collapses to -1, so the raw
+			// "left & ~(right)" mixes bigint and number at runtime. Route wide
+			// AND-NOT through the typed helper; narrow operands keep raw JS.
+			if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
+				return value, append(leftDiagnostics, rightDiagnostics...)
+			}
 			return left + " & ~(" + right + ")", append(leftDiagnostics, rightDiagnostics...)
 		}
 		if isEqualityOperator(typed.Op) {
@@ -8655,6 +8664,8 @@ func (o *LoweringOwner) lowerWideIntegerBinaryExpr(ctx lowerFileContext, expr *a
 		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64Sub, RuntimeHelperInt64Sub)), true
 	case token.AND:
 		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64And, RuntimeHelperInt64And)), true
+	case token.AND_NOT:
+		return helperCall(wideIntegerHelper(signed, RuntimeHelperUint64AndNot, RuntimeHelperInt64AndNot)), true
 	case token.XOR:
 		if isZeroIntegerExpr(ctx, expr.Y) {
 			return left, true
@@ -9159,11 +9170,11 @@ func (o *LoweringOwner) packageVarAssignmentValue(
 	if len(diagnostics) != 0 {
 		return "", false
 	}
-	if tok == token.AND_NOT_ASSIGN {
-		return left + " & ~(" + right + ")", true
-	}
 	if helper, ok := wideIntegerAssignHelper(targetType, tok); ok {
 		return coerceWideHelperResult(o.runtimeOwner, targetType, o.runtimeOwner.QualifiedHelper(helper)+"("+left+", "+right+")"), true
+	}
+	if tok == token.AND_NOT_ASSIGN {
+		return left + " & ~(" + right + ")", true
 	}
 	if value, ok := integerQuotientAssignValueExpr(targetType, left, right, tok); ok {
 		return value, true
