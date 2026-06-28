@@ -1,8 +1,49 @@
 import { describe, expect, it } from 'vitest'
 
 import * as $ from '../../../builtin/index.js'
+import { Builder } from '../../../strings/index.js'
 import {
   AppendVarint,
+  DecodeBytes,
+  DecodeBytesAppend,
+  DecodeFloat32,
+  DecodeFloat64,
+  DecodeLengthDelimited,
+  DecodeSint32,
+  DecodeSint64,
+  DecodeString,
+  DecodeStringUnsafe,
+  DecodeVarintBool,
+  EncodeBool,
+  EncodeBytes,
+  EncodeFixed32,
+  EncodeFixed64,
+  EncodeRawBytes,
+  EncodeString,
+  EncodeVarintPacked,
+  EncodeZigzag32,
+  EncodeZigzag32Packed,
+  EncodeZigzag64,
+  EncodeZigzag64Packed,
+  PackedFixedElementCount,
+  PackedVarintElementCount,
+  SkipWithin,
+  TextFinishMessage,
+  TextSortedMapKeys,
+  TextStartMessage,
+  TextWriteBool,
+  TextWriteBytes,
+  TextWriteFieldPrefix,
+  TextWriteFloat32,
+  TextWriteFloat64,
+  TextWriteInt,
+  TextWriteListEnd,
+  TextWriteListSeparator,
+  TextWriteListStart,
+  TextWriteString,
+  TextWriteStringer,
+  TextWriteTextMarshaler,
+  TextWriteUint,
   CloneBytes,
   CloneBytesMap,
   CloneBytesSlice,
@@ -642,5 +683,193 @@ describe('protobuf-go-lite wire helpers', () => {
 
     expect(SizeMessage(1, 3)).toBe(5)
     expect(SizeGroup(1, 3)).toBe(5)
+  })
+})
+
+// These helpers mirror the exported helper functions the protobuf-go-lite
+// generator now emits as calls instead of inlining. The generated .pb.gs.ts
+// references them by name, so the shim must reproduce their wire semantics.
+describe('protobuf-go-lite encode helpers', () => {
+  it('writes raw bytes and length-prefixed bytes from the buffer tail', () => {
+    const raw = new Uint8Array(3)
+    expect(EncodeRawBytes(raw, 3, new Uint8Array([1, 2, 3]))).toBe(0)
+    expect(Array.from(raw)).toEqual([1, 2, 3])
+
+    const v = new Uint8Array([9, 8, 7])
+    const buf = new Uint8Array(4)
+    expect(EncodeBytes(buf, 4, v)).toBe(0)
+    expect(Array.from(buf)).toEqual([3, 9, 8, 7])
+    const [decoded, end, err] = DecodeBytes(buf, 0, true)
+    expect(err).toBeNull()
+    expect(end).toBe(4)
+    expect(Array.from(decoded as Uint8Array)).toEqual([9, 8, 7])
+  })
+
+  it('round-trips strings including multibyte runes', () => {
+    const buf = new Uint8Array(8)
+    const off = EncodeString(buf, 8, 'héllo')
+    const [s, end, err] = DecodeString(buf, off)
+    expect(err).toBeNull()
+    expect(s).toBe('héllo')
+    expect(end).toBe(8)
+  })
+
+  it('encodes bool and decodes it as a varint bool', () => {
+    const t = new Uint8Array(1)
+    expect(EncodeBool(t, 1, true)).toBe(0)
+    expect(DecodeVarintBool(t, 0)).toEqual([true, 1, null])
+    const f = new Uint8Array(1)
+    expect(EncodeBool(f, 1, false)).toBe(0)
+    expect(DecodeVarintBool(f, 0)).toEqual([false, 1, null])
+  })
+
+  it('writes fixed32 and fixed64 little-endian', () => {
+    const b32 = new Uint8Array(4)
+    expect(EncodeFixed32(b32, 4, 0x11223344)).toBe(0)
+    expect(Array.from(b32)).toEqual([0x44, 0x33, 0x22, 0x11])
+    const [v32, , err32] = DecodeFixed32(b32, 0)
+    expect(err32).toBeNull()
+    expect(v32).toBe(0x11223344)
+
+    const b64 = new Uint8Array(8)
+    expect(EncodeFixed64(b64, 8, 0x1122334455667788n)).toBe(0)
+    expect(Array.from(b64)).toEqual([
+      0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11,
+    ])
+  })
+
+  it('round-trips sint32 zigzag including extremes', () => {
+    for (const v of [0, 1, -1, 65, -65, 2147483647, -2147483648]) {
+      const buf = new Uint8Array(10)
+      const off = EncodeZigzag32(buf, 10, v)
+      const [decoded, , err] = DecodeSint32(buf, off)
+      expect(err).toBeNull()
+      expect(decoded).toBe(v)
+    }
+  })
+
+  it('round-trips sint64 zigzag including extremes', () => {
+    for (const v of [
+      0n,
+      1n,
+      -1n,
+      300n,
+      -300n,
+      9223372036854775807n,
+      -9223372036854775808n,
+    ]) {
+      const buf = new Uint8Array(10)
+      const off = EncodeZigzag64(buf, 10, v)
+      const [decoded, , err] = DecodeSint64(buf, off)
+      expect(err).toBeNull()
+      expect(decoded).toBe(v)
+    }
+  })
+
+  it('packs varints and counts elements', () => {
+    const buf = new Uint8Array(4)
+    expect(EncodeVarintPacked(buf, 4, [1n, 300n])).toBe(0)
+    expect(Array.from(buf)).toEqual([3, 1, 0xac, 0x02])
+    const [start, end, err] = DecodeLengthDelimited(buf, 0)
+    expect(err).toBeNull()
+    expect(start).toBe(1)
+    expect(end).toBe(4)
+    expect(PackedVarintElementCount($.goSlice(buf, start, end))).toBe(2)
+  })
+
+  it('packs zigzag varints', () => {
+    const b32 = new Uint8Array(3)
+    expect(EncodeZigzag32Packed(b32, 3, [-1, 1])).toBe(0)
+    expect(Array.from(b32)).toEqual([2, 1, 2])
+    const b64 = new Uint8Array(3)
+    expect(EncodeZigzag64Packed(b64, 3, [-1n, 1n])).toBe(0)
+    expect(Array.from(b64)).toEqual([2, 1, 2])
+  })
+
+  it('counts packed fixed-width elements', () => {
+    expect(PackedFixedElementCount(new Uint8Array(12), 4)).toBe(3)
+    expect(PackedFixedElementCount(new Uint8Array(10), 4)).toBe(2)
+    expect(PackedFixedElementCount(new Uint8Array(8), 0)).toBe(0)
+  })
+
+  it('decodes floats from fixed-width bit patterns', () => {
+    const f32 = new Uint8Array([0x00, 0x00, 0xc0, 0x3f])
+    expect(DecodeFloat32(f32, 0)).toEqual([1.5, 4, null])
+    const f64 = new Uint8Array([0, 0, 0, 0, 0, 0, 0xf8, 0x3f])
+    expect(DecodeFloat64(f64, 0)).toEqual([1.5, 8, null])
+  })
+
+  it('appends decoded bytes and reads unsafe strings', () => {
+    const buf = new Uint8Array([3, 97, 98, 99])
+    const [bytes, end, err] = DecodeBytesAppend(null, buf, 0)
+    expect(err).toBeNull()
+    expect(end).toBe(4)
+    expect(Array.from(bytes as Uint8Array)).toEqual([97, 98, 99])
+    expect(DecodeStringUnsafe(buf, 0)).toEqual(['abc', 4, null])
+  })
+
+  it('skips a record bounded by a limit', () => {
+    // field 1, wire type 0 (varint), value 150 encoded as 0x96 0x01.
+    const rec = new Uint8Array([0x08, 0x96, 0x01])
+    expect(SkipWithin(rec, 0, 3)).toEqual([3, null])
+    const [, errLimit] = SkipWithin(rec, 0, 2)
+    expect(errLimit).not.toBeNull()
+  })
+})
+
+describe('protobuf-go-lite text helpers', () => {
+  it('assembles a proto-text message body', () => {
+    const sb = new Builder()
+    const initial = TextStartMessage(sb, 'M')
+    TextWriteFieldPrefix(sb, initial, 'a')
+    TextWriteInt(sb, 1n)
+    TextWriteFieldPrefix(sb, initial, 'b')
+    TextWriteString(sb, 'hi')
+    TextWriteFieldPrefix(sb, initial, 'c')
+    TextWriteBool(sb, true)
+    expect(TextFinishMessage(sb)).toBe('M {a: 1 b: "hi" c: true}')
+  })
+
+  it('writes lists, maps, and sorted keys', () => {
+    const sb = new Builder()
+    const initial = TextStartMessage(sb, 'L')
+    TextWriteListStart(sb, initial, 'items')
+    TextWriteListSeparator(sb, 0)
+    TextWriteUint(sb, 1n)
+    TextWriteListSeparator(sb, 1)
+    TextWriteUint(sb, 2n)
+    TextWriteListEnd(sb)
+    expect(TextFinishMessage(sb)).toBe('L {items: [1, 2]}')
+
+    const keys = TextSortedMapKeys(
+      new Map([
+        ['b', 1],
+        ['a', 2],
+      ]),
+    )
+    expect(Array.from(keys as string[])).toEqual(['a', 'b'])
+  })
+
+  it('encodes bytes as base64 and floats via FormatFloat', () => {
+    const sb = new Builder()
+    TextWriteBytes(sb, new Uint8Array([1, 2, 3]))
+    expect(sb.String()).toBe('"AQID"')
+
+    const fb = new Builder()
+    TextWriteFloat32(fb, 1.5)
+    expect(fb.String()).toBe('1.5')
+    const f64 = new Builder()
+    TextWriteFloat64(f64, 2.25)
+    expect(f64.String()).toBe('2.25')
+  })
+
+  it('writes stringer and text-marshaler values', () => {
+    const sb = new Builder()
+    TextWriteStringer(sb, { String: () => 'ID' })
+    expect(sb.String()).toBe('"ID"')
+
+    const mb = new Builder()
+    TextWriteTextMarshaler(mb, { MarshalProtoText: () => 'inner {}' })
+    expect(mb.String()).toBe('inner {}')
   })
 })

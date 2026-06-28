@@ -1,4 +1,7 @@
 import * as $ from '../../../builtin/index.js'
+import * as math from '../../../math/index.js'
+import * as strconv from '../../../strconv/index.js'
+import * as strings from '../../../strings/index.js'
 
 export const ErrInvalidLength = $.newError(
   'proto: negative length found during unmarshaling',
@@ -32,6 +35,14 @@ export interface JSONMessage {
 $.registerInterfaceType('protobuf_go_lite.JSONMessage', null, [
   { name: 'MarshalJSON', args: [], returns: [] },
   { name: 'UnmarshalJSON', args: [], returns: [] },
+])
+
+export interface TextMarshaler {
+  MarshalProtoText(): string
+}
+
+$.registerInterfaceType('protobuf_go_lite.TextMarshaler', null, [
+  { name: 'MarshalProtoText', args: [], returns: [] },
 ])
 
 export interface CloneMessage extends Message {
@@ -1289,4 +1300,520 @@ function toInt32(v: number): number {
 
 function ioUnexpectedEOF(): $.GoError {
   return $.newError('unexpected EOF')
+}
+
+export function EncodeRawBytes(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: $.Bytes | null,
+): number {
+  const n = $.len(v)
+  offset -= n
+  for (let i = 0; i < n; i++) {
+    setByte(dAtA, offset + i, $.indexStringOrBytes(v!, i))
+  }
+  return offset
+}
+
+export function EncodeFixed32(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: number,
+): number {
+  offset -= 4
+  const u = v >>> 0
+  setByte(dAtA, offset, u)
+  setByte(dAtA, offset + 1, u >>> 8)
+  setByte(dAtA, offset + 2, u >>> 16)
+  setByte(dAtA, offset + 3, u >>> 24)
+  return offset
+}
+
+export function EncodeFixed64(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: number | bigint,
+): number {
+  offset -= 8
+  let u = normalizedVarint(v)
+  for (let i = 0; i < 8; i++) {
+    setByte(dAtA, offset + i, Number(u & 0xffn))
+    u >>= 8n
+  }
+  return offset
+}
+
+export function EncodeBool(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: boolean,
+): number {
+  offset--
+  setByte(dAtA, offset, v ? 1 : 0)
+  return offset
+}
+
+export function EncodeString(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: string,
+): number {
+  const bytes = $.stringToBytes(v)
+  offset = EncodeRawBytes(dAtA, offset, bytes)
+  return EncodeVarint(dAtA, offset, bytes.length)
+}
+
+export function EncodeBytes(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: $.Bytes | null,
+): number {
+  const n = $.len(v)
+  offset = EncodeRawBytes(dAtA, offset, v)
+  return EncodeVarint(dAtA, offset, n)
+}
+
+export function EncodeZigzag32(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: number,
+): number {
+  return EncodeVarint(dAtA, offset, ((v << 1) ^ (v >> 31)) >>> 0)
+}
+
+export function EncodeZigzag64(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: number | bigint,
+): number {
+  const x = toInt64(v)
+  return EncodeVarint(dAtA, offset, BigInt.asUintN(64, (x << 1n) ^ (x >> 63n)))
+}
+
+export function EncodeVarintPacked(
+  dAtA: $.Slice<number>,
+  offset: number,
+  vals: $.Slice<number | bigint> | null,
+): number {
+  let total = 0
+  for (const v of vals ?? []) {
+    total += SizeOfVarint(v)
+  }
+  offset -= total
+  let j = offset
+  for (const v of vals ?? []) {
+    j = putVarintAt(dAtA, j, v)
+  }
+  return EncodeVarint(dAtA, offset, total)
+}
+
+export function EncodeZigzag32Packed(
+  dAtA: $.Slice<number>,
+  offset: number,
+  vals: $.Slice<number> | null,
+): number {
+  let total = 0
+  for (const v of vals ?? []) {
+    total += SizeOfZigzag(BigInt.asUintN(64, BigInt(v | 0)))
+  }
+  offset -= total
+  let j = offset
+  for (const v of vals ?? []) {
+    j = putVarintAt(dAtA, j, ((v << 1) ^ (v >> 31)) >>> 0)
+  }
+  return EncodeVarint(dAtA, offset, total)
+}
+
+export function EncodeZigzag64Packed(
+  dAtA: $.Slice<number>,
+  offset: number,
+  vals: $.Slice<number | bigint> | null,
+): number {
+  let total = 0
+  for (const v of vals ?? []) {
+    total += SizeOfZigzag(BigInt.asUintN(64, toInt64(v)))
+  }
+  offset -= total
+  let j = offset
+  for (const v of vals ?? []) {
+    const x = toInt64(v)
+    j = putVarintAt(dAtA, j, BigInt.asUintN(64, (x << 1n) ^ (x >> 63n)))
+  }
+  return EncodeVarint(dAtA, offset, total)
+}
+
+export function DecodeVarintBool(
+  b: $.Slice<number>,
+  idx: number,
+): [boolean, number, $.GoError] {
+  const [v, n] = ConsumeVarint($.goSlice(b, idx, undefined))
+  if (n < 0) {
+    return [false, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
+  }
+  return [v !== 0, idx + n, null]
+}
+
+export function DecodeSint32(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [v, n] = ConsumeVarint($.goSlice(b, idx, undefined))
+  if (n < 0) {
+    return [0, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
+  }
+  const lo = low32(v)
+  return [((lo >>> 1) ^ -(lo & 1)) | 0, idx + n, null]
+}
+
+export function DecodeSint64(
+  b: $.Slice<number>,
+  idx: number,
+): [bigint, number, $.GoError] {
+  const [v, n] = ConsumeVarint($.goSlice(b, idx, undefined))
+  if (n < 0) {
+    return [0n, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
+  }
+  const u = normalizedVarint(v)
+  const mask = (u & 1n) === 1n ? 0xffffffffffffffffn : 0n
+  return [BigInt.asIntN(64, (u >> 1n) ^ mask), idx + n, null]
+}
+
+export function DecodeFloat32(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [v, next, err] = DecodeFixed32(b, idx)
+  if (err != null) {
+    return [0, 0, err]
+  }
+  return [math.Float32frombits(v), next, null]
+}
+
+export function DecodeFloat64(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [v, next, err] = DecodeFixed64(b, idx)
+  if (err != null) {
+    return [0, 0, err]
+  }
+  return [math.Float64frombits(v), next, null]
+}
+
+export function DecodeLengthDelimited(
+  b: $.Slice<number>,
+  idx: number,
+): [number, number, $.GoError] {
+  const [length, next, err] = DecodeVarint(b, idx)
+  if (err != null) {
+    return [0, 0, err]
+  }
+  const l = typeof length === 'bigint' ? Number(length) : length
+  if (l < 0) {
+    return [0, 0, ErrInvalidLength]
+  }
+  const end = next + l
+  if (end < 0) {
+    return [0, 0, ErrInvalidLength]
+  }
+  if (end > $.len(b)) {
+    return [0, 0, ioUnexpectedEOF()]
+  }
+  return [next, end, null]
+}
+
+export function DecodeBytes(
+  b: $.Slice<number>,
+  idx: number,
+  cp: boolean,
+): [$.Slice<number>, number, $.GoError] {
+  const [start, end, err] = DecodeLengthDelimited(b, idx)
+  if (err != null) {
+    return [null, 0, err]
+  }
+  if (cp) {
+    const out: number[] = []
+    for (let i = start; i < end; i++) {
+      out.push(byteSliceValue(b, i))
+    }
+    return [$.arrayToSlice(out), end, null]
+  }
+  return [$.goSlice(b, start, end), end, null]
+}
+
+export function DecodeBytesAppend(
+  dst: $.Slice<number>,
+  b: $.Slice<number>,
+  idx: number,
+): [$.Slice<number>, number, $.GoError] {
+  const [start, end, err] = DecodeLengthDelimited(b, idx)
+  if (err != null) {
+    return [dst, 0, err]
+  }
+  const out: number[] = []
+  for (let i = start; i < end; i++) {
+    out.push(byteSliceValue(b, i))
+  }
+  return [$.arrayToSlice(out), end, null]
+}
+
+export function DecodeString(
+  b: $.Slice<number>,
+  idx: number,
+): [string, number, $.GoError] {
+  const [start, end, err] = DecodeLengthDelimited(b, idx)
+  if (err != null) {
+    return ['', 0, err]
+  }
+  return [$.bytesToString($.goSlice(b, start, end)), end, null]
+}
+
+export function DecodeStringUnsafe(
+  b: $.Slice<number>,
+  idx: number,
+): [string, number, $.GoError] {
+  const [start, end, err] = DecodeLengthDelimited(b, idx)
+  if (err != null) {
+    return ['', 0, err]
+  }
+  if (start === end) {
+    return ['', end, null]
+  }
+  return [$.bytesToString($.goSlice(b, start, end)), end, null]
+}
+
+export function PackedVarintElementCount(b: $.Slice<number> | null): number {
+  let n = 0
+  const l = $.len(b)
+  for (let i = 0; i < l; i++) {
+    if (byteSliceValue(b!, i) < 0x80) {
+      n++
+    }
+  }
+  return n
+}
+
+export function PackedFixedElementCount(
+  b: $.Slice<number> | null,
+  width: number,
+): number {
+  if (width <= 0) {
+    return 0
+  }
+  return Math.floor($.len(b) / width)
+}
+
+export function SkipWithin(
+  dAtA: $.Slice<number>,
+  idx: number,
+  limit: number,
+): [number, $.GoError] {
+  const [skippy, err] = Skip($.goSlice(dAtA, idx, undefined))
+  if (err != null) {
+    return [0, err]
+  }
+  const next = idx + skippy
+  if (skippy < 0 || next < 0) {
+    return [0, ErrInvalidLength]
+  }
+  if (next > limit) {
+    return [0, ioUnexpectedEOF()]
+  }
+  return [next, null]
+}
+
+export type TextBuilder = strings.Builder
+
+type TextBuilderArg = strings.Builder | $.VarRef<strings.Builder> | null
+
+export function TextStartMessage(sb: TextBuilderArg, name: string): number {
+  const b = textBuilder(sb)
+  b.WriteString(name)
+  b.WriteString(' {')
+  return $.len(name) + 2
+}
+
+export function TextFinishMessage(sb: TextBuilderArg): string {
+  const b = textBuilder(sb)
+  b.WriteString('}')
+  return b.String()
+}
+
+export function TextWriteFieldPrefix(
+  sb: TextBuilderArg,
+  initialLen: number,
+  name: string,
+): void {
+  const b = textBuilder(sb)
+  if (b.Len() > initialLen) {
+    b.WriteString(' ')
+  }
+  b.WriteString(name)
+  b.WriteString(': ')
+}
+
+export function TextWriteListStart(
+  sb: TextBuilderArg,
+  initialLen: number,
+  name: string,
+): void {
+  TextWriteFieldPrefix(sb, initialLen, name)
+  textBuilder(sb).WriteString('[')
+}
+
+export function TextWriteListSeparator(sb: TextBuilderArg, index: number): void {
+  if (index > 0) {
+    textBuilder(sb).WriteString(', ')
+  }
+}
+
+export function TextWriteListEnd(sb: TextBuilderArg): void {
+  textBuilder(sb).WriteString(']')
+}
+
+export function TextWriteMapStart(
+  sb: TextBuilderArg,
+  initialLen: number,
+  name: string,
+): void {
+  TextWriteFieldPrefix(sb, initialLen, name)
+  textBuilder(sb).WriteString('{')
+}
+
+export function TextWriteMapEntryPrefix(sb: TextBuilderArg): void {
+  textBuilder(sb).WriteString(' ')
+}
+
+export function TextWriteMapKeyValueSeparator(sb: TextBuilderArg): void {
+  textBuilder(sb).WriteString(': ')
+}
+
+export function TextWriteMapEnd(sb: TextBuilderArg): void {
+  textBuilder(sb).WriteString(' }')
+}
+
+export function TextSortedMapKeys<K, V>(m: Map<K, V> | null): $.Slice<K> {
+  if (m == null) {
+    return $.arrayToSlice<K>([])
+  }
+  const keys = Array.from(m.keys())
+  keys.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+  return $.arrayToSlice(keys)
+}
+
+export function TextWriteTextMarshaler(
+  sb: TextBuilderArg,
+  v: TextMarshaler | null,
+): void {
+  textBuilder(sb).WriteString(v!.MarshalProtoText())
+}
+
+export function TextWriteString(sb: TextBuilderArg, v: string): void {
+  textBuilder(sb).WriteString(strconv.Quote(v))
+}
+
+export function TextWriteBytes(sb: TextBuilderArg, v: $.Bytes | null): void {
+  const b = textBuilder(sb)
+  b.WriteString('"')
+  b.WriteString(base64StdEncode(v))
+  b.WriteString('"')
+}
+
+export function TextWriteStringer(
+  sb: TextBuilderArg,
+  v: { String(): string } | null,
+): void {
+  const b = textBuilder(sb)
+  b.WriteString('"')
+  b.WriteString(v!.String())
+  b.WriteString('"')
+}
+
+export function TextWriteInt(sb: TextBuilderArg, v: number | bigint): void {
+  textBuilder(sb).WriteString(strconv.FormatInt(v, 10))
+}
+
+export function TextWriteUint(sb: TextBuilderArg, v: number | bigint): void {
+  textBuilder(sb).WriteString(strconv.FormatUint(v, 10))
+}
+
+export function TextWriteFloat32(sb: TextBuilderArg, v: number): void {
+  textBuilder(sb).WriteString(strconv.FormatFloat(v, 103, -1, 32))
+}
+
+export function TextWriteFloat64(sb: TextBuilderArg, v: number): void {
+  textBuilder(sb).WriteString(strconv.FormatFloat(v, 103, -1, 64))
+}
+
+export function TextWriteBool(sb: TextBuilderArg, v: boolean): void {
+  textBuilder(sb).WriteString(strconv.FormatBool(v))
+}
+
+function textBuilder(sb: TextBuilderArg): strings.Builder {
+  return $.pointerValue<strings.Builder>(sb)
+}
+
+function putVarintAt(
+  dAtA: $.Slice<number>,
+  offset: number,
+  v: number | bigint,
+): number {
+  let value = normalizedVarint(v)
+  while (value >= 0x80n) {
+    setByte(dAtA, offset, Number((value & 0x7fn) | 0x80n))
+    value >>= 7n
+    offset++
+  }
+  setByte(dAtA, offset, Number(value))
+  return offset + 1
+}
+
+function toInt64(v: number | bigint): bigint {
+  return typeof v === 'bigint' ?
+      BigInt.asIntN(64, v)
+    : BigInt.asIntN(64, BigInt(Math.trunc(v)))
+}
+
+function low32(v: number | bigint): number {
+  if (typeof v === 'bigint') {
+    return Number(BigInt.asUintN(32, v))
+  }
+  return v >>> 0
+}
+
+const base64StdAlphabet =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+function base64StdEncode(v: $.Bytes | null): string {
+  const n = $.len(v)
+  if (n === 0) {
+    return ''
+  }
+  let out = ''
+  let i = 0
+  for (; i + 2 < n; i += 3) {
+    const b0 = $.indexStringOrBytes(v!, i)
+    const b1 = $.indexStringOrBytes(v!, i + 1)
+    const b2 = $.indexStringOrBytes(v!, i + 2)
+    out += base64StdAlphabet[b0 >> 2]
+    out += base64StdAlphabet[((b0 & 0x3) << 4) | (b1 >> 4)]
+    out += base64StdAlphabet[((b1 & 0xf) << 2) | (b2 >> 6)]
+    out += base64StdAlphabet[b2 & 0x3f]
+  }
+  const rem = n - i
+  if (rem === 1) {
+    const b0 = $.indexStringOrBytes(v!, i)
+    out += base64StdAlphabet[b0 >> 2]
+    out += base64StdAlphabet[(b0 & 0x3) << 4]
+    out += '=='
+  }
+  if (rem === 2) {
+    const b0 = $.indexStringOrBytes(v!, i)
+    const b1 = $.indexStringOrBytes(v!, i + 1)
+    out += base64StdAlphabet[b0 >> 2]
+    out += base64StdAlphabet[((b0 & 0x3) << 4) | (b1 >> 4)]
+    out += base64StdAlphabet[(b1 & 0xf) << 2]
+    out += '='
+  }
+  return out
 }
