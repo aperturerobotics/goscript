@@ -6890,6 +6890,17 @@ func (o *LoweringOwner) lowerSwitchStmt(ctx lowerFileContext, stmt *ast.SwitchSt
 				sourceType := ctx.semPkg.source.TypesInfo.TypeOf(expr)
 				lowered = o.lowerValueForTargetTypes(ctx, tagType, sourceType, lowered, shouldCloneStructValue(expr))
 				lowered = o.runtimeOwner.QualifiedHelper(RuntimeHelperComparableEqual) + "(" + compareValue + ", " + lowered + ")"
+			} else if tagType != nil && isBigIntBackedType(tagType) {
+				// A bigint-backed tag (int64/uint64) lowers to a bigint at
+				// runtime, and JS switch matches with strict ===. An integer
+				// constant case must carry the bigint literal ("5n") so a small
+				// value still matches; a plain number case (5) would fail
+				// 5n === 5 and fall through to default.
+				if tv, ok := ctx.semPkg.source.TypesInfo.Types[unwrapParenExpr(expr)]; ok {
+					if bigLit, ok := lowerConstantValueForType(tv.Value, tagType); ok {
+						lowered = bigLit
+					}
+				}
 			}
 			values = append(values, lowered)
 		}
