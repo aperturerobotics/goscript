@@ -51,6 +51,25 @@ describe('encoding/binary override', () => {
     expect(BigEndian.GoString()).toBe('binary.BigEndian')
   })
 
+  it('returns uint64 as bigint even when the value fits in a float', () => {
+    // Go uint64 is always a JS bigint in GoScript. A small value that fits in
+    // Number.MAX_SAFE_INTEGER must still come back as a bigint, or a later raw
+    // operator mixing it with a wide bigint uint64 throws "Cannot mix BigInt
+    // and other types" (the chunk-index upload crash on staging).
+    const small = $.makeSlice<number>(8, undefined, 'byte')
+    LittleEndian.PutUint64(small, 5n as unknown as number)
+    const wide = $.makeSlice<number>(8, undefined, 'byte')
+    LittleEndian.PutUint64(wide, (1n << 60n) as unknown as number)
+
+    const a = LittleEndian.Uint64(small)
+    const b = LittleEndian.Uint64(wide)
+    expect(typeof a).toBe('bigint')
+    expect(typeof b).toBe('bigint')
+    expect(a).toBe(5n)
+    // The raw relational operator GoScript emits for uint64 must not throw.
+    expect((a as unknown as bigint) < (b as unknown as bigint)).toBe(true)
+  })
+
   it('appends endian integers', () => {
     let out = BigEndian.AppendUint16(null, 0x1234)
     out = LittleEndian.AppendUint32(out, 0x01020304)
@@ -84,32 +103,32 @@ describe('encoding/binary override', () => {
     expect(Array.from($.bytesToUint8Array($.goSlice(buf, 0, n)))).toEqual([
       0xac, 0x02,
     ])
-    expect(Uvarint($.goSlice(buf, 0, n))).toEqual([300, 2])
+    expect(Uvarint($.goSlice(buf, 0, n))).toEqual([300n, 2])
 
     const signed = $.makeSlice<number>(MaxVarintLen64, undefined, 'byte')
     const signedN = PutVarint(signed, -150)
-    expect(Varint($.goSlice(signed, 0, signedN))).toEqual([-150, signedN])
+    expect(Varint($.goSlice(signed, 0, signedN))).toEqual([-150n, signedN])
 
     expect(Array.from($.bytesToUint8Array(AppendUvarint(null, 300)))).toEqual([
       0xac, 0x02,
     ])
-    expect(Varint(AppendVarint(null, -150))[0]).toBe(-150)
+    expect(Varint(AppendVarint(null, -150))[0]).toBe(-150n)
 
     const reader = bytes.NewReader($.goSlice(buf, 0, n))!
-    expect(await ReadUvarint(reader)).toEqual([300, null])
+    expect(await ReadUvarint(reader)).toEqual([300n, null])
 
     const signedReader = bytes.NewReader($.goSlice(signed, 0, signedN))!
-    expect(await ReadVarint(signedReader)).toEqual([-150, null])
+    expect(await ReadVarint(signedReader)).toEqual([-150n, null])
   })
 
   it('reports varint short buffers and overflows', async () => {
-    expect(Uvarint($.stringToBytes('\x80'))).toEqual([0, 0])
+    expect(Uvarint($.stringToBytes('\x80'))).toEqual([0n, 0])
 
     const overflow = $.makeSlice<number>(11, undefined, 'byte')
     for (let i = 0; i < $.len(overflow); i++) {
       overflow[i] = 0x80
     }
-    expect(Uvarint(overflow)).toEqual([0, -11])
+    expect(Uvarint(overflow)).toEqual([0n, -11])
 
     const shortReader = bytes.NewReader($.stringToBytes('\x80'))!
     const [, shortErr] = await ReadUvarint(shortReader)
@@ -191,13 +210,13 @@ describe('encoding/binary override', () => {
       { kind: $.TypeKind.Pointer, elemType: polType },
     )
     expect(Decode(polEncoded, LittleEndian, polTarget)).toEqual([8, null])
-    expect(polRef.value).toBe(0x010203040506)
+    expect(polRef.value).toBe(0x010203040506n)
 
     polRef.value = 0
     expect(
       await Read(bytes.NewReader(polEncoded)!, LittleEndian, polTarget),
     ).toBeNull()
-    expect(polRef.value).toBe(0x010203040506)
+    expect(polRef.value).toBe(0x010203040506n)
 
     const written: $.Bytes[] = []
     const writer = {

@@ -338,18 +338,18 @@ export function Uvarint(buf: $.Slice<number>): [number, number] {
   for (let i = 0; i < $.len(buf); i++) {
     const b = byteAt(buf, i)
     if (i === MaxVarintLen64) {
-      return [0, -(i + 1)]
+      return [uint64Result(0n), -(i + 1)]
     }
     if (b < 0x80) {
       if (i === MaxVarintLen64 - 1 && b > 1) {
-        return [0, -(i + 1)]
+        return [uint64Result(0n), -(i + 1)]
       }
       return [uint64Result(x | (BigInt(b) << s)), i + 1]
     }
     x |= BigInt(b & 0x7f) << s
     s += 7n
   }
-  return [0, 0]
+  return [uint64Result(0n), 0]
 }
 
 export function AppendVarint(buf: $.Slice<number>, x: number): $.Slice<number> {
@@ -1144,23 +1144,21 @@ function isNegativeInt64(value: number | bigint): boolean {
   return typeof value === 'bigint' ? value < 0n : value < 0
 }
 
+// uint64Result normalizes a uint64 computation to its runtime representation.
+// GoScript represents Go uint64 as a JS bigint, so this always returns a
+// bigint, even when the value fits in a float. Returning a number for small
+// values made binary.Uint64 yield number|bigint, and a later raw operator
+// mixing that number with a bigint uint64 threw "Cannot mix BigInt and other
+// types". The cast satisfies the ByteOrder interface's number-typed signature.
 function uint64Result(value: bigint): number {
-  const normalized = BigInt.asUintN(64, value)
-  if (normalized <= BigInt(Number.MAX_SAFE_INTEGER)) {
-    return Number(normalized)
-  }
-  return normalized as unknown as number
+  return BigInt.asUintN(64, value) as unknown as number
 }
 
+// int64Result normalizes an int64 computation to its runtime representation. As
+// with uint64Result, Go int64 is always a JS bigint in GoScript, so this never
+// narrows to a number.
 function int64Result(value: bigint): number {
-  const normalized = BigInt.asIntN(64, value)
-  if (
-    normalized >= BigInt(Number.MIN_SAFE_INTEGER) &&
-    normalized <= BigInt(Number.MAX_SAFE_INTEGER)
-  ) {
-    return Number(normalized)
-  }
-  return normalized as unknown as number
+  return BigInt.asIntN(64, value) as unknown as number
 }
 
 function intN(value: number, bits: number): number {
