@@ -36,9 +36,9 @@ export class LocalTime {
 
 	constructor(init?: Partial<{wall?: bigint, ext?: bigint, loc?: time.Location | $.VarRef<time.Location> | null}>) {
 		this._fields = {
-			wall: $.varRef(init?.wall ?? (0n as unknown as bigint)),
-			ext: $.varRef(init?.ext ?? (0n as unknown as bigint)),
-			loc: $.varRef(init?.loc ?? (null as unknown as time.Location | $.VarRef<time.Location> | null))
+			wall: $.varRef(init?.wall ?? (0n as bigint)),
+			ext: $.varRef(init?.ext ?? (0n as bigint)),
+			loc: $.varRef(init?.loc ?? (null as time.Location | $.VarRef<time.Location> | null))
 		}
 	}
 
@@ -62,19 +62,19 @@ export class LocalTime {
 }
 
 export function asTime(t: LocalTime): time.Time {
-	return $.markAsStructValue($.cloneStructValue((t as unknown as time.Time)))
+	return $.markAsStructValue($.cloneStructValue($.namedStructConversion<time.Time>(t)))
 }
 
 export function asLocal(t: time.Time): LocalTime {
-	return $.markAsStructValue($.cloneStructValue((t as unknown as LocalTime)))
+	return $.markAsStructValue($.cloneStructValue($.namedStructConversion<LocalTime>(t)))
 }
 
 export async function main(): globalThis.Promise<void> {
-	let first = $.markAsStructValue($.cloneStructValue(($.markAsStructValue($.cloneStructValue(time.Unix(11n, 0n))).UTC() as unknown as LocalTime)))
+	let first = $.markAsStructValue($.cloneStructValue($.namedStructConversion<LocalTime>($.markAsStructValue($.cloneStructValue(time.Unix(11n, 0n))).UTC())))
 	$.println("as time:", $.markAsStructValue($.cloneStructValue(asTime($.markAsStructValue($.cloneStructValue(first))))).Unix())
 
 	let second = $.markAsStructValue($.cloneStructValue(asLocal($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(time.Unix(22n, 0n))).UTC())))))
-	$.println("as local:", $.markAsStructValue($.cloneStructValue((second as unknown as time.Time))).Unix())
+	$.println("as local:", $.markAsStructValue($.cloneStructValue($.namedStructConversion<time.Time>(second))).Unix())
 }
 
 if ($.isMainScript(import.meta)) {

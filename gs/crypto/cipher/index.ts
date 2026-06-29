@@ -209,7 +209,7 @@ class webCryptoGCM implements AEAD {
     const encrypted = await globalThis.crypto.subtle.encrypt(
       this.algorithm(nonce, additionalData),
       await this.block.webCryptoKey(),
-      $.bytesToUint8Array(plaintext) as unknown as BufferSource,
+      $.bytesToUint8Array(plaintext) as BufferSource,
     )
     return appendBytes(dst, new Uint8Array(encrypted))
   }
@@ -227,7 +227,7 @@ class webCryptoGCM implements AEAD {
       const decrypted = await globalThis.crypto.subtle.decrypt(
         this.algorithm(nonce, additionalData),
         await this.block.webCryptoKey(),
-        $.bytesToUint8Array(ciphertext) as unknown as BufferSource,
+        $.bytesToUint8Array(ciphertext) as BufferSource,
       )
       return [appendBytes(dst, new Uint8Array(decrypted)), null]
     } catch {
@@ -238,13 +238,13 @@ class webCryptoGCM implements AEAD {
   private algorithm(nonce: $.Bytes, additionalData: $.Bytes): AesGcmParams {
     const params: AesGcmParams = {
       name: 'AES-GCM',
-      iv: $.bytesToUint8Array(nonce) as unknown as BufferSource,
+      iv: $.bytesToUint8Array(nonce) as BufferSource,
       tagLength: this.tagSize * 8,
     }
     if ($.len(additionalData) !== 0) {
       params.additionalData = $.bytesToUint8Array(
         additionalData,
-      ) as unknown as BufferSource
+      ) as BufferSource
     }
     return params
   }

@@ -118,7 +118,7 @@ async function sum(
 
   const digest = await subtle.digest(
     algorithm === 'sha384' ? 'SHA-384' : 'SHA-512',
-    $.bytesToUint8Array(data) as unknown as BufferSource,
+    $.bytesToUint8Array(data) as BufferSource,
   )
   return new Uint8Array(digest)
 }

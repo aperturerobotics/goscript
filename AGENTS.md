@@ -11,7 +11,8 @@
 - DO NOT maintain backwards compatibility - this is an experimental project
 - Remove any "for backwards compatibility" comments and fallback logic
 - NEVER hardcode things: examples include function names, builtins, etc.
-- Actively try to improve the codebase to conform to these rules when the opportunity arises
+- Actively improve touched code and design docs when the opportunity is clear: if you find a stale or contradictory design note in the area you are changing, update the doc to match the source/tests instead of preserving the contradiction.
+- Never use `as unknown as ...`. It is a red flag for a type-system escape hatch hiding a bad runtime contract; return the actual runtime type or fix the owner type signature so the checker catches mismatches.
 - Go standard library sources are located at "go env GOROOT" (shell command)
 - Leverage adding more tests (e.g., `compiler/analysis_test.go`) instead of debug logging for diagnosing issues. If the new test case is temporary, add a `tmp_test.go` file to keep things separated.
 - AVOID type arguments unless necessary (prefer type inference)
@@ -88,7 +89,7 @@ NOTE: `./tests/deps/` contains library dependencies compiled by the goscript com
 
 ### Core Principles
 
-1. **Follow Existing Patterns**: Always reference `/design/DESIGN.md` for design details and existing code patterns
+1. **Follow Existing Patterns**: Use `design/DESIGN.md` as historical orientation only after checking the current compiler source, runtime overrides, and passing compliance tests. If it contradicts reality in an area you touch, update the document rather than implementing stale text.
 
 2. **Function Naming Convention**: When writing functions that convert Go AST to TypeScript, name them to match the AST type:
    - For `*ast.FuncDecl`, use `WriteFuncDecl`

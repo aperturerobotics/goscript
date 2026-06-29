@@ -37,7 +37,7 @@ export class ClientInvoker {
 
 	constructor(init?: Partial<{client?: __goscript_client.Client | null}>) {
 		this._fields = {
-			client: $.varRef(init?.client ?? (null as unknown as __goscript_client.Client | null))
+			client: $.varRef(init?.client ?? (null as __goscript_client.Client | null))
 		}
 	}
 

@@ -27,7 +27,7 @@ export class Dog {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 
@@ -70,7 +70,7 @@ export class Cat {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 

@@ -20,7 +20,7 @@ export class Simple {
 
 	constructor(init?: Partial<{X?: number}>) {
 		this._fields = {
-			X: $.varRef(init?.X ?? (0 as unknown as number))
+			X: $.varRef(init?.X ?? (0 as number))
 		}
 	}
 

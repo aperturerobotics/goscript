@@ -35,7 +35,7 @@ export class ClientSet {
 
 	constructor(init?: Partial<{clients?: $.Slice<__goscript_client.Client | null>}>) {
 		this._fields = {
-			clients: $.varRef(init?.clients ?? (null as unknown as $.Slice<__goscript_client.Client | null>))
+			clients: $.varRef(init?.clients ?? (null as $.Slice<__goscript_client.Client | null>))
 		}
 	}
 

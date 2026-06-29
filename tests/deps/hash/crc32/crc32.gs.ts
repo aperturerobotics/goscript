@@ -48,8 +48,8 @@ export class digest {
 
 	constructor(init?: Partial<{crc?: number, tab?: $.VarRef<Table> | null}>) {
 		this._fields = {
-			crc: $.varRef(init?.crc ?? (0 as unknown as number)),
-			tab: $.varRef(init?.tab ?? (null as unknown as $.VarRef<Table> | null))
+			crc: $.varRef(init?.crc ?? (0 as number)),
+			tab: $.varRef(init?.tab ?? (null as $.VarRef<Table> | null))
 		}
 	}
 
@@ -165,7 +165,7 @@ export function __goscript_set_castagnoliTable8(__goscriptValue: $.VarRef<__gosc
 	castagnoliTable8 = __goscriptValue
 }
 
-export let updateCastagnoli: $.VarRef<((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null> = $.varRef(null as unknown as ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null)
+export let updateCastagnoli: $.VarRef<((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null> = $.varRef(null as ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null)
 
 export function __goscript_set_updateCastagnoli(__goscriptValue: ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null): void {
 	updateCastagnoli.value = __goscriptValue
@@ -236,7 +236,7 @@ export function __goscript_set_ieeeTable8(__goscriptValue: $.VarRef<__goscript_c
 	ieeeTable8 = __goscriptValue
 }
 
-export let updateIEEE: $.VarRef<((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null> = $.varRef(null as unknown as ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null)
+export let updateIEEE: $.VarRef<((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null> = $.varRef(null as ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null)
 
 export function __goscript_set_updateIEEE(__goscriptValue: ((crc: number, p: $.Slice<number>) => number | globalThis.Promise<number>) | null): void {
 	updateIEEE.value = __goscriptValue

@@ -45,8 +45,8 @@ export class packetWriterWithClose {
 
 	constructor(init?: Partial<{PacketWriter?: PacketWriter | null, closeFn?: (() => $.GoError | globalThis.Promise<$.GoError>) | null}>) {
 		this._fields = {
-			PacketWriter: $.varRef(init?.PacketWriter ?? (null as unknown as PacketWriter | null)),
-			closeFn: $.varRef(init?.closeFn ?? (null as unknown as (() => $.GoError | globalThis.Promise<$.GoError>) | null))
+			PacketWriter: $.varRef(init?.PacketWriter ?? (null as PacketWriter | null)),
+			closeFn: $.varRef(init?.closeFn ?? (null as (() => $.GoError | globalThis.Promise<$.GoError>) | null))
 		}
 	}
 

@@ -145,7 +145,7 @@ describe('cryptobyte override String', () => {
     const u24 = $.varRef(0)
     const u32 = $.varRef(0)
     const u48 = $.varRef(0)
-    const u64 = $.varRef(0)
+    const u64 = $.varRef(0n)
     const tail = $.varRef<$.Bytes>(new Uint8Array(0))
 
     expect(String_ReadUint8(input, u8)).toBe(true)

@@ -48,7 +48,7 @@ export class pooledFlateWriter {
 	constructor(init?: Partial<{mu?: sync.Mutex, fw?: flate.Writer | $.VarRef<flate.Writer> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			fw: $.varRef(init?.fw ?? (null as unknown as flate.Writer | $.VarRef<flate.Writer> | null))
+			fw: $.varRef(init?.fw ?? (null as flate.Writer | $.VarRef<flate.Writer> | null))
 		}
 	}
 
@@ -129,7 +129,7 @@ export class pooledFlateReader {
 	constructor(init?: Partial<{mu?: sync.Mutex, fr?: io.ReadCloser | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			fr: $.varRef(init?.fr ?? (null as unknown as io.ReadCloser | null))
+			fr: $.varRef(init?.fr ?? (null as io.ReadCloser | null))
 		}
 	}
 

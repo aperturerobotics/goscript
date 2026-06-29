@@ -17,7 +17,7 @@ export class Tx {
 
 	constructor(init?: Partial<{Name?: string}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ("" as unknown as string))
+			Name: $.varRef(init?.Name ?? ("" as string))
 		}
 	}
 

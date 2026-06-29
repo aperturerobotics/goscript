@@ -59,9 +59,9 @@ export class fdMutex {
 
 	constructor(init?: Partial<{state?: bigint, rsema?: number, wsema?: number}>) {
 		this._fields = {
-			state: $.varRef(init?.state ?? (0n as unknown as bigint)),
-			rsema: $.varRef(init?.rsema ?? (0 as unknown as number)),
-			wsema: $.varRef(init?.wsema ?? (0 as unknown as number))
+			state: $.varRef(init?.state ?? (0n as bigint)),
+			rsema: $.varRef(init?.rsema ?? (0 as number)),
+			wsema: $.varRef(init?.wsema ?? (0 as number))
 		}
 	}
 

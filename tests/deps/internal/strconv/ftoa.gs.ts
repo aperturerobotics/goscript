@@ -57,9 +57,9 @@ export class floatInfo {
 
 	constructor(init?: Partial<{mantbits?: number, expbits?: number, bias?: number}>) {
 		this._fields = {
-			mantbits: $.varRef(init?.mantbits ?? (0 as unknown as number)),
-			expbits: $.varRef(init?.expbits ?? (0 as unknown as number)),
-			bias: $.varRef(init?.bias ?? (0 as unknown as number))
+			mantbits: $.varRef(init?.mantbits ?? (0 as number)),
+			expbits: $.varRef(init?.expbits ?? (0 as number)),
+			bias: $.varRef(init?.bias ?? (0 as number))
 		}
 	}
 
@@ -112,9 +112,9 @@ export class decimalSlice {
 
 	constructor(init?: Partial<{d?: $.Slice<number>, nd?: number, dp?: number}>) {
 		this._fields = {
-			d: $.varRef(init?.d ?? (null as unknown as $.Slice<number>)),
-			nd: $.varRef(init?.nd ?? (0 as unknown as number)),
-			dp: $.varRef(init?.dp ?? (0 as unknown as number))
+			d: $.varRef(init?.d ?? (null as $.Slice<number>)),
+			nd: $.varRef(init?.nd ?? (0 as number)),
+			dp: $.varRef(init?.dp ?? (0 as number))
 		}
 	}
 

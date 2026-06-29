@@ -46,8 +46,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{Value1?: string, Value2?: string}>) {
 		this._fields = {
-			Value1: $.varRef(init?.Value1 ?? ("" as unknown as string)),
-			Value2: $.varRef(init?.Value2 ?? ("" as unknown as string))
+			Value1: $.varRef(init?.Value1 ?? ("" as string)),
+			Value2: $.varRef(init?.Value2 ?? ("" as string))
 		}
 	}
 

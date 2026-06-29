@@ -29,7 +29,7 @@ export class oneByteReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null))
+			r: $.varRef(init?.r ?? (null as io.Reader | null))
 		}
 	}
 
@@ -72,7 +72,7 @@ export class halfReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null))
+			r: $.varRef(init?.r ?? (null as io.Reader | null))
 		}
 	}
 
@@ -128,9 +128,9 @@ export class dataErrReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, unread?: $.Slice<number>, data?: $.Slice<number>}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
-			unread: $.varRef(init?.unread ?? (null as unknown as $.Slice<number>)),
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			r: $.varRef(init?.r ?? (null as io.Reader | null)),
+			unread: $.varRef(init?.unread ?? (null as $.Slice<number>)),
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -196,8 +196,8 @@ export class timeoutReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, count?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
-			count: $.varRef(init?.count ?? (0 as unknown as number))
+			r: $.varRef(init?.r ?? (null as io.Reader | null)),
+			count: $.varRef(init?.count ?? (0 as number))
 		}
 	}
 
@@ -242,7 +242,7 @@ export class errReader {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 
@@ -298,9 +298,9 @@ export class smallByteReader {
 
 	constructor(init?: Partial<{r?: io.Reader | null, off?: number, n?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
-			off: $.varRef(init?.off ?? (0 as unknown as number)),
-			n: $.varRef(init?.n ?? (0 as unknown as number))
+			r: $.varRef(init?.r ?? (null as io.Reader | null)),
+			off: $.varRef(init?.off ?? (0 as number)),
+			n: $.varRef(init?.n ?? (0 as number))
 		}
 	}
 

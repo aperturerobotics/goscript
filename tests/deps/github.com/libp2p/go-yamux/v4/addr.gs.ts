@@ -57,7 +57,7 @@ export class yamuxAddr {
 
 	constructor(init?: Partial<{Addr?: string}>) {
 		this._fields = {
-			Addr: $.varRef(init?.Addr ?? ("" as unknown as string))
+			Addr: $.varRef(init?.Addr ?? ("" as string))
 		}
 	}
 

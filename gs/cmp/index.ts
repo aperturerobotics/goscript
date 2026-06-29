@@ -11,8 +11,8 @@ export type Ordered = number | string | boolean | bigint
 // Floating-point NaN orders below every non-NaN value and equals itself, as in
 // Go's cmp.Compare; raw JS < / > would report two incomparable NaNs as equal.
 export function Compare<T extends Ordered>(a: T, b: T): number {
-  const aNaN = Number.isNaN(a as unknown as number)
-  const bNaN = Number.isNaN(b as unknown as number)
+  const aNaN = Number.isNaN(a as number)
+  const bNaN = Number.isNaN(b as number)
   if (aNaN && bNaN) return 0
   if (aNaN || a < b) return -1
   if (bNaN || a > b) return 1
@@ -23,8 +23,8 @@ export function Compare<T extends Ordered>(a: T, b: T): number {
 // match Go's cmp.Less.
 export function Less<T extends Ordered>(a: T, b: T): boolean {
   return (
-    (Number.isNaN(a as unknown as number) &&
-      !Number.isNaN(b as unknown as number)) ||
+    (Number.isNaN(a as number) &&
+      !Number.isNaN(b as number)) ||
     a < b
   )
 }

@@ -65,10 +65,10 @@ export class SRV {
 
 	constructor(init?: Partial<{Target?: string, Port?: number, Priority?: number, Weight?: number}>) {
 		this._fields = {
-			Target: $.varRef(init?.Target ?? ("" as unknown as string)),
-			Port: $.varRef(init?.Port ?? (0 as unknown as number)),
-			Priority: $.varRef(init?.Priority ?? (0 as unknown as number)),
-			Weight: $.varRef(init?.Weight ?? (0 as unknown as number))
+			Target: $.varRef(init?.Target ?? ("" as string)),
+			Port: $.varRef(init?.Port ?? (0 as number)),
+			Priority: $.varRef(init?.Priority ?? (0 as number)),
+			Weight: $.varRef(init?.Weight ?? (0 as number))
 		}
 	}
 
@@ -114,8 +114,8 @@ export class MX {
 
 	constructor(init?: Partial<{Host?: string, Pref?: number}>) {
 		this._fields = {
-			Host: $.varRef(init?.Host ?? ("" as unknown as string)),
-			Pref: $.varRef(init?.Pref ?? (0 as unknown as number))
+			Host: $.varRef(init?.Host ?? ("" as string)),
+			Pref: $.varRef(init?.Pref ?? (0 as number))
 		}
 	}
 
@@ -151,7 +151,7 @@ export class NS {
 
 	constructor(init?: Partial<{Host?: string}>) {
 		this._fields = {
-			Host: $.varRef(init?.Host ?? ("" as unknown as string))
+			Host: $.varRef(init?.Host ?? ("" as string))
 		}
 	}
 

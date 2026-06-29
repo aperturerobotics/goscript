@@ -62,8 +62,8 @@ export class Packet {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Body?: isPacket_Body | null}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			Body: $.varRef(init?.Body ?? (null as unknown as isPacket_Body | null))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			Body: $.varRef(init?.Body ?? (null as isPacket_Body | null))
 		}
 	}
 
@@ -641,7 +641,7 @@ export class Packet_CallStart {
 
 	constructor(init?: Partial<{CallStart?: CallStart | $.VarRef<CallStart> | null}>) {
 		this._fields = {
-			CallStart: $.varRef(init?.CallStart ?? (null as unknown as CallStart | $.VarRef<CallStart> | null))
+			CallStart: $.varRef(init?.CallStart ?? (null as CallStart | $.VarRef<CallStart> | null))
 		}
 	}
 
@@ -770,7 +770,7 @@ export class Packet_CallData {
 
 	constructor(init?: Partial<{CallData?: CallData | $.VarRef<CallData> | null}>) {
 		this._fields = {
-			CallData: $.varRef(init?.CallData ?? (null as unknown as CallData | $.VarRef<CallData> | null))
+			CallData: $.varRef(init?.CallData ?? (null as CallData | $.VarRef<CallData> | null))
 		}
 	}
 
@@ -899,7 +899,7 @@ export class Packet_CallCancel {
 
 	constructor(init?: Partial<{CallCancel?: boolean}>) {
 		this._fields = {
-			CallCancel: $.varRef(init?.CallCancel ?? (false as unknown as boolean))
+			CallCancel: $.varRef(init?.CallCancel ?? (false as boolean))
 		}
 	}
 
@@ -1043,11 +1043,11 @@ export class CallStart {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, RpcService?: string, RpcMethod?: string, Data?: $.Slice<number>, DataIsZero?: boolean}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			RpcService: $.varRef(init?.RpcService ?? ("" as unknown as string)),
-			RpcMethod: $.varRef(init?.RpcMethod ?? ("" as unknown as string)),
-			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
-			DataIsZero: $.varRef(init?.DataIsZero ?? (false as unknown as boolean))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			RpcService: $.varRef(init?.RpcService ?? ("" as string)),
+			RpcMethod: $.varRef(init?.RpcMethod ?? ("" as string)),
+			Data: $.varRef(init?.Data ?? (null as $.Slice<number>)),
+			DataIsZero: $.varRef(init?.DataIsZero ?? (false as boolean))
 		}
 	}
 
@@ -1618,11 +1618,11 @@ export class CallData {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Data?: $.Slice<number>, DataIsZero?: boolean, Complete?: boolean, Error?: string}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
-			DataIsZero: $.varRef(init?.DataIsZero ?? (false as unknown as boolean)),
-			Complete: $.varRef(init?.Complete ?? (false as unknown as boolean)),
-			Error: $.varRef(init?.Error ?? ("" as unknown as string))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			Data: $.varRef(init?.Data ?? (null as $.Slice<number>)),
+			DataIsZero: $.varRef(init?.DataIsZero ?? (false as boolean)),
+			Complete: $.varRef(init?.Complete ?? (false as boolean)),
+			Error: $.varRef(init?.Error ?? ("" as string))
 		}
 	}
 

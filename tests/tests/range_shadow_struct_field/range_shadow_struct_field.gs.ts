@@ -17,7 +17,7 @@ export class Match {
 
 	constructor(init?: Partial<{Size?: number}>) {
 		this._fields = {
-			Size: $.varRef(init?.Size ?? (0 as unknown as number))
+			Size: $.varRef(init?.Size ?? (0 as number))
 		}
 	}
 
@@ -52,7 +52,7 @@ export class Matcher {
 
 	constructor(init?: Partial<{matches?: $.Slice<Match>}>) {
 		this._fields = {
-			matches: $.varRef(init?.matches ?? (null as unknown as $.Slice<Match>))
+			matches: $.varRef(init?.matches ?? (null as $.Slice<Match>))
 		}
 	}
 

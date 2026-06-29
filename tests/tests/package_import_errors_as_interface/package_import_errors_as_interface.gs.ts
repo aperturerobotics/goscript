@@ -20,7 +20,7 @@ export class wrappedHealthError {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 

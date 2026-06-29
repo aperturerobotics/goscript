@@ -28,8 +28,8 @@ export class sourceStruct {
 
 	constructor(init?: Partial<{flag?: boolean, data?: $.Slice<number>}>) {
 		this._fields = {
-			flag: $.varRef(init?.flag ?? (false as unknown as boolean)),
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			flag: $.varRef(init?.flag ?? (false as boolean)),
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -73,8 +73,8 @@ export class viewStruct {
 
 	constructor(init?: Partial<{flag?: boolean, data?: $.Slice<number>}>) {
 		this._fields = {
-			flag: $.varRef(init?.flag ?? (false as unknown as boolean)),
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			flag: $.varRef(init?.flag ?? (false as boolean)),
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -102,7 +102,7 @@ export function noescape(p: any): any {
 }
 
 export function inlineSlice(values: $.Slice<number>): $.Slice<number> {
-	return $.goSlice($.pointerValue<number[]>(($.arrayPointerFromIndexRef<number>($.indexRef(values!, 0), 2, 8, 8) as unknown as $.VarRef<number[]> | null)), undefined, undefined)
+	return $.goSlice($.pointerValue<number[]>($.unsafePointerCast<$.VarRef<number[]> | null>($.arrayPointerFromIndexRef<number>($.indexRef(values!, 0), 2, 8, 8))), undefined, undefined)
 }
 
 export function markThroughView(src: sourceStruct | $.VarRef<sourceStruct> | null): boolean {

@@ -34,8 +34,8 @@ export class tableEntry {
 
 	constructor(init?: Partial<{val?: number, offset?: number}>) {
 		this._fields = {
-			val: $.varRef(init?.val ?? (0 as unknown as number)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			val: $.varRef(init?.val ?? (0 as number)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 
@@ -88,8 +88,8 @@ export class deflateFast {
 	constructor(init?: Partial<{table?: tableEntry[], prev?: $.Slice<number>, cur?: number}>) {
 		this._fields = {
 			table: $.varRef(init?.table !== undefined ? $.cloneArrayValue(init.table) : Array.from({ length: 16384 }, () => $.markAsStructValue(new tableEntry()))),
-			prev: $.varRef(init?.prev ?? (null as unknown as $.Slice<number>)),
-			cur: $.varRef(init?.cur ?? (0 as unknown as number))
+			prev: $.varRef(init?.prev ?? (null as $.Slice<number>)),
+			cur: $.varRef(init?.cur ?? (0 as number))
 		}
 	}
 

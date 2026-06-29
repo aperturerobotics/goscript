@@ -3,8 +3,8 @@ import * as $ from '@goscript/builtin/index.js'
 import * as time from '@goscript/time/index.js'
 
 import * as utf8 from '@goscript/unicode/utf8/index.js'
-
 import * as oserror from '@goscript/internal/oserror/index.js'
+
 
 export type FS = null | {
   // Open opens the named file.

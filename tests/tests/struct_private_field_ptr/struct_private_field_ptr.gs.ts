@@ -17,7 +17,7 @@ export class MyStruct {
 
 	constructor(init?: Partial<{myPrivate?: $.VarRef<number> | null}>) {
 		this._fields = {
-			myPrivate: $.varRef(init?.myPrivate ?? (null as unknown as $.VarRef<number> | null))
+			myPrivate: $.varRef(init?.myPrivate ?? (null as $.VarRef<number> | null))
 		}
 	}
 

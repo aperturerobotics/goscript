@@ -112,16 +112,16 @@ export class Regexp {
 
 	constructor(init?: Partial<{Op?: Op, Flags?: __goscript_parse.Flags, Sub?: $.Slice<Regexp | $.VarRef<Regexp> | null>, Sub0?: (Regexp | $.VarRef<Regexp> | null)[], Rune?: $.Slice<number>, Rune0?: number[], Min?: number, Max?: number, Cap?: number, Name?: string}>) {
 		this._fields = {
-			Op: $.varRef(init?.Op ?? (0 as unknown as Op)),
-			Flags: $.varRef(init?.Flags ?? (0 as unknown as __goscript_parse.Flags)),
-			Sub: $.varRef(init?.Sub ?? (null as unknown as $.Slice<Regexp | $.VarRef<Regexp> | null>)),
+			Op: $.varRef(init?.Op ?? (0 as Op)),
+			Flags: $.varRef(init?.Flags ?? (0 as __goscript_parse.Flags)),
+			Sub: $.varRef(init?.Sub ?? (null as $.Slice<Regexp | $.VarRef<Regexp> | null>)),
 			Sub0: $.varRef(init?.Sub0 !== undefined ? $.cloneArrayValue(init.Sub0) : Array.from({ length: 1 }, () => null)),
-			Rune: $.varRef(init?.Rune ?? (null as unknown as $.Slice<number>)),
+			Rune: $.varRef(init?.Rune ?? (null as $.Slice<number>)),
 			Rune0: $.varRef(init?.Rune0 !== undefined ? $.cloneArrayValue(init.Rune0) : Array.from({ length: 2 }, () => 0)),
-			Min: $.varRef(init?.Min ?? (0 as unknown as number)),
-			Max: $.varRef(init?.Max ?? (0 as unknown as number)),
-			Cap: $.varRef(init?.Cap ?? (0 as unknown as number)),
-			Name: $.varRef(init?.Name ?? ("" as unknown as string))
+			Min: $.varRef(init?.Min ?? (0 as number)),
+			Max: $.varRef(init?.Max ?? (0 as number)),
+			Cap: $.varRef(init?.Cap ?? (0 as number)),
+			Name: $.varRef(init?.Name ?? ("" as string))
 		}
 	}
 

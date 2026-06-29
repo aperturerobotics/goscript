@@ -20,7 +20,7 @@ export class loader {
 
 	constructor(init?: Partial<{load?: ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null}>) {
 		this._fields = {
-			load: $.varRef(init?.load ?? (null as unknown as ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null))
+			load: $.varRef(init?.load ?? (null as ((_p0: string) => [any, boolean] | globalThis.Promise<[any, boolean]>) | null))
 		}
 	}
 

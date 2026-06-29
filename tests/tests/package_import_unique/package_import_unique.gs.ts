@@ -20,7 +20,7 @@ export class zone {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 

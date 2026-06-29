@@ -2527,7 +2527,7 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 		lazy := lazyTuple || ctx.topLevel && ctx.lazyPackageVars[obj]
 		if lazy {
 			keyword = "var"
-			code = "var " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as unknown as " + variableType
+			code = "var " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as " + variableType
 		}
 		indexExport := ""
 		if ctx.topLevel {
@@ -8534,7 +8534,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 			}
 			result += ")"
 			if isByteType(array.Elem()) {
-				result = "(" + result + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")"
+				result = "(" + result + " as " + o.tsTypeFor(ctx, targetType) + ")"
 			}
 			return result, diagnostics
 		}
@@ -8549,7 +8549,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 			}
 			result += ")"
 			if isByteType(array.Elem()) {
-				result = "(" + result + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")"
+				result = "(" + result + " as " + o.tsTypeFor(ctx, targetType) + ")"
 			}
 			return result, diagnostics
 		}
@@ -8558,7 +8558,8 @@ func (o *LoweringOwner) lowerConversionExpr(
 		source := pointerToNamedStructType(sourceType)
 		if source != nil && !types.Identical(target, source) &&
 			types.IdenticalIgnoreTags(target.Underlying(), source.Underlying()) {
-			return "(" + value + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics
+			return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsafePointerCast) +
+				"<" + o.tsTypeFor(ctx, targetType) + ">(" + value + ")", diagnostics
 		}
 	}
 	if conversion, ok := o.lowerNamedStructConversion(ctx, expr.Args[0], targetType, sourceType, value); ok {
@@ -9870,14 +9871,14 @@ func (o *LoweringOwner) lowerReflectHeaderPointerConversion(
 		}
 		value, diagnostics := o.lowerAddressedValueRef(ctx, address.X)
 		helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperStringHeaderRef) + "(" + value + ")"
-		return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsafePointerCast) + "<" + o.tsTypeFor(ctx, targetType) + ">(" + helper + ")", diagnostics, true
 	case "SliceHeader":
 		if !isByteSliceType(ctx.semPkg.source.TypesInfo.TypeOf(address.X)) {
 			return "", nil, false
 		}
 		value, diagnostics := o.lowerAddressedValueRef(ctx, address.X)
 		helper := o.runtimeOwner.QualifiedHelper(RuntimeHelperSliceHeaderRef) + "(" + value + ")"
-		return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+		return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsafePointerCast) + "<" + o.tsTypeFor(ctx, targetType) + ">(" + helper + ")", diagnostics, true
 	default:
 		return "", nil, false
 	}
@@ -9914,7 +9915,7 @@ func (o *LoweringOwner) lowerUnsafeArrayPointerConversion(
 		strconv.FormatInt(array.Len(), 10) + ", " +
 		strconv.FormatInt(sourceElementSize, 10) + ", " +
 		strconv.FormatInt(targetElementSize, 10) + ")"
-	return "(" + helper + " as unknown as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics, true
+	return o.runtimeOwner.QualifiedHelper(RuntimeHelperUnsafePointerCast) + "<" + o.tsTypeFor(ctx, targetType) + ">(" + helper + ")", diagnostics, true
 }
 
 func (o *LoweringOwner) lowerUnsafeArrayPointerSourceRef(
@@ -11046,7 +11047,7 @@ func (o *LoweringOwner) lowerZeroValueExprFor(ctx lowerFileContext, typ types.Ty
 
 func (o *LoweringOwner) lowerDeclarationZeroValueExpr(ctx lowerFileContext, typ types.Type) string {
 	if isFunctionType(typ) {
-		return "null as unknown as " + o.tsFunctionZeroValueTypeFor(ctx, typ)
+		return "null as " + o.tsFunctionZeroValueTypeFor(ctx, typ)
 	}
 	typeParam, ok := types.Unalias(typ).(*types.TypeParam)
 	if !ok {

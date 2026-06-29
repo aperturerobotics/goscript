@@ -76,12 +76,12 @@ export class segmentedBuffer {
 
 	constructor(init?: Partial<{cap?: number, len?: number, bm?: sync.Mutex, readPos?: number, bPos?: number, b?: $.Slice<$.Slice<number>>}>) {
 		this._fields = {
-			cap: $.varRef(init?.cap ?? (0 as unknown as number)),
-			len: $.varRef(init?.len ?? (0 as unknown as number)),
+			cap: $.varRef(init?.cap ?? (0 as number)),
+			len: $.varRef(init?.len ?? (0 as number)),
 			bm: $.varRef(init?.bm ? $.markAsStructValue($.cloneStructValue(init.bm)) : $.markAsStructValue(new sync.Mutex())),
-			readPos: $.varRef(init?.readPos ?? (0 as unknown as number)),
-			bPos: $.varRef(init?.bPos ?? (0 as unknown as number)),
-			b: $.varRef(init?.b ?? (null as unknown as $.Slice<$.Slice<number>>))
+			readPos: $.varRef(init?.readPos ?? (0 as number)),
+			bPos: $.varRef(init?.bPos ?? (0 as number)),
+			b: $.varRef(init?.b ?? (null as $.Slice<$.Slice<number>>))
 		}
 	}
 

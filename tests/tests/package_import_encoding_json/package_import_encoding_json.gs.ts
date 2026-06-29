@@ -45,9 +45,9 @@ export class Person {
 
 	constructor(init?: Partial<{Name?: string, Age?: number, Active?: boolean}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
-			Age: $.varRef(init?.Age ?? (0 as unknown as number)),
-			Active: $.varRef(init?.Active ?? (false as unknown as boolean))
+			Name: $.varRef(init?.Name ?? ("" as string)),
+			Age: $.varRef(init?.Age ?? (0 as number)),
+			Active: $.varRef(init?.Active ?? (false as boolean))
 		}
 	}
 

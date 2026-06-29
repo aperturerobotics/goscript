@@ -20,7 +20,7 @@ export class customErr {
 
 	constructor(init?: Partial<{msg?: string}>) {
 		this._fields = {
-			msg: $.varRef(init?.msg ?? ("" as unknown as string))
+			msg: $.varRef(init?.msg ?? ("" as string))
 		}
 	}
 
@@ -60,7 +60,7 @@ export class wrappedErr {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 

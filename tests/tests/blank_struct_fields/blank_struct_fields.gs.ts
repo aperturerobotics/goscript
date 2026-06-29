@@ -34,7 +34,7 @@ export class padded {
 	constructor(init?: Partial<{_blank0?: Uint8Array, Value?: number, _blank2?: Uint8Array}>) {
 		this._fields = {
 			_blank0: $.varRef(init?._blank0 !== undefined ? $.cloneArrayValue(init._blank0) : new Uint8Array(2)),
-			Value: $.varRef(init?.Value ?? (0 as unknown as number)),
+			Value: $.varRef(init?.Value ?? (0 as number)),
 			_blank2: $.varRef(init?._blank2 !== undefined ? $.cloneArrayValue(init._blank2) : new Uint8Array(3))
 		}
 	}

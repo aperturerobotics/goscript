@@ -19,7 +19,7 @@ export class Job {
 
 	constructor(init?: Partial<{Value?: string}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? ("" as unknown as string))
+			Value: $.varRef(init?.Value ?? ("" as string))
 		}
 	}
 

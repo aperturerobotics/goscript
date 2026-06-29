@@ -28,7 +28,7 @@ export class parser {
 
 	constructor(init?: Partial<{errors?: errlist.ErrorList, astruct?: errlist.AStruct}>) {
 		this._fields = {
-			errors: $.varRef(init?.errors ?? (null as unknown as errlist.ErrorList)),
+			errors: $.varRef(init?.errors ?? (null as errlist.ErrorList)),
 			astruct: $.varRef(init?.astruct ? $.markAsStructValue($.cloneStructValue(init.astruct)) : $.markAsStructValue(new errlist.AStruct()))
 		}
 	}

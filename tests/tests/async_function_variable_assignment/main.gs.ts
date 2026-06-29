@@ -18,7 +18,7 @@ export async function main(): globalThis.Promise<void> {
 
 		constructor(init?: Partial<{value?: number}>) {
 			this._fields = {
-				value: $.varRef(init?.value ?? (0 as unknown as number))
+				value: $.varRef(init?.value ?? (0 as number))
 			}
 		}
 
@@ -40,7 +40,7 @@ export async function main(): globalThis.Promise<void> {
 	}
 
 	let ch: $.Channel<result> | null = $.makeChannel<result>(1, $.markAsStructValue(new result()), "both")
-	let fn: (() => result | globalThis.Promise<result>) | null = null as unknown as (() => result | globalThis.Promise<result>) | null
+	let fn: (() => result | globalThis.Promise<result>) | null = null as (() => result | globalThis.Promise<result>) | null
 	fn = $.functionValue(async (): globalThis.Promise<result> => {
 		return $.markAsStructValue($.cloneStructValue(await $.chanRecv(ch)))
 	}, ({ kind: $.TypeKind.Function, params: [], results: ["main.result"] } as $.FunctionTypeInfo))

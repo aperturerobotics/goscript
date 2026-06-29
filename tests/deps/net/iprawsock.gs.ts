@@ -128,8 +128,8 @@ export class IPAddr {
 
 	constructor(init?: Partial<{IP?: __goscript_ip.IP, Zone?: string}>) {
 		this._fields = {
-			IP: $.varRef(init?.IP ?? (null as unknown as __goscript_ip.IP)),
-			Zone: $.varRef(init?.Zone ?? ("" as unknown as string))
+			IP: $.varRef(init?.IP ?? (null as __goscript_ip.IP)),
+			Zone: $.varRef(init?.Zone ?? ("" as string))
 		}
 	}
 

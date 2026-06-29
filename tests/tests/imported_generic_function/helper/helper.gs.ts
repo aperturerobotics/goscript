@@ -27,7 +27,7 @@ export class Box {
 
 	constructor(init?: Partial<{Value?: any}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? (null as unknown as any))
+			Value: $.varRef(init?.Value ?? (null as any))
 		}
 	}
 
@@ -62,7 +62,7 @@ export class IntValue {
 
 	constructor(init?: Partial<{N?: number}>) {
 		this._fields = {
-			N: $.varRef(init?.N ?? (0 as unknown as number))
+			N: $.varRef(init?.N ?? (0 as number))
 		}
 	}
 

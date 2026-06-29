@@ -45,8 +45,8 @@ export class VerboseStore {
 
 	constructor(init?: Partial<{BaseStore?: dep.BaseStore | $.VarRef<dep.BaseStore> | null, name?: string}>) {
 		this._fields = {
-			BaseStore: $.varRef(init?.BaseStore ?? (null as unknown as dep.BaseStore | $.VarRef<dep.BaseStore> | null)),
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			BaseStore: $.varRef(init?.BaseStore ?? (null as dep.BaseStore | $.VarRef<dep.BaseStore> | null)),
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 

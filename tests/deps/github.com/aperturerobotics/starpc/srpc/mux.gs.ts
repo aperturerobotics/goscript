@@ -74,9 +74,9 @@ export class mux {
 
 	constructor(init?: Partial<{fallback?: $.Slice<__goscript_invoker.Invoker | null>, rmtx?: sync.RWMutex, services?: globalThis.Map<string, muxMethods> | null}>) {
 		this._fields = {
-			fallback: $.varRef(init?.fallback ?? (null as unknown as $.Slice<__goscript_invoker.Invoker | null>)),
+			fallback: $.varRef(init?.fallback ?? (null as $.Slice<__goscript_invoker.Invoker | null>)),
 			rmtx: $.varRef(init?.rmtx ? $.markAsStructValue($.cloneStructValue(init.rmtx)) : $.markAsStructValue(new sync.RWMutex())),
-			services: $.varRef(init?.services ?? (null as unknown as globalThis.Map<string, muxMethods> | null))
+			services: $.varRef(init?.services ?? (null as globalThis.Map<string, muxMethods> | null))
 		}
 	}
 

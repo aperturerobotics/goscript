@@ -58,10 +58,10 @@ export class call {
 	constructor(init?: Partial<{wg?: sync.WaitGroup, val?: any, err?: $.GoError, dups?: number, chans?: $.Slice<$.Channel<Result> | null>}>) {
 		this._fields = {
 			wg: $.varRef(init?.wg ? $.markAsStructValue($.cloneStructValue(init.wg)) : $.markAsStructValue(new sync.WaitGroup())),
-			val: $.varRef(init?.val ?? (null as unknown as any)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			dups: $.varRef(init?.dups ?? (0 as unknown as number)),
-			chans: $.varRef(init?.chans ?? (null as unknown as $.Slice<$.Channel<Result> | null>))
+			val: $.varRef(init?.val ?? (null as any)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			dups: $.varRef(init?.dups ?? (0 as number)),
+			chans: $.varRef(init?.chans ?? (null as $.Slice<$.Channel<Result> | null>))
 		}
 	}
 
@@ -109,7 +109,7 @@ export class Group {
 	constructor(init?: Partial<{mu?: sync.Mutex, m?: globalThis.Map<string, call | $.VarRef<call> | null> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			m: $.varRef(init?.m ?? (null as unknown as globalThis.Map<string, call | $.VarRef<call> | null> | null))
+			m: $.varRef(init?.m ?? (null as globalThis.Map<string, call | $.VarRef<call> | null> | null))
 		}
 	}
 
@@ -254,9 +254,9 @@ export class Result {
 
 	constructor(init?: Partial<{Val?: any, Err?: $.GoError, Shared?: boolean}>) {
 		this._fields = {
-			Val: $.varRef(init?.Val ?? (null as unknown as any)),
-			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError)),
-			Shared: $.varRef(init?.Shared ?? (false as unknown as boolean))
+			Val: $.varRef(init?.Val ?? (null as any)),
+			Err: $.varRef(init?.Err ?? (null as $.GoError)),
+			Shared: $.varRef(init?.Shared ?? (false as boolean))
 		}
 	}
 

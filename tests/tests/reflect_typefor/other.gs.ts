@@ -17,7 +17,7 @@ export class OtherStruct {
 
 	constructor(init?: Partial<{Label?: string}>) {
 		this._fields = {
-			Label: $.varRef(init?.Label ?? ("" as unknown as string))
+			Label: $.varRef(init?.Label ?? ("" as string))
 		}
 	}
 

@@ -20,7 +20,7 @@ export class CoreStore {
 
 	constructor(init?: Partial<{Prefix?: string}>) {
 		this._fields = {
-			Prefix: $.varRef(init?.Prefix ?? ("" as unknown as string))
+			Prefix: $.varRef(init?.Prefix ?? ("" as string))
 		}
 	}
 

@@ -1139,7 +1139,7 @@ export class Value {
     }
 
     // Extract the value to send
-    const valueToSend = (x as unknown as { value: ReflectValue }).value
+    const valueToSend = (x as { value: ReflectValue }).value
 
     // For synchronous operation, we'll use a simplified send
     // In the real implementation, this would need proper async handling
@@ -1325,7 +1325,7 @@ export class Value {
       )
     }
     const zeroVal = Zero(this.Type())
-    this.storeValue((zeroVal as unknown as { value: ReflectValue }).value)
+    this.storeValue((zeroVal as { value: ReflectValue }).value)
   }
 
   // SetLen sets v's length to n
@@ -1363,8 +1363,8 @@ export class Value {
     if (!(mapObj instanceof globalThis.Map)) {
       throw new Error('reflect: assignment to entry in nil map')
     }
-    const keyVal = (key as unknown as { value: ReflectValue }).value
-    const elemVal = (elem as unknown as { value: ReflectValue }).value
+    const keyVal = (key as { value: ReflectValue }).value
+    const elemVal = (elem as { value: ReflectValue }).value
     if (!elem.IsValid()) {
       mapObj.delete(keyVal)
       return
@@ -1412,7 +1412,7 @@ export class Value {
   public Equal(u: Value): boolean {
     return DeepEqual(
       this._value,
-      (u as unknown as { value: ReflectValue }).value,
+      (u as { value: ReflectValue }).value,
     )
   }
 

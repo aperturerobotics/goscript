@@ -568,19 +568,19 @@ export class Addr {
 			}
 			case n == 4:
 			{
-				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue(AddrFrom4(($.sliceToArray<number>(b, 4, "byte") as unknown as Uint8Array)))))
+				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue(AddrFrom4(($.sliceToArray<number>(b, 4, "byte") as Uint8Array)))))
 				return null
 				break
 			}
 			case n == 16:
 			{
-				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>(b, 16, "byte") as unknown as Uint8Array)))))
+				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>(b, 16, "byte") as Uint8Array)))))
 				return null
 				break
 			}
 			case n > 16:
 			{
-				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>($.goSlice(b, undefined, 16), 16, "byte") as unknown as Uint8Array)))).WithZone($.bytesToString($.goSlice(b, 16, undefined))))))
+				$.assignStruct($.pointerValue<Addr>(ip), $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>($.goSlice(b, undefined, 16), 16, "byte") as Uint8Array)))).WithZone($.bytesToString($.goSlice(b, 16, undefined))))))
 				return null
 				break
 			}
@@ -808,8 +808,8 @@ export class addrDetail {
 
 	constructor(init?: Partial<{isV6?: boolean, zoneV6?: string}>) {
 		this._fields = {
-			isV6: $.varRef(init?.isV6 ?? (false as unknown as boolean)),
-			zoneV6: $.varRef(init?.zoneV6 ?? ("" as unknown as string))
+			isV6: $.varRef(init?.isV6 ?? (false as boolean)),
+			zoneV6: $.varRef(init?.zoneV6 ?? ("" as string))
 		}
 	}
 
@@ -861,9 +861,9 @@ export class parseAddrError {
 
 	constructor(init?: Partial<{_in?: string, msg?: string, at?: string}>) {
 		this._fields = {
-			_in: $.varRef(init?._in ?? ("" as unknown as string)),
-			msg: $.varRef(init?.msg ?? ("" as unknown as string)),
-			at: $.varRef(init?.at ?? ("" as unknown as string))
+			_in: $.varRef(init?._in ?? ("" as string)),
+			msg: $.varRef(init?.msg ?? ("" as string)),
+			at: $.varRef(init?.at ?? ("" as string))
 		}
 	}
 
@@ -918,7 +918,7 @@ export class AddrPort {
 	constructor(init?: Partial<{ip?: Addr, port?: number}>) {
 		this._fields = {
 			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
-			port: $.varRef(init?.port ?? (0 as unknown as number))
+			port: $.varRef(init?.port ?? (0 as number))
 		}
 	}
 
@@ -1131,7 +1131,7 @@ export class Prefix {
 	constructor(init?: Partial<{ip?: Addr, bitsPlusOne?: number}>) {
 		this._fields = {
 			ip: $.varRef(init?.ip ? $.markAsStructValue($.cloneStructValue(init.ip)) : $.markAsStructValue(new Addr())),
-			bitsPlusOne: $.varRef(init?.bitsPlusOne ?? (0 as unknown as number))
+			bitsPlusOne: $.varRef(init?.bitsPlusOne ?? (0 as number))
 		}
 	}
 
@@ -1414,8 +1414,8 @@ export class parsePrefixError {
 
 	constructor(init?: Partial<{_in?: string, msg?: string}>) {
 		this._fields = {
-			_in: $.varRef(init?._in ?? ("" as unknown as string)),
-			msg: $.varRef(init?.msg ?? ("" as unknown as string))
+			_in: $.varRef(init?._in ?? ("" as string)),
+			msg: $.varRef(init?.msg ?? ("" as string))
 		}
 	}
 
@@ -1732,12 +1732,12 @@ export function AddrFromSlice(slice: $.Slice<number>): [Addr, boolean] {
 	switch ($.len(slice)) {
 		case 4:
 		{
-			return [$.markAsStructValue($.cloneStructValue(AddrFrom4(($.sliceToArray<number>(slice, 4, "byte") as unknown as Uint8Array)))), true]
+			return [$.markAsStructValue($.cloneStructValue(AddrFrom4(($.sliceToArray<number>(slice, 4, "byte") as Uint8Array)))), true]
 			break
 		}
 		case 16:
 		{
-			return [$.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>(slice, 16, "byte") as unknown as Uint8Array)))), true]
+			return [$.markAsStructValue($.cloneStructValue(AddrFrom16(($.sliceToArray<number>(slice, 16, "byte") as Uint8Array)))), true]
 			break
 		}
 	}

@@ -73,10 +73,10 @@ export class nsswitchConfig {
 	constructor(init?: Partial<{initOnce?: sync.Once, ch?: $.Channel<{}> | null, lastChecked?: time.Time, mu?: sync.Mutex, nssConf?: nssConf | $.VarRef<nssConf> | null}>) {
 		this._fields = {
 			initOnce: $.varRef(init?.initOnce ? $.markAsStructValue($.cloneStructValue(init.initOnce)) : $.markAsStructValue(new sync.Once())),
-			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null)),
+			ch: $.varRef(init?.ch ?? (null as $.Channel<{}> | null)),
 			lastChecked: $.varRef(init?.lastChecked ? $.markAsStructValue($.cloneStructValue(init.lastChecked)) : $.markAsStructValue(new time.Time())),
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			nssConf: $.varRef(init?.nssConf ?? (null as unknown as nssConf | $.VarRef<nssConf> | null))
+			nssConf: $.varRef(init?.nssConf ?? (null as nssConf | $.VarRef<nssConf> | null))
 		}
 	}
 
@@ -211,8 +211,8 @@ export class nssConf {
 	constructor(init?: Partial<{mtime?: time.Time, err?: $.GoError, sources?: globalThis.Map<string, $.Slice<nssSource>> | null}>) {
 		this._fields = {
 			mtime: $.varRef(init?.mtime ? $.markAsStructValue($.cloneStructValue(init.mtime)) : $.markAsStructValue(new time.Time())),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			sources: $.varRef(init?.sources ?? (null as unknown as globalThis.Map<string, $.Slice<nssSource>> | null))
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			sources: $.varRef(init?.sources ?? (null as globalThis.Map<string, $.Slice<nssSource>> | null))
 		}
 	}
 
@@ -257,8 +257,8 @@ export class nssSource {
 
 	constructor(init?: Partial<{source?: string, criteria?: $.Slice<nssCriterion>}>) {
 		this._fields = {
-			source: $.varRef(init?.source ?? ("" as unknown as string)),
-			criteria: $.varRef(init?.criteria ?? (null as unknown as $.Slice<nssCriterion>))
+			source: $.varRef(init?.source ?? ("" as string)),
+			criteria: $.varRef(init?.criteria ?? (null as $.Slice<nssCriterion>))
 		}
 	}
 
@@ -321,9 +321,9 @@ export class nssCriterion {
 
 	constructor(init?: Partial<{negate?: boolean, status?: string, action?: string}>) {
 		this._fields = {
-			negate: $.varRef(init?.negate ?? (false as unknown as boolean)),
-			status: $.varRef(init?.status ?? ("" as unknown as string)),
-			action: $.varRef(init?.action ?? ("" as unknown as string))
+			negate: $.varRef(init?.negate ?? (false as boolean)),
+			status: $.varRef(init?.status ?? ("" as string)),
+			action: $.varRef(init?.action ?? ("" as string))
 		}
 	}
 

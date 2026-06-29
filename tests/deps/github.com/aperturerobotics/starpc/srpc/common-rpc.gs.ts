@@ -173,20 +173,20 @@ export class commonRPC {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, ctxCancel?: (() => void) | null, ctxCanceled?: atomic.Bool, service?: string, method?: string, localCompleted?: atomic.Bool, bcast?: broadcast.Broadcast, writer?: __goscript_writer.PacketWriter | null, writerClosed?: boolean, localCompleting?: boolean, localDone?: boolean, dataQueue?: $.Slice<$.Slice<number>>, dataClosed?: boolean, remoteErr?: $.GoError}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			ctxCancel: $.varRef(init?.ctxCancel ?? (null as unknown as (() => void) | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			ctxCancel: $.varRef(init?.ctxCancel ?? (null as (() => void) | null)),
 			ctxCanceled: $.varRef(init?.ctxCanceled ? $.markAsStructValue($.cloneStructValue(init.ctxCanceled)) : $.markAsStructValue(new atomic.Bool())),
-			service: $.varRef(init?.service ?? ("" as unknown as string)),
-			method: $.varRef(init?.method ?? ("" as unknown as string)),
+			service: $.varRef(init?.service ?? ("" as string)),
+			method: $.varRef(init?.method ?? ("" as string)),
 			localCompleted: $.varRef(init?.localCompleted ? $.markAsStructValue($.cloneStructValue(init.localCompleted)) : $.markAsStructValue(new atomic.Bool())),
 			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast.Broadcast())),
-			writer: $.varRef(init?.writer ?? (null as unknown as __goscript_writer.PacketWriter | null)),
-			writerClosed: $.varRef(init?.writerClosed ?? (false as unknown as boolean)),
-			localCompleting: $.varRef(init?.localCompleting ?? (false as unknown as boolean)),
-			localDone: $.varRef(init?.localDone ?? (false as unknown as boolean)),
-			dataQueue: $.varRef(init?.dataQueue ?? (null as unknown as $.Slice<$.Slice<number>>)),
-			dataClosed: $.varRef(init?.dataClosed ?? (false as unknown as boolean)),
-			remoteErr: $.varRef(init?.remoteErr ?? (null as unknown as $.GoError))
+			writer: $.varRef(init?.writer ?? (null as __goscript_writer.PacketWriter | null)),
+			writerClosed: $.varRef(init?.writerClosed ?? (false as boolean)),
+			localCompleting: $.varRef(init?.localCompleting ?? (false as boolean)),
+			localDone: $.varRef(init?.localDone ?? (false as boolean)),
+			dataQueue: $.varRef(init?.dataQueue ?? (null as $.Slice<$.Slice<number>>)),
+			dataClosed: $.varRef(init?.dataClosed ?? (false as boolean)),
+			remoteErr: $.varRef(init?.remoteErr ?? (null as $.GoError))
 		}
 	}
 

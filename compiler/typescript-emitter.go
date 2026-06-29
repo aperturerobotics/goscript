@@ -487,7 +487,7 @@ func renderStruct(b *strings.Builder, structType *loweredStruct, runtimeOwner *R
 			b.WriteString(" ?? ")
 			b.WriteString("(")
 			b.WriteString(field.zero)
-			b.WriteString(" as unknown as ")
+			b.WriteString(" as ")
 			b.WriteString(field.typ)
 			b.WriteString(")")
 		}
@@ -1048,7 +1048,7 @@ func renderNamedStructConversion(expr *loweredNamedStructConversionExpr) string 
 		return "undefined"
 	}
 	if expr.castOnly {
-		return "(" + expr.value.text + " as unknown as " + expr.castTarget + ")"
+		return "$.namedStructConversion<" + expr.castTarget + ">(" + expr.value.text + ")"
 	}
 	fields := make([]string, 0, len(expr.fields))
 	for _, field := range expr.fields {

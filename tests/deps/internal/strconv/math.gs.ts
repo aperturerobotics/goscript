@@ -31,8 +31,8 @@ export class uint128 {
 
 	constructor(init?: Partial<{Hi?: bigint, Lo?: bigint}>) {
 		this._fields = {
-			Hi: $.varRef(init?.Hi ?? (0n as unknown as bigint)),
-			Lo: $.varRef(init?.Lo ?? (0n as unknown as bigint))
+			Hi: $.varRef(init?.Hi ?? (0n as bigint)),
+			Lo: $.varRef(init?.Lo ?? (0n as bigint))
 		}
 	}
 

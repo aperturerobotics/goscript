@@ -20,7 +20,7 @@ export class msg {
 
 	constructor(init?: Partial<{v?: number}>) {
 		this._fields = {
-			v: $.varRef(init?.v ?? (0 as unknown as number))
+			v: $.varRef(init?.v ?? (0 as number))
 		}
 	}
 

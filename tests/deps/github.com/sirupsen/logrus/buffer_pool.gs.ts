@@ -34,7 +34,7 @@ export class defaultPool {
 
 	constructor(init?: Partial<{pool?: sync.Pool | $.VarRef<sync.Pool> | null}>) {
 		this._fields = {
-			pool: $.varRef(init?.pool ?? (null as unknown as sync.Pool | $.VarRef<sync.Pool> | null))
+			pool: $.varRef(init?.pool ?? (null as sync.Pool | $.VarRef<sync.Pool> | null))
 		}
 	}
 

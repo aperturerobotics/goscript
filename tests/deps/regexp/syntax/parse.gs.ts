@@ -56,8 +56,8 @@ export class Error {
 
 	constructor(init?: Partial<{Code?: ErrorCode, Expr?: string}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? ("" as unknown as ErrorCode)),
-			Expr: $.varRef(init?.Expr ?? ("" as unknown as string))
+			Code: $.varRef(init?.Code ?? ("" as ErrorCode)),
+			Expr: $.varRef(init?.Expr ?? ("" as string))
 		}
 	}
 
@@ -178,17 +178,17 @@ export class parser {
 
 	constructor(init?: Partial<{flags?: Flags, stack?: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, free?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, numCap?: number, wholeRegexp?: string, tmpClass?: $.Slice<number>, numRegexp?: number, numRunes?: number, repeats?: bigint, height?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null, size?: globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null}>) {
 		this._fields = {
-			flags: $.varRef(init?.flags ?? (0 as unknown as Flags)),
-			stack: $.varRef(init?.stack ?? (null as unknown as $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>)),
-			free: $.varRef(init?.free ?? (null as unknown as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
-			numCap: $.varRef(init?.numCap ?? (0 as unknown as number)),
-			wholeRegexp: $.varRef(init?.wholeRegexp ?? ("" as unknown as string)),
-			tmpClass: $.varRef(init?.tmpClass ?? (null as unknown as $.Slice<number>)),
-			numRegexp: $.varRef(init?.numRegexp ?? (0 as unknown as number)),
-			numRunes: $.varRef(init?.numRunes ?? (0 as unknown as number)),
-			repeats: $.varRef(init?.repeats ?? (0n as unknown as bigint)),
-			height: $.varRef(init?.height ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
-			size: $.varRef(init?.size ?? (null as unknown as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null))
+			flags: $.varRef(init?.flags ?? (0 as Flags)),
+			stack: $.varRef(init?.stack ?? (null as $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>)),
+			free: $.varRef(init?.free ?? (null as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
+			numCap: $.varRef(init?.numCap ?? (0 as number)),
+			wholeRegexp: $.varRef(init?.wholeRegexp ?? ("" as string)),
+			tmpClass: $.varRef(init?.tmpClass ?? (null as $.Slice<number>)),
+			numRegexp: $.varRef(init?.numRegexp ?? (0 as number)),
+			numRunes: $.varRef(init?.numRunes ?? (0 as number)),
+			repeats: $.varRef(init?.repeats ?? (0n as bigint)),
+			height: $.varRef(init?.height ?? (null as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, number> | null)),
+			size: $.varRef(init?.size ?? (null as globalThis.Map<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, bigint> | null))
 		}
 	}
 
@@ -1700,8 +1700,8 @@ export class charGroup {
 
 	constructor(init?: Partial<{sign?: number, _class?: $.Slice<number>}>) {
 		this._fields = {
-			sign: $.varRef(init?.sign ?? (0 as unknown as number)),
-			_class: $.varRef(init?._class ?? (null as unknown as $.Slice<number>))
+			sign: $.varRef(init?.sign ?? (0 as number)),
+			_class: $.varRef(init?._class ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -1737,7 +1737,7 @@ export class ranges {
 
 	constructor(init?: Partial<{p?: $.VarRef<$.Slice<number>> | null}>) {
 		this._fields = {
-			p: $.varRef(init?.p ?? (null as unknown as $.VarRef<$.Slice<number>> | null))
+			p: $.varRef(init?.p ?? (null as $.VarRef<$.Slice<number>> | null))
 		}
 	}
 

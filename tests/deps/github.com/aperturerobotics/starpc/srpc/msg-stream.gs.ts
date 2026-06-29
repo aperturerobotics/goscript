@@ -59,9 +59,9 @@ export class MsgStream {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, rw?: MsgStreamRw | null, closeCb?: (() => void) | null}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			rw: $.varRef(init?.rw ?? (null as unknown as MsgStreamRw | null)),
-			closeCb: $.varRef(init?.closeCb ?? (null as unknown as (() => void) | null))
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			rw: $.varRef(init?.rw ?? (null as MsgStreamRw | null)),
+			closeCb: $.varRef(init?.closeCb ?? (null as (() => void) | null))
 		}
 	}
 

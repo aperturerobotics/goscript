@@ -28,8 +28,8 @@ export class Wrapped {
 
 	constructor(init?: Partial<{Value?: string, Hidden?: any}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? ("" as unknown as string)),
-			Hidden: $.varRef(init?.Hidden ?? (undefined as any as unknown as any))
+			Value: $.varRef(init?.Value ?? ("" as string)),
+			Hidden: $.varRef(init?.Hidden ?? (undefined as any as any))
 		}
 	}
 
@@ -44,7 +44,7 @@ export class Wrapped {
 
 	public ["public"](): dep.Public | $.VarRef<dep.Public> | null {
 		const w: Wrapped | $.VarRef<Wrapped> | null = this
-		return (w as unknown as dep.Public | $.VarRef<dep.Public> | null)
+		return $.unsafePointerCast<dep.Public | $.VarRef<dep.Public> | null>(w)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -57,7 +57,7 @@ export class Wrapped {
 }
 
 export function wrap(p: dep.Public | $.VarRef<dep.Public> | null): Wrapped | $.VarRef<Wrapped> | null {
-	return (p as unknown as Wrapped | $.VarRef<Wrapped> | null)
+	return $.unsafePointerCast<Wrapped | $.VarRef<Wrapped> | null>(p)
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -27,7 +27,7 @@ export class blockImpl {
 
 	constructor(init?: Partial<{size?: number}>) {
 		this._fields = {
-			size: $.varRef(init?.size ?? (0 as unknown as number))
+			size: $.varRef(init?.size ?? (0 as number))
 		}
 	}
 

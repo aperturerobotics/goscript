@@ -93,8 +93,8 @@ export class streamWithClose {
 
 	constructor(init?: Partial<{Stream?: Stream | null, closeFn?: (() => $.GoError | globalThis.Promise<$.GoError>) | null}>) {
 		this._fields = {
-			Stream: $.varRef(init?.Stream ?? (null as unknown as Stream | null)),
-			closeFn: $.varRef(init?.closeFn ?? (null as unknown as (() => $.GoError | globalThis.Promise<$.GoError>) | null))
+			Stream: $.varRef(init?.Stream ?? (null as Stream | null)),
+			closeFn: $.varRef(init?.closeFn ?? (null as (() => $.GoError | globalThis.Promise<$.GoError>) | null))
 		}
 	}
 
@@ -164,8 +164,8 @@ export class streamWithContext {
 
 	constructor(init?: Partial<{Stream?: Stream | null, ctx?: context.Context | null}>) {
 		this._fields = {
-			Stream: $.varRef(init?.Stream ?? (null as unknown as Stream | null)),
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null))
+			Stream: $.varRef(init?.Stream ?? (null as Stream | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null))
 		}
 	}
 

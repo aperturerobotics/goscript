@@ -115,7 +115,7 @@ export async function NewKeyFromSeed(seed: $.Bytes): Promise<PrivateKey> {
   const subtle = requireSubtle()
   const key = await subtle.importKey(
     'pkcs8',
-    pkcs8FromSeed(seedBytes) as unknown as BufferSource,
+    pkcs8FromSeed(seedBytes) as BufferSource,
     { name: 'Ed25519' },
     true,
     ['sign'],
@@ -143,7 +143,7 @@ export async function Sign(
 
   const key = await requireSubtle().importKey(
     'pkcs8',
-    pkcs8FromSeed(priv.subarray(0, SeedSize)) as unknown as BufferSource,
+    pkcs8FromSeed(priv.subarray(0, SeedSize)) as BufferSource,
     { name: 'Ed25519' },
     false,
     ['sign'],
@@ -151,7 +151,7 @@ export async function Sign(
   const sig = await requireSubtle().sign(
     'Ed25519',
     key,
-    $.bytesToUint8Array(message) as unknown as BufferSource,
+    $.bytesToUint8Array(message) as BufferSource,
   )
   return new Uint8Array(sig)
 }
@@ -186,7 +186,7 @@ export async function VerifyWithOptions(
 
   const key = await requireSubtle().importKey(
     'raw',
-    $.bytesToUint8Array(publicKey) as unknown as BufferSource,
+    $.bytesToUint8Array(publicKey) as BufferSource,
     { name: 'Ed25519' },
     false,
     ['verify'],
@@ -194,8 +194,8 @@ export async function VerifyWithOptions(
   const ok = await requireSubtle().verify(
     'Ed25519',
     key,
-    $.bytesToUint8Array(sig) as unknown as BufferSource,
-    $.bytesToUint8Array(message) as unknown as BufferSource,
+    $.bytesToUint8Array(sig) as BufferSource,
+    $.bytesToUint8Array(message) as BufferSource,
   )
   return ok ? null : new Ed25519Error('ed25519: invalid signature')
 }

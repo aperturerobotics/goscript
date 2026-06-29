@@ -44,6 +44,10 @@ export interface Reader {
   Read(p: $.Bytes): [number, $.GoError]
 }
 
+export interface AsyncReader {
+  Read(p: $.Bytes): Promise<[number, $.GoError]>
+}
+
 // Writer is the interface that wraps the basic Write method
 export interface Writer {
   Write(p: $.Bytes): [number, $.GoError]
@@ -636,14 +640,16 @@ export async function ReadFull(
 }
 
 // ReadAll reads from r until an error or EOF and returns the data it read
-export async function ReadAll(r: Reader): Promise<[$.Bytes, $.GoError]> {
+export async function ReadAll(
+  r: Reader | AsyncReader,
+): Promise<[$.Bytes, $.GoError]> {
   const chunks: $.Bytes[] = []
   let totalLength = 0
   const buf = $.makeSlice<number>(512, undefined, 'byte')
   let readErr: $.GoError = null
 
   while (true) {
-    const [n, err] = await (r.Read(buf) as any)
+    const [n, err] = await r.Read(buf)
     if (n > 0) {
       const chunk = $.makeSlice<number>(n, undefined, 'byte')
       $.copy(chunk, $.goSlice(buf, 0, n))

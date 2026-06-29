@@ -173,7 +173,14 @@ export function IsEqualVT<T>(
   if (t1 == null || t2 == null) {
     return t1 == t2
   }
-  return (t1 as unknown as EqualVT<T>).EqualVT(t2)
+  if (
+    typeof t1 === 'object' &&
+    'EqualVT' in t1 &&
+    typeof t1.EqualVT === 'function'
+  ) {
+    return t1.EqualVT(t2)
+  }
+  return t1 === t2
 }
 
 export function CompareEqualVT<T>(
@@ -835,16 +842,16 @@ export function AppendVarint(
   return $.append(b, ...bytes)
 }
 
-export function ConsumeVarint(b: $.Slice<number>): [number, number] {
+export function ConsumeVarint(b: $.Slice<number>): [bigint, number] {
   let v = 0n
   let shift = 0n
   for (let i = 0; i < 10; i++) {
     if (i >= $.len(b)) {
-      return [0, -1]
+      return [0n, -1]
     }
     const value = byteSliceValue(b, i)
     if (shift === 63n && value > 1) {
-      return [0, -2]
+      return [0n, -2]
     }
     v += BigInt(value & 0x7f) << shift
     if (value < 0x80) {
@@ -852,7 +859,7 @@ export function ConsumeVarint(b: $.Slice<number>): [number, number] {
     }
     shift += 7n
   }
-  return [0, -2]
+  return [0n, -2]
 }
 
 export function SizeOfVarint(x: number | bigint): number {
@@ -1119,20 +1126,17 @@ function normalizedVarint(value: number | bigint): bigint {
   return BigInt.asUintN(64, BigInt(Math.trunc(value)))
 }
 
-function varintResult(value: bigint): number {
-  if (value <= BigInt(Number.MAX_SAFE_INTEGER)) {
-    return Number(value)
-  }
-  return value as unknown as number
+function varintResult(value: bigint): bigint {
+  return BigInt.asUintN(64, value)
 }
 
 export function DecodeVarint(
   b: $.Slice<number>,
   idx: number,
-): [number, number, $.GoError] {
+): [bigint, number, $.GoError] {
   const [v, n] = ConsumeVarint($.goSlice(b, idx, undefined))
   if (n < 0) {
-    return [0, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
+    return [0n, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
   }
   return [v, idx + n, null]
 }
@@ -1148,7 +1152,7 @@ export function DecodeVarintInt32(
 export function DecodeVarintInt64(
   b: $.Slice<number>,
   idx: number,
-): [number, number, $.GoError] {
+): [bigint, number, $.GoError] {
   return DecodeVarint(b, idx)
 }
 
@@ -1157,7 +1161,7 @@ export function DecodeVarintUint32(
   idx: number,
 ): [number, number, $.GoError] {
   const [v, next, err] = DecodeVarint(b, idx)
-  return [v >>> 0, next, err]
+  return [low32(v), next, err]
 }
 
 export function DecodeFixed32(
@@ -1294,8 +1298,8 @@ function setByte(b: $.Slice<number>, idx: number, value: number): void {
   b[idx] = value & 0xff
 }
 
-function toInt32(v: number): number {
-  return v | 0
+function toInt32(v: number | bigint): number {
+  return low32(v) | 0
 }
 
 function ioUnexpectedEOF(): $.GoError {
@@ -1450,7 +1454,7 @@ export function DecodeVarintBool(
   if (n < 0) {
     return [false, 0, n === -1 ? ioUnexpectedEOF() : ErrIntOverflow]
   }
-  return [v !== 0, idx + n, null]
+  return [v !== 0n, idx + n, null]
 }
 
 export function DecodeSint32(

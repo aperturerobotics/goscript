@@ -175,21 +175,21 @@ export class dnsConfig {
 
 	constructor(init?: Partial<{servers?: $.Slice<string>, search?: $.Slice<string>, ndots?: number, timeout?: time.Duration, attempts?: number, rotate?: boolean, unknownOpt?: boolean, lookup?: $.Slice<string>, err?: $.GoError, mtime?: time.Time, soffset?: number, singleRequest?: boolean, useTCP?: boolean, trustAD?: boolean, noReload?: boolean}>) {
 		this._fields = {
-			servers: $.varRef(init?.servers ?? (null as unknown as $.Slice<string>)),
-			search: $.varRef(init?.search ?? (null as unknown as $.Slice<string>)),
-			ndots: $.varRef(init?.ndots ?? (0 as unknown as number)),
-			timeout: $.varRef(init?.timeout ?? (0n as unknown as time.Duration)),
-			attempts: $.varRef(init?.attempts ?? (0 as unknown as number)),
-			rotate: $.varRef(init?.rotate ?? (false as unknown as boolean)),
-			unknownOpt: $.varRef(init?.unknownOpt ?? (false as unknown as boolean)),
-			lookup: $.varRef(init?.lookup ?? (null as unknown as $.Slice<string>)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
+			servers: $.varRef(init?.servers ?? (null as $.Slice<string>)),
+			search: $.varRef(init?.search ?? (null as $.Slice<string>)),
+			ndots: $.varRef(init?.ndots ?? (0 as number)),
+			timeout: $.varRef(init?.timeout ?? (0n as time.Duration)),
+			attempts: $.varRef(init?.attempts ?? (0 as number)),
+			rotate: $.varRef(init?.rotate ?? (false as boolean)),
+			unknownOpt: $.varRef(init?.unknownOpt ?? (false as boolean)),
+			lookup: $.varRef(init?.lookup ?? (null as $.Slice<string>)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
 			mtime: $.varRef(init?.mtime ? $.markAsStructValue($.cloneStructValue(init.mtime)) : $.markAsStructValue(new time.Time())),
-			soffset: $.varRef(init?.soffset ?? (0 as unknown as number)),
-			singleRequest: $.varRef(init?.singleRequest ?? (false as unknown as boolean)),
-			useTCP: $.varRef(init?.useTCP ?? (false as unknown as boolean)),
-			trustAD: $.varRef(init?.trustAD ?? (false as unknown as boolean)),
-			noReload: $.varRef(init?.noReload ?? (false as unknown as boolean))
+			soffset: $.varRef(init?.soffset ?? (0 as number)),
+			singleRequest: $.varRef(init?.singleRequest ?? (false as boolean)),
+			useTCP: $.varRef(init?.useTCP ?? (false as boolean)),
+			trustAD: $.varRef(init?.trustAD ?? (false as boolean)),
+			noReload: $.varRef(init?.noReload ?? (false as boolean))
 		}
 	}
 

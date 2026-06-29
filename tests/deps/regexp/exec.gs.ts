@@ -43,8 +43,8 @@ export class queue {
 
 	constructor(init?: Partial<{sparse?: $.Slice<number>, dense?: $.Slice<entry>}>) {
 		this._fields = {
-			sparse: $.varRef(init?.sparse ?? (null as unknown as $.Slice<number>)),
-			dense: $.varRef(init?.dense ?? (null as unknown as $.Slice<entry>))
+			sparse: $.varRef(init?.sparse ?? (null as $.Slice<number>)),
+			dense: $.varRef(init?.dense ?? (null as $.Slice<entry>))
 		}
 	}
 
@@ -88,8 +88,8 @@ export class entry {
 
 	constructor(init?: Partial<{pc?: number, t?: thread | $.VarRef<thread> | null}>) {
 		this._fields = {
-			pc: $.varRef(init?.pc ?? (0 as unknown as number)),
-			t: $.varRef(init?.t ?? (null as unknown as thread | $.VarRef<thread> | null))
+			pc: $.varRef(init?.pc ?? (0 as number)),
+			t: $.varRef(init?.t ?? (null as thread | $.VarRef<thread> | null))
 		}
 	}
 
@@ -133,8 +133,8 @@ export class thread {
 
 	constructor(init?: Partial<{inst?: syntax.Inst | $.VarRef<syntax.Inst> | null, cap?: $.Slice<number>}>) {
 		this._fields = {
-			inst: $.varRef(init?.inst ?? (null as unknown as syntax.Inst | $.VarRef<syntax.Inst> | null)),
-			cap: $.varRef(init?.cap ?? (null as unknown as $.Slice<number>))
+			inst: $.varRef(init?.inst ?? (null as syntax.Inst | $.VarRef<syntax.Inst> | null)),
+			cap: $.varRef(init?.cap ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -328,13 +328,13 @@ export class machine {
 
 	constructor(init?: Partial<{re?: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, p?: syntax.Prog | $.VarRef<syntax.Prog> | null, q0?: queue, q1?: queue, pool?: $.Slice<thread | $.VarRef<thread> | null>, matched?: boolean, matchcap?: $.Slice<number>, inputs?: inputs}>) {
 		this._fields = {
-			re: $.varRef(init?.re ?? (null as unknown as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
-			p: $.varRef(init?.p ?? (null as unknown as syntax.Prog | $.VarRef<syntax.Prog> | null)),
+			re: $.varRef(init?.re ?? (null as __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null)),
+			p: $.varRef(init?.p ?? (null as syntax.Prog | $.VarRef<syntax.Prog> | null)),
 			q0: $.varRef(init?.q0 ? $.markAsStructValue($.cloneStructValue(init.q0)) : $.markAsStructValue(new queue())),
 			q1: $.varRef(init?.q1 ? $.markAsStructValue($.cloneStructValue(init.q1)) : $.markAsStructValue(new queue())),
-			pool: $.varRef(init?.pool ?? (null as unknown as $.Slice<thread | $.VarRef<thread> | null>)),
-			matched: $.varRef(init?.matched ?? (false as unknown as boolean)),
-			matchcap: $.varRef(init?.matchcap ?? (null as unknown as $.Slice<number>)),
+			pool: $.varRef(init?.pool ?? (null as $.Slice<thread | $.VarRef<thread> | null>)),
+			matched: $.varRef(init?.matched ?? (false as boolean)),
+			matchcap: $.varRef(init?.matchcap ?? (null as $.Slice<number>)),
 			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs()))
 		}
 	}
@@ -676,7 +676,7 @@ export class onePassMachine {
 	constructor(init?: Partial<{inputs?: inputs, matchcap?: $.Slice<number>}>) {
 		this._fields = {
 			inputs: $.varRef(init?.inputs ? $.markAsStructValue($.cloneStructValue(init.inputs)) : $.markAsStructValue(new inputs())),
-			matchcap: $.varRef(init?.matchcap ?? (null as unknown as $.Slice<number>))
+			matchcap: $.varRef(init?.matchcap ?? (null as $.Slice<number>))
 		}
 	}
 

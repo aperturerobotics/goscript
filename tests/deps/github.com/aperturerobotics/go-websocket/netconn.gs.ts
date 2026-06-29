@@ -157,20 +157,20 @@ export class netConn {
 
 	constructor(init?: Partial<{c?: __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null, msgType?: __goscript_ws_js.MessageType, writeTimer?: time.Timer | $.VarRef<time.Timer> | null, writeMu?: __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null, writeExpired?: atomic.Int64, writeCtx?: context.Context | null, writeCancel?: (() => void) | null, readTimer?: time.Timer | $.VarRef<time.Timer> | null, readMu?: __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null, readExpired?: atomic.Int64, readCtx?: context.Context | null, readCancel?: (() => void) | null, readEOFed?: boolean, reader?: io.Reader | null}>) {
 		this._fields = {
-			c: $.varRef(init?.c ?? (null as unknown as __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null)),
-			msgType: $.varRef(init?.msgType ?? (0 as unknown as __goscript_ws_js.MessageType)),
-			writeTimer: $.varRef(init?.writeTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
-			writeMu: $.varRef(init?.writeMu ?? (null as unknown as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
+			c: $.varRef(init?.c ?? (null as __goscript_ws_js.Conn | $.VarRef<__goscript_ws_js.Conn> | null)),
+			msgType: $.varRef(init?.msgType ?? (0 as __goscript_ws_js.MessageType)),
+			writeTimer: $.varRef(init?.writeTimer ?? (null as time.Timer | $.VarRef<time.Timer> | null)),
+			writeMu: $.varRef(init?.writeMu ?? (null as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
 			writeExpired: $.varRef(init?.writeExpired ? $.markAsStructValue($.cloneStructValue(init.writeExpired)) : $.markAsStructValue(new atomic.Int64())),
-			writeCtx: $.varRef(init?.writeCtx ?? (null as unknown as context.Context | null)),
-			writeCancel: $.varRef(init?.writeCancel ?? (null as unknown as (() => void) | null)),
-			readTimer: $.varRef(init?.readTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
-			readMu: $.varRef(init?.readMu ?? (null as unknown as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
+			writeCtx: $.varRef(init?.writeCtx ?? (null as context.Context | null)),
+			writeCancel: $.varRef(init?.writeCancel ?? (null as (() => void) | null)),
+			readTimer: $.varRef(init?.readTimer ?? (null as time.Timer | $.VarRef<time.Timer> | null)),
+			readMu: $.varRef(init?.readMu ?? (null as __goscript_ws_js.mu | $.VarRef<__goscript_ws_js.mu> | null)),
 			readExpired: $.varRef(init?.readExpired ? $.markAsStructValue($.cloneStructValue(init.readExpired)) : $.markAsStructValue(new atomic.Int64())),
-			readCtx: $.varRef(init?.readCtx ?? (null as unknown as context.Context | null)),
-			readCancel: $.varRef(init?.readCancel ?? (null as unknown as (() => void) | null)),
-			readEOFed: $.varRef(init?.readEOFed ?? (false as unknown as boolean)),
-			reader: $.varRef(init?.reader ?? (null as unknown as io.Reader | null))
+			readCtx: $.varRef(init?.readCtx ?? (null as context.Context | null)),
+			readCancel: $.varRef(init?.readCancel ?? (null as (() => void) | null)),
+			readEOFed: $.varRef(init?.readEOFed ?? (false as boolean)),
+			reader: $.varRef(init?.reader ?? (null as io.Reader | null))
 		}
 	}
 

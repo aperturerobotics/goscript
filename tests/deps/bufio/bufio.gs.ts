@@ -80,13 +80,13 @@ export class Reader {
 
 	constructor(init?: Partial<{buf?: $.Slice<number>, rd?: io.Reader | null, r?: number, w?: number, err?: $.GoError, lastByte?: number, lastRuneSize?: number}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			rd: $.varRef(init?.rd ?? (null as unknown as io.Reader | null)),
-			r: $.varRef(init?.r ?? (0 as unknown as number)),
-			w: $.varRef(init?.w ?? (0 as unknown as number)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			lastByte: $.varRef(init?.lastByte ?? (0 as unknown as number)),
-			lastRuneSize: $.varRef(init?.lastRuneSize ?? (0 as unknown as number))
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			rd: $.varRef(init?.rd ?? (null as io.Reader | null)),
+			r: $.varRef(init?.r ?? (0 as number)),
+			w: $.varRef(init?.w ?? (0 as number)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			lastByte: $.varRef(init?.lastByte ?? (0 as number)),
+			lastRuneSize: $.varRef(init?.lastRuneSize ?? (0 as number))
 		}
 	}
 
@@ -635,10 +635,10 @@ export class Writer {
 
 	constructor(init?: Partial<{err?: $.GoError, buf?: $.Slice<number>, n?: number, wr?: io.Writer | null}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			n: $.varRef(init?.n ?? (0 as unknown as number)),
-			wr: $.varRef(init?.wr ?? (null as unknown as io.Writer | null))
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			n: $.varRef(init?.n ?? (0 as number)),
+			wr: $.varRef(init?.wr ?? (null as io.Writer | null))
 		}
 	}
 
@@ -914,8 +914,8 @@ export class ReadWriter {
 
 	constructor(init?: Partial<{Reader?: Reader | $.VarRef<Reader> | null, Writer?: Writer | $.VarRef<Writer> | null}>) {
 		this._fields = {
-			Reader: $.varRef(init?.Reader ?? (null as unknown as Reader | $.VarRef<Reader> | null)),
-			Writer: $.varRef(init?.Writer ?? (null as unknown as Writer | $.VarRef<Writer> | null))
+			Reader: $.varRef(init?.Reader ?? (null as Reader | $.VarRef<Reader> | null)),
+			Writer: $.varRef(init?.Writer ?? (null as Writer | $.VarRef<Writer> | null))
 		}
 	}
 

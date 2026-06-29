@@ -283,37 +283,37 @@ export class yamuxConn {
 
 	constructor(init?: Partial<{rtt?: bigint, remoteGoAway?: number, localGoAway?: number, nextStreamID?: number, config?: yamux2.Config | $.VarRef<yamux2.Config> | null, logger?: log.Logger | $.VarRef<log.Logger> | null, conn?: net.Conn | null, reader?: io.Reader | null, newMemoryManager?: (() => [yamux2.MemoryManager | null, $.GoError] | globalThis.Promise<[yamux2.MemoryManager | null, $.GoError]>) | null, pingLock?: sync.Mutex, pingID?: number, activePing?: any, numIncomingStreams?: number, streams?: globalThis.Map<number, yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, inflight?: globalThis.Map<number, {}> | null, streamLock?: sync.Mutex, synCh?: $.Channel<{}> | null, acceptCh?: $.Channel<yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null, sendCh?: $.Channel<$.Slice<number>> | null, pongCh?: $.Channel<number> | null, pingCh?: $.Channel<number> | null, recvDoneCh?: $.Channel<{}> | null, sendDoneCh?: $.Channel<{}> | null, client?: boolean, shutdown?: boolean, shutdownErr?: $.GoError, shutdownCh?: $.Channel<{}> | null, shutdownLock?: sync.Mutex, keepaliveLock?: sync.Mutex, keepaliveTimer?: time.Timer | $.VarRef<time.Timer> | null, keepaliveActive?: boolean}>) {
 		this._fields = {
-			rtt: $.varRef(init?.rtt ?? (0n as unknown as bigint)),
-			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as unknown as number)),
-			localGoAway: $.varRef(init?.localGoAway ?? (0 as unknown as number)),
-			nextStreamID: $.varRef(init?.nextStreamID ?? (0 as unknown as number)),
-			config: $.varRef(init?.config ?? (null as unknown as yamux2.Config | $.VarRef<yamux2.Config> | null)),
-			logger: $.varRef(init?.logger ?? (null as unknown as log.Logger | $.VarRef<log.Logger> | null)),
-			conn: $.varRef(init?.conn ?? (null as unknown as net.Conn | null)),
-			reader: $.varRef(init?.reader ?? (null as unknown as io.Reader | null)),
-			newMemoryManager: $.varRef(init?.newMemoryManager ?? (null as unknown as (() => [yamux2.MemoryManager | null, $.GoError] | globalThis.Promise<[yamux2.MemoryManager | null, $.GoError]>) | null)),
+			rtt: $.varRef(init?.rtt ?? (0n as bigint)),
+			remoteGoAway: $.varRef(init?.remoteGoAway ?? (0 as number)),
+			localGoAway: $.varRef(init?.localGoAway ?? (0 as number)),
+			nextStreamID: $.varRef(init?.nextStreamID ?? (0 as number)),
+			config: $.varRef(init?.config ?? (null as yamux2.Config | $.VarRef<yamux2.Config> | null)),
+			logger: $.varRef(init?.logger ?? (null as log.Logger | $.VarRef<log.Logger> | null)),
+			conn: $.varRef(init?.conn ?? (null as net.Conn | null)),
+			reader: $.varRef(init?.reader ?? (null as io.Reader | null)),
+			newMemoryManager: $.varRef(init?.newMemoryManager ?? (null as (() => [yamux2.MemoryManager | null, $.GoError] | globalThis.Promise<[yamux2.MemoryManager | null, $.GoError]>) | null)),
 			pingLock: $.varRef(init?.pingLock ? $.markAsStructValue($.cloneStructValue(init.pingLock)) : $.markAsStructValue(new sync.Mutex())),
-			pingID: $.varRef(init?.pingID ?? (0 as unknown as number)),
-			activePing: $.varRef(init?.activePing ?? (null as unknown as any)),
-			numIncomingStreams: $.varRef(init?.numIncomingStreams ?? (0 as unknown as number)),
-			streams: $.varRef(init?.streams ?? (null as unknown as globalThis.Map<number, yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null)),
-			inflight: $.varRef(init?.inflight ?? (null as unknown as globalThis.Map<number, {}> | null)),
+			pingID: $.varRef(init?.pingID ?? (0 as number)),
+			activePing: $.varRef(init?.activePing ?? (null as any)),
+			numIncomingStreams: $.varRef(init?.numIncomingStreams ?? (0 as number)),
+			streams: $.varRef(init?.streams ?? (null as globalThis.Map<number, yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null)),
+			inflight: $.varRef(init?.inflight ?? (null as globalThis.Map<number, {}> | null)),
 			streamLock: $.varRef(init?.streamLock ? $.markAsStructValue($.cloneStructValue(init.streamLock)) : $.markAsStructValue(new sync.Mutex())),
-			synCh: $.varRef(init?.synCh ?? (null as unknown as $.Channel<{}> | null)),
-			acceptCh: $.varRef(init?.acceptCh ?? (null as unknown as $.Channel<yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null)),
-			sendCh: $.varRef(init?.sendCh ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
-			pongCh: $.varRef(init?.pongCh ?? (null as unknown as $.Channel<number> | null)),
-			pingCh: $.varRef(init?.pingCh ?? (null as unknown as $.Channel<number> | null)),
-			recvDoneCh: $.varRef(init?.recvDoneCh ?? (null as unknown as $.Channel<{}> | null)),
-			sendDoneCh: $.varRef(init?.sendDoneCh ?? (null as unknown as $.Channel<{}> | null)),
-			client: $.varRef(init?.client ?? (false as unknown as boolean)),
-			shutdown: $.varRef(init?.shutdown ?? (false as unknown as boolean)),
-			shutdownErr: $.varRef(init?.shutdownErr ?? (null as unknown as $.GoError)),
-			shutdownCh: $.varRef(init?.shutdownCh ?? (null as unknown as $.Channel<{}> | null)),
+			synCh: $.varRef(init?.synCh ?? (null as $.Channel<{}> | null)),
+			acceptCh: $.varRef(init?.acceptCh ?? (null as $.Channel<yamux2.Stream | $.VarRef<yamux2.Stream> | null> | null)),
+			sendCh: $.varRef(init?.sendCh ?? (null as $.Channel<$.Slice<number>> | null)),
+			pongCh: $.varRef(init?.pongCh ?? (null as $.Channel<number> | null)),
+			pingCh: $.varRef(init?.pingCh ?? (null as $.Channel<number> | null)),
+			recvDoneCh: $.varRef(init?.recvDoneCh ?? (null as $.Channel<{}> | null)),
+			sendDoneCh: $.varRef(init?.sendDoneCh ?? (null as $.Channel<{}> | null)),
+			client: $.varRef(init?.client ?? (false as boolean)),
+			shutdown: $.varRef(init?.shutdown ?? (false as boolean)),
+			shutdownErr: $.varRef(init?.shutdownErr ?? (null as $.GoError)),
+			shutdownCh: $.varRef(init?.shutdownCh ?? (null as $.Channel<{}> | null)),
 			shutdownLock: $.varRef(init?.shutdownLock ? $.markAsStructValue($.cloneStructValue(init.shutdownLock)) : $.markAsStructValue(new sync.Mutex())),
 			keepaliveLock: $.varRef(init?.keepaliveLock ? $.markAsStructValue($.cloneStructValue(init.keepaliveLock)) : $.markAsStructValue(new sync.Mutex())),
-			keepaliveTimer: $.varRef(init?.keepaliveTimer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
-			keepaliveActive: $.varRef(init?.keepaliveActive ?? (false as unknown as boolean))
+			keepaliveTimer: $.varRef(init?.keepaliveTimer ?? (null as time.Timer | $.VarRef<time.Timer> | null)),
+			keepaliveActive: $.varRef(init?.keepaliveActive ?? (false as boolean))
 		}
 	}
 
@@ -363,7 +363,7 @@ export class yamuxConn {
 		if (err != null) {
 			return [null, err]
 		}
-		return [$.interfaceValue<__goscript_muxed.MuxedStream | null>((s as unknown as __goscript_stream_yamux.yamuxStream | $.VarRef<__goscript_stream_yamux.yamuxStream> | null), "*srpc.yamuxStream"), null]
+		return [$.interfaceValue<__goscript_muxed.MuxedStream | null>($.unsafePointerCast<__goscript_stream_yamux.yamuxStream | $.VarRef<__goscript_stream_yamux.yamuxStream> | null>(s), "*srpc.yamuxStream"), null]
 	}
 
 	public async Close(): globalThis.Promise<$.GoError> {
@@ -384,12 +384,12 @@ export class yamuxConn {
 		if (err != null) {
 			return [null, err]
 		}
-		return [$.interfaceValue<__goscript_muxed.MuxedStream | null>((s as unknown as __goscript_stream_yamux.yamuxStream | $.VarRef<__goscript_stream_yamux.yamuxStream> | null), "*srpc.yamuxStream"), null]
+		return [$.interfaceValue<__goscript_muxed.MuxedStream | null>($.unsafePointerCast<__goscript_stream_yamux.yamuxStream | $.VarRef<__goscript_stream_yamux.yamuxStream> | null>(s), "*srpc.yamuxStream"), null]
 	}
 
 	public yamux(): yamux2.Session | $.VarRef<yamux2.Session> | null {
 		const c: yamuxConn | $.VarRef<yamuxConn> | null = this
-		return (c as unknown as yamux2.Session | $.VarRef<yamux2.Session> | null)
+		return $.unsafePointerCast<yamux2.Session | $.VarRef<yamux2.Session> | null>(c)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -402,5 +402,5 @@ export class yamuxConn {
 }
 
 export function newYamuxConn(sess: yamux2.Session | $.VarRef<yamux2.Session> | null): __goscript_muxed.MuxedConn | null {
-	return $.interfaceValue<__goscript_muxed.MuxedConn | null>((sess as unknown as yamuxConn | $.VarRef<yamuxConn> | null), "*srpc.yamuxConn")
+	return $.interfaceValue<__goscript_muxed.MuxedConn | null>($.unsafePointerCast<yamuxConn | $.VarRef<yamuxConn> | null>(sess), "*srpc.yamuxConn")
 }

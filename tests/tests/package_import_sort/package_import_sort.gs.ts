@@ -23,7 +23,7 @@ export class descending {
 
 	constructor(init?: Partial<{values?: $.Slice<number>}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? (null as unknown as $.Slice<number>))
+			values: $.varRef(init?.values ?? (null as $.Slice<number>))
 		}
 	}
 

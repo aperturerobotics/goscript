@@ -47,7 +47,7 @@ export class WebSocket {
 
 	public async OnClose(fn: ((_p0: CloseEvent) => void) | null): globalThis.Promise<(() => void) | null> {
 		const c = this
-		let remove: (() => void) | null = null as unknown as (() => void) | null
+		let remove: (() => void) | null = null as (() => void) | null
 		return await $.markAsStructValue($.cloneStructValue(c)).addEventListener("close", $.functionValue(async (e: js.Value): globalThis.Promise<void> => {
 			let ce = (() => { const __goscriptLiteralField1 = $.uint($.uint($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(e)).Get("code"))).Int(), 16), 16); const __goscriptLiteralField2 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(e)).Get("reason"))).String(); const __goscriptLiteralField3 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(e)).Get("wasClean"))).Bool(); return $.markAsStructValue(new CloseEvent({Code: __goscriptLiteralField1, Reason: __goscriptLiteralField2, WasClean: __goscriptLiteralField3})) })()
 			await fn!($.markAsStructValue($.cloneStructValue(ce)))
@@ -56,13 +56,13 @@ export class WebSocket {
 
 	public async OnError(fn: ((e: js.Value) => void) | null): globalThis.Promise<(() => void) | null> {
 		const c = this
-		let remove: (() => void) | null = null as unknown as (() => void) | null
+		let remove: (() => void) | null = null as (() => void) | null
 		return await $.markAsStructValue($.cloneStructValue(c)).addEventListener("error", fn)
 	}
 
 	public async OnMessage(fn: ((m: MessageEvent) => void) | null): globalThis.Promise<(() => void) | null> {
 		const c = this
-		let remove: (() => void) | null = null as unknown as (() => void) | null
+		let remove: (() => void) | null = null as (() => void) | null
 		return await $.markAsStructValue($.cloneStructValue(c)).addEventListener("message", $.functionValue(async (e: js.Value): globalThis.Promise<void> => {
 			let data: any = null as any
 
@@ -80,7 +80,7 @@ export class WebSocket {
 
 	public async OnOpen(fn: ((e: js.Value) => void) | null): globalThis.Promise<(() => void) | null> {
 		const c = this
-		let remove: (() => void) | null = null as unknown as (() => void) | null
+		let remove: (() => void) | null = null as (() => void) | null
 		return await $.markAsStructValue($.cloneStructValue(c)).addEventListener("open", fn)
 	}
 
@@ -173,9 +173,9 @@ export class CloseEvent {
 
 	constructor(init?: Partial<{Code?: number, Reason?: string, WasClean?: boolean}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? (0 as unknown as number)),
-			Reason: $.varRef(init?.Reason ?? ("" as unknown as string)),
-			WasClean: $.varRef(init?.WasClean ?? (false as unknown as boolean))
+			Code: $.varRef(init?.Code ?? (0 as number)),
+			Reason: $.varRef(init?.Reason ?? ("" as string)),
+			WasClean: $.varRef(init?.WasClean ?? (false as boolean))
 		}
 	}
 
@@ -213,7 +213,7 @@ export class MessageEvent {
 
 	constructor(init?: Partial<{Data?: any}>) {
 		this._fields = {
-			Data: $.varRef(init?.Data ?? (null as unknown as any))
+			Data: $.varRef(init?.Data ?? (null as any))
 		}
 	}
 

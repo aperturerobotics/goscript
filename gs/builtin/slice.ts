@@ -30,6 +30,8 @@ export class GoBinaryString extends String {
 
 type GoStringValue = string | GoBinaryString
 type GoStringBytes = GoStringValue | Slice<number> | Uint8Array
+const goBinaryStringPrefix = '\uFDD0goscript-bytes:'
+
 
 function isGoStringValue(value: unknown): value is GoStringValue {
   return typeof value === 'string' || value instanceof GoBinaryString
@@ -38,6 +40,9 @@ function isGoStringValue(value: unknown): value is GoStringValue {
 function goStringBytes(str: GoStringValue): Uint8Array {
   if (str instanceof GoBinaryString) {
     return str.bytes.slice()
+  }
+  if (str.startsWith(goBinaryStringPrefix)) {
+    return binaryStringToBytes(str.slice(goBinaryStringPrefix.length))
   }
   return new TextEncoder().encode(str)
 }
@@ -59,7 +64,7 @@ function goStringFromBytes(bytes: Uint8Array): string {
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
   } catch {
-    return new GoBinaryString(bytes) as unknown as string
+    return goBinaryStringPrefix + bytesToBinaryString(bytes)
   }
 }
 
@@ -93,8 +98,12 @@ export type SliceProxy<T> = T[] & {
   __meta__: GoSliceObject<T>
 }
 
+type ByteSliceMeta = Omit<GoSliceObject<number>, 'backing'> & {
+  backing: Uint8Array
+}
+
 type ByteSlice = Uint8Array & {
-  __meta__?: GoSliceObject<number>
+  __meta__?: ByteSliceMeta
 }
 
 function sliceIndexProperty(prop: string | symbol): number {
@@ -259,14 +268,14 @@ export function sliceToArrayPointer<T>(
   }
   if (typeHint === 'byte') {
     if (slice instanceof Uint8Array) {
-      return varRef(goSlice(slice, 0, length) as unknown as Uint8Array)
+      return varRef(goSlice(slice, 0, length) as Uint8Array)
     }
     return varRef(
-      goSlice(slice as Slice<T>, 0, length) as unknown as Uint8Array,
+      goSlice(slice as Slice<T>, 0, length) as Uint8Array,
     )
   }
   if (slice instanceof Uint8Array) {
-    return varRef(goSlice(slice, 0, length) as unknown as T[])
+    return varRef(goSlice(slice, 0, length) as T[])
   }
   return varRef(goSlice(slice, 0, length) as T[])
 }
@@ -274,7 +283,7 @@ export function sliceToArrayPointer<T>(
 /**
  * isComplexSlice checks if a slice is a complex slice (has __meta__ property)
  */
-function isComplexSlice<T>(slice: Slice<T>): slice is SliceProxy<T> {
+function isComplexSlice<T>(slice: unknown): slice is SliceProxy<T> {
   return (
     slice !== null &&
     slice !== undefined &&
@@ -291,7 +300,7 @@ function normalizeSliceIndex(value: number | undefined): number | undefined {
   return Number(value)
 }
 
-function byteSliceMeta(slice: Uint8Array): GoSliceObject<number> | undefined {
+function byteSliceMeta(slice: Uint8Array): ByteSliceMeta | undefined {
   return (slice as ByteSlice).__meta__
 }
 
@@ -304,7 +313,7 @@ function byteSliceView(
   const view = backing.subarray(offset, offset + length) as ByteSlice
   if (capacity !== length) {
     view.__meta__ = {
-      backing: backing as unknown as number[],
+      backing,
       offset,
       length,
       capacity,
@@ -453,7 +462,7 @@ export const makeSlice = <T>(
     },
   }
 
-  return new Proxy(proxy, handler) as unknown as SliceProxy<T>
+  return new Proxy(proxy, handler) as SliceProxy<T>
 }
 
 /**
@@ -710,7 +719,7 @@ export function goSlice<T>( // T can be number for Uint8Array case
 
   // const handler = { ... } // Handler is now defined at the top
 
-  return new Proxy(proxy, handler) as unknown as SliceProxy<T>
+  return new Proxy(proxy, handler) as SliceProxy<T>
 }
 
 /**
@@ -819,7 +828,7 @@ export const arrayToSlice = <T>(
     }
   }
 
-  return new Proxy(target, handler) as unknown as SliceProxy<T>
+  return new Proxy(target, handler) as SliceProxy<T>
 }
 
 /**
@@ -853,7 +862,7 @@ export const len = <T = unknown, V = unknown>(
   }
 
   if (Array.isArray(obj)) {
-    const meta = (obj as unknown as SliceProxy<T>).__meta__
+    const meta = (obj as SliceProxy<T>).__meta__
     if (meta !== undefined) {
       return meta.length
     }
@@ -868,8 +877,8 @@ export const len = <T = unknown, V = unknown>(
     return stringLen(obj)
   }
 
-  if (isComplexSlice(obj as any)) {
-    return (obj as unknown as SliceProxy<T>).__meta__.length
+  if (isComplexSlice<T>(obj)) {
+    return obj.__meta__.length
   }
 
   if (typeof (obj as any).len === 'function') {
@@ -1241,12 +1250,12 @@ function copyFromString<T>(
     const dstMeta = dst.__meta__
     for (let i = 0; i < count; i++) {
       const byteVal = bytes[i]
-      dstMeta.backing[dstMeta.offset + i] = byteVal as unknown as T
+      dstMeta.backing[dstMeta.offset + i] = byteVal as T
       ;(dst as any)[i] = byteVal
     }
   } else if (Array.isArray(dst)) {
     for (let i = 0; i < count; i++) {
-      dst[i] = bytes[i] as unknown as T
+      dst[i] = bytes[i] as T
     }
   }
 
@@ -1280,12 +1289,12 @@ function copyFromUint8Array<T>(
   if (isComplexSlice(dst)) {
     const dstMeta = dst.__meta__
     for (let i = 0; i < count; i++) {
-      dstMeta.backing[dstMeta.offset + i] = values[i] as unknown as T
+      dstMeta.backing[dstMeta.offset + i] = values[i] as T
       ;(dst as any)[i] = values[i]
     }
   } else if (Array.isArray(dst)) {
     for (let i = 0; i < count; i++) {
-      dst[i] = values[i] as unknown as T
+      dst[i] = values[i] as T
     }
   }
   return count
@@ -1604,12 +1613,12 @@ function uintElementValue(value: unknown, byteSize: number): bigint {
   return 0n
 }
 
-function uintElementResult(value: bigint, byteSize: number): number {
+function uintElementResult(value: bigint, byteSize: number): number | bigint {
   const normalized = BigInt.asUintN(byteSize * 8, value)
   if (normalized <= BigInt(Number.MAX_SAFE_INTEGER)) {
     return Number(normalized)
   }
-  return normalized as unknown as number
+  return normalized
 }
 
 function byteAddressBase(backing: object, source: ByteAddressSource): number {
@@ -1624,7 +1633,7 @@ function byteAddressBase(backing: object, source: ByteAddressSource): number {
 }
 
 function numericByteSource(
-  backing: number[],
+  backing: unknown[],
   elementByteSize: number,
 ): ByteAddressSource {
   const byteSize = Math.max(1, Math.trunc(elementByteSize))
@@ -1682,7 +1691,7 @@ export function indexByteAddress<T>(
     if (index < 0 || index >= collection.__meta__.length) {
       outOfRangeIndex(index, collection.__meta__.length)
     }
-    const backing = collection.__meta__.backing as unknown as number[]
+    const backing = collection.__meta__.backing
     const byteSize = Math.max(1, Math.trunc(elementByteSize))
     const base = byteAddressBase(backing, numericByteSource(backing, byteSize))
     return base + (collection.__meta__.offset + index) * byteSize
@@ -1695,7 +1704,7 @@ export function indexByteAddress<T>(
     const byteSize = Math.max(1, Math.trunc(elementByteSize))
     const base = byteAddressBase(
       collection,
-      numericByteSource(collection as unknown as number[], byteSize),
+      numericByteSource(collection, byteSize),
     )
     return base + index * byteSize
   }
@@ -1947,7 +1956,7 @@ export const bytesToString = (
     // For simple T[] slices
     byteArray = bytes
   }
-  return goStringFromBytes(Uint8Array.from(byteArray)) as string
+  return goStringFromBytes(Uint8Array.from(byteArray))
 }
 
 export function stringEqual(
@@ -2015,7 +2024,7 @@ function byteStringView(value: GoStringBytes): ByteStringView {
     return { backing: value, offset: 0, length: value.length }
   }
   if (Array.isArray(value)) {
-    const meta = (value as unknown as SliceProxy<number>).__meta__
+    const meta = (value as SliceProxy<number>).__meta__
     if (meta !== undefined) {
       return {
         backing: meta.backing,
@@ -2025,12 +2034,11 @@ function byteStringView(value: GoStringBytes): ByteStringView {
     }
     return { backing: value, offset: 0, length: value.length }
   }
-  const meta = (value as unknown as SliceProxy<number>).__meta__
-  return {
-    backing: meta.backing,
-    offset: meta.offset,
-    length: meta.length,
+  if (isGoStringValue(value)) {
+    const bytes = goStringBytes(value)
+    return { backing: bytes, offset: 0, length: bytes.length }
   }
+  return { backing: [], offset: 0, length: 0 }
 }
 
 function collectionValue(value: unknown): unknown {
@@ -2064,6 +2072,14 @@ function bytesToBinaryString(bytes: Uint8Array): string {
   return out
 }
 
+function binaryStringToBytes(value: string): Uint8Array {
+  const out = new Uint8Array(value.length)
+  for (let i = 0; i < value.length; i++) {
+    out[i] = value.charCodeAt(i) & 0xff
+  }
+  return out
+}
+
 /**
  * Converts a string to a Uint8Array (byte slice).
  * @param s The input string.
@@ -2086,7 +2102,7 @@ export function stringToBytes(
   return new Uint8Array(Array.isArray(s) ? s : [])
 }
 
-type StringHeaderData = {
+export type StringHeaderData = {
   kind: 'string'
   value: string
 }

@@ -131,8 +131,8 @@ export class UnixAddr {
 
 	constructor(init?: Partial<{Name?: string, Net?: string}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
-			Net: $.varRef(init?.Net ?? ("" as unknown as string))
+			Name: $.varRef(init?.Name ?? ("" as string)),
+			Net: $.varRef(init?.Net ?? ("" as string))
 		}
 	}
 
@@ -545,9 +545,9 @@ export class UnixListener {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, path?: string, unlink?: boolean, unlinkOnce?: sync.Once}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
-			path: $.varRef(init?.path ?? ("" as unknown as string)),
-			unlink: $.varRef(init?.unlink ?? (false as unknown as boolean)),
+			fd: $.varRef(init?.fd ?? (null as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
+			path: $.varRef(init?.path ?? ("" as string)),
+			unlink: $.varRef(init?.unlink ?? (false as boolean)),
 			unlinkOnce: $.varRef(init?.unlinkOnce ? $.markAsStructValue($.cloneStructValue(init.unlinkOnce)) : $.markAsStructValue(new sync.Once()))
 		}
 	}

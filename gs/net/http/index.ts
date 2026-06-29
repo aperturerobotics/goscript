@@ -452,7 +452,7 @@ class responseBody implements io.ReadCloser {
   }
 }
 
-class fetchResponseBody {
+class fetchResponseBody implements io.ReadCloser {
   private reader: bytes.Reader | null = null
   private closed = false
 
@@ -463,7 +463,13 @@ class fetchResponseBody {
     private stopContextWatch: () => void,
   ) {}
 
-  public async Read(p: $.Bytes): Promise<[number, $.GoError]> {
+  public Read(p: $.Bytes): [number, $.GoError]
+  public Read(p: $.Bytes): Promise<[number, $.GoError]>
+  public Read(p: $.Bytes): [number, $.GoError] | Promise<[number, $.GoError]> {
+    return this.readAsync(p)
+  }
+
+  private async readAsync(p: $.Bytes): Promise<[number, $.GoError]> {
     if (this.closed) {
       return [0, ErrBodyReadAfterClose]
     }
@@ -1387,15 +1393,15 @@ async function fetchRoundTrip(
     }
     const respHeader = new Header()
     fetched.headers.forEach((value, key) => Header_Add(respHeader, key, value))
-    const responseBody: io.ReadCloser =
+    const bodyReader: io.ReadCloser =
       request.Method === MethodHead ?
         NoBody
-      : (new fetchResponseBody(
+      : new fetchResponseBody(
           fetched,
           request.Context(),
           fetchContext.abort,
           fetchContext.stop,
-        ) as unknown as io.ReadCloser)
+        )
     if (request.Method === MethodHead) {
       fetchContext.stop()
     }
@@ -1403,7 +1409,7 @@ async function fetchRoundTrip(
       new Response({
         Status: `${fetched.status} ${fetched.statusText}`,
         StatusCode: fetched.status,
-        Body: responseBody,
+        Body: bodyReader,
         Header: respHeader,
         ContentLength: Number(fetched.headers.get('content-length') ?? -1),
         Request: request,
@@ -3155,7 +3161,7 @@ async function serveContent(
     Header_Set(header, 'Content-Length', String(knownSize))
     await w.WriteHeader(StatusOK)
     if (req?.Method !== MethodHead) {
-      await io.Copy(w as unknown as io.Writer, content)
+      await io.Copy(w as io.Writer, content)
     }
     return
   }
@@ -3228,7 +3234,7 @@ async function serveContent(
   if (length === 0) {
     return
   }
-  await io.CopyN(w as unknown as io.Writer, seeker, BigInt(length))
+  await io.CopyN(w as io.Writer, seeker, BigInt(length))
 }
 
 function parseHTTPRange(

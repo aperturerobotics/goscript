@@ -50,8 +50,8 @@ export class IPNet {
 
 	constructor(init?: Partial<{IP?: IP, Mask?: IPMask}>) {
 		this._fields = {
-			IP: $.varRef(init?.IP ?? (null as unknown as IP)),
-			Mask: $.varRef(init?.Mask ?? (null as unknown as IPMask))
+			IP: $.varRef(init?.IP ?? (null as IP)),
+			Mask: $.varRef(init?.Mask ?? (null as IPMask))
 		}
 	}
 

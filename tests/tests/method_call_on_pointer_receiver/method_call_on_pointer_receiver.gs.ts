@@ -25,8 +25,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
 		this._fields = {
-			MyInt: $.varRef(init?.MyInt ?? (0 as unknown as number)),
-			MyString: $.varRef(init?.MyString ?? ("" as unknown as string))
+			MyInt: $.varRef(init?.MyInt ?? (0 as number)),
+			MyString: $.varRef(init?.MyString ?? ("" as string))
 		}
 	}
 
@@ -67,7 +67,7 @@ export class setterStruct {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? (0 as unknown as number))
+			value: $.varRef(init?.value ?? (0 as number))
 		}
 	}
 
@@ -112,7 +112,7 @@ export class digest {
 
 	constructor(init?: Partial<{writes?: number}>) {
 		this._fields = {
-			writes: $.varRef(init?.writes ?? (0 as unknown as number))
+			writes: $.varRef(init?.writes ?? (0 as number))
 		}
 	}
 

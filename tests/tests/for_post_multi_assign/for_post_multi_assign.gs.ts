@@ -17,7 +17,7 @@ export class frame {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 
@@ -52,7 +52,7 @@ export class iterator {
 
 	constructor(init?: Partial<{idx?: number}>) {
 		this._fields = {
-			idx: $.varRef(init?.idx ?? (0 as unknown as number))
+			idx: $.varRef(init?.idx ?? (0 as number))
 		}
 	}
 

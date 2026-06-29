@@ -25,8 +25,8 @@ export class point {
 
 	constructor(init?: Partial<{x?: number, y?: number}>) {
 		this._fields = {
-			x: $.varRef(init?.x ?? (0 as unknown as number)),
-			y: $.varRef(init?.y ?? (0 as unknown as number))
+			x: $.varRef(init?.x ?? (0 as number)),
+			y: $.varRef(init?.y ?? (0 as number))
 		}
 	}
 

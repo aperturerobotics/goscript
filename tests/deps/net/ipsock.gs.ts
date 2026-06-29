@@ -118,9 +118,9 @@ export class ipStackCapabilities {
 	constructor(init?: Partial<{Once?: sync.Once, ipv4Enabled?: boolean, ipv6Enabled?: boolean, ipv4MappedIPv6Enabled?: boolean}>) {
 		this._fields = {
 			Once: $.varRef(init?.Once ? $.markAsStructValue($.cloneStructValue(init.Once)) : $.markAsStructValue(new sync.Once())),
-			ipv4Enabled: $.varRef(init?.ipv4Enabled ?? (false as unknown as boolean)),
-			ipv6Enabled: $.varRef(init?.ipv6Enabled ?? (false as unknown as boolean)),
-			ipv4MappedIPv6Enabled: $.varRef(init?.ipv4MappedIPv6Enabled ?? (false as unknown as boolean))
+			ipv4Enabled: $.varRef(init?.ipv4Enabled ?? (false as boolean)),
+			ipv6Enabled: $.varRef(init?.ipv6Enabled ?? (false as boolean)),
+			ipv4MappedIPv6Enabled: $.varRef(init?.ipv4MappedIPv6Enabled ?? (false as boolean))
 		}
 	}
 

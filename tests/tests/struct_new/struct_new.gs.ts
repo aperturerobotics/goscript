@@ -33,9 +33,9 @@ export class MyStruct {
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string, myBool?: boolean}>) {
 		this._fields = {
-			MyInt: $.varRef(init?.MyInt ?? (0 as unknown as number)),
-			MyString: $.varRef(init?.MyString ?? ("" as unknown as string)),
-			myBool: $.varRef(init?.myBool ?? (false as unknown as boolean))
+			MyInt: $.varRef(init?.MyInt ?? (0 as number)),
+			MyString: $.varRef(init?.MyString ?? ("" as string)),
+			myBool: $.varRef(init?.myBool ?? (false as boolean))
 		}
 	}
 

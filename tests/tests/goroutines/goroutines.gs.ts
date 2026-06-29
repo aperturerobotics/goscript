@@ -25,8 +25,8 @@ export class Message {
 
 	constructor(init?: Partial<{priority?: number, text?: string}>) {
 		this._fields = {
-			priority: $.varRef(init?.priority ?? (0 as unknown as number)),
-			text: $.varRef(init?.text ?? ("" as unknown as string))
+			priority: $.varRef(init?.priority ?? (0 as number)),
+			text: $.varRef(init?.text ?? ("" as string))
 		}
 	}
 

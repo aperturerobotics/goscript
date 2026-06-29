@@ -47,9 +47,9 @@ export async function main(): globalThis.Promise<void> {
 	$.println("slice:", $.len(view), $.arrayIndex(view!, 2))
 
 	let buf: $.Slice<number> = $.arrayToSlice<number>([$.uint(9, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8), $.uint(0, 8)])
-	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null))
+	fillArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as $.VarRef<Uint8Array> | null))
 	$.println("converted:", $.uint($.arrayIndex(buf!, 0), 8), $.uint($.arrayIndex(buf!, 1), 8), $.uint($.arrayIndex(buf!, 2), 8), $.uint($.arrayIndex(buf!, 3), 8), $.uint($.arrayIndex(buf!, 4), 8))
-	$.println("converted sum:", sumArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as unknown as $.VarRef<Uint8Array> | null)))
+	$.println("converted sum:", sumArray(($.sliceToArrayPointer<number>($.goSlice(buf, 1, undefined), 4, "byte") as $.VarRef<Uint8Array> | null)))
 
 	let literal: $.VarRef<Uint8Array> | null = $.varRef(new Uint8Array([$.uint(4, 8), $.uint(3, 8), $.uint(2, 8), $.uint(1, 8)]))
 	$.println("literal sum:", sumArray(literal))

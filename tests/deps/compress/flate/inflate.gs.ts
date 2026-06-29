@@ -74,8 +74,8 @@ export class ReadError {
 
 	constructor(init?: Partial<{Offset?: bigint, Err?: $.GoError}>) {
 		this._fields = {
-			Offset: $.varRef(init?.Offset ?? (0n as unknown as bigint)),
-			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
+			Offset: $.varRef(init?.Offset ?? (0n as bigint)),
+			Err: $.varRef(init?.Err ?? (null as $.GoError))
 		}
 	}
 
@@ -124,8 +124,8 @@ export class WriteError {
 
 	constructor(init?: Partial<{Offset?: bigint, Err?: $.GoError}>) {
 		this._fields = {
-			Offset: $.varRef(init?.Offset ?? (0n as unknown as bigint)),
-			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
+			Offset: $.varRef(init?.Offset ?? (0n as bigint)),
+			Err: $.varRef(init?.Err ?? (null as $.GoError))
 		}
 	}
 
@@ -190,10 +190,10 @@ export class huffmanDecoder {
 
 	constructor(init?: Partial<{min?: number, chunks?: number[], links?: $.Slice<$.Slice<number>>, linkMask?: number}>) {
 		this._fields = {
-			min: $.varRef(init?.min ?? (0 as unknown as number)),
+			min: $.varRef(init?.min ?? (0 as number)),
 			chunks: $.varRef(init?.chunks !== undefined ? $.cloneArrayValue(init.chunks) : Array.from({ length: 512 }, () => 0)),
-			links: $.varRef(init?.links ?? (null as unknown as $.Slice<$.Slice<number>>)),
-			linkMask: $.varRef(init?.linkMask ?? (0 as unknown as number))
+			links: $.varRef(init?.links ?? (null as $.Slice<$.Slice<number>>)),
+			linkMask: $.varRef(init?.linkMask ?? (0 as number))
 		}
 	}
 
@@ -541,26 +541,26 @@ export class decompressor {
 
 	constructor(init?: Partial<{r?: Reader | null, rBuf?: bufio.Reader | $.VarRef<bufio.Reader> | null, roffset?: bigint, b?: number, nb?: number, h1?: huffmanDecoder, h2?: huffmanDecoder, bits?: $.VarRef<number[]> | null, codebits?: $.VarRef<number[]> | null, dict?: __goscript_dict_decoder.dictDecoder, buf?: Uint8Array, step?: ((_p0: decompressor | $.VarRef<decompressor> | null) => void) | null, stepState?: number, final?: boolean, err?: $.GoError, toRead?: $.Slice<number>, hl?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, hd?: huffmanDecoder | $.VarRef<huffmanDecoder> | null, copyLen?: number, copyDist?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as Reader | null)),
-			rBuf: $.varRef(init?.rBuf ?? (null as unknown as bufio.Reader | $.VarRef<bufio.Reader> | null)),
-			roffset: $.varRef(init?.roffset ?? (0n as unknown as bigint)),
-			b: $.varRef(init?.b ?? (0 as unknown as number)),
-			nb: $.varRef(init?.nb ?? (0 as unknown as number)),
+			r: $.varRef(init?.r ?? (null as Reader | null)),
+			rBuf: $.varRef(init?.rBuf ?? (null as bufio.Reader | $.VarRef<bufio.Reader> | null)),
+			roffset: $.varRef(init?.roffset ?? (0n as bigint)),
+			b: $.varRef(init?.b ?? (0 as number)),
+			nb: $.varRef(init?.nb ?? (0 as number)),
 			h1: $.varRef(init?.h1 ? $.markAsStructValue($.cloneStructValue(init.h1)) : $.markAsStructValue(new huffmanDecoder())),
 			h2: $.varRef(init?.h2 ? $.markAsStructValue($.cloneStructValue(init.h2)) : $.markAsStructValue(new huffmanDecoder())),
-			bits: $.varRef(init?.bits ?? (null as unknown as $.VarRef<number[]> | null)),
-			codebits: $.varRef(init?.codebits ?? (null as unknown as $.VarRef<number[]> | null)),
+			bits: $.varRef(init?.bits ?? (null as $.VarRef<number[]> | null)),
+			codebits: $.varRef(init?.codebits ?? (null as $.VarRef<number[]> | null)),
 			dict: $.varRef(init?.dict ? $.markAsStructValue($.cloneStructValue(init.dict)) : $.markAsStructValue(new __goscript_dict_decoder.dictDecoder())),
 			buf: $.varRef(init?.buf !== undefined ? $.cloneArrayValue(init.buf) : new Uint8Array(4)),
-			step: $.varRef(init?.step ?? (null as unknown as ((_p0: decompressor | $.VarRef<decompressor> | null) => void) | null)),
-			stepState: $.varRef(init?.stepState ?? (0 as unknown as number)),
-			final: $.varRef(init?.final ?? (false as unknown as boolean)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			toRead: $.varRef(init?.toRead ?? (null as unknown as $.Slice<number>)),
-			hl: $.varRef(init?.hl ?? (null as unknown as huffmanDecoder | $.VarRef<huffmanDecoder> | null)),
-			hd: $.varRef(init?.hd ?? (null as unknown as huffmanDecoder | $.VarRef<huffmanDecoder> | null)),
-			copyLen: $.varRef(init?.copyLen ?? (0 as unknown as number)),
-			copyDist: $.varRef(init?.copyDist ?? (0 as unknown as number))
+			step: $.varRef(init?.step ?? (null as ((_p0: decompressor | $.VarRef<decompressor> | null) => void) | null)),
+			stepState: $.varRef(init?.stepState ?? (0 as number)),
+			final: $.varRef(init?.final ?? (false as boolean)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			toRead: $.varRef(init?.toRead ?? (null as $.Slice<number>)),
+			hl: $.varRef(init?.hl ?? (null as huffmanDecoder | $.VarRef<huffmanDecoder> | null)),
+			hd: $.varRef(init?.hd ?? (null as huffmanDecoder | $.VarRef<huffmanDecoder> | null)),
+			copyLen: $.varRef(init?.copyLen ?? (0 as number)),
+			copyDist: $.varRef(init?.copyDist ?? (0 as number))
 		}
 	}
 

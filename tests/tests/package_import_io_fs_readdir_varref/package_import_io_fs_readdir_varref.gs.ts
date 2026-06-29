@@ -23,7 +23,7 @@ export class openOnlyFS {
 
 	constructor(init?: Partial<{fsys?: fstest.MapFS}>) {
 		this._fields = {
-			fsys: $.varRef(init?.fsys ?? (null as unknown as fstest.MapFS))
+			fsys: $.varRef(init?.fsys ?? (null as fstest.MapFS))
 		}
 	}
 

@@ -22,6 +22,8 @@ func TestRuntimeContractOwnsBuiltinImportAndHelpers(t *testing.T) {
 		RuntimeHelperAssignStruct:             RuntimeHelperCategoryValue,
 		RuntimeHelperMarkAsStructValue:        RuntimeHelperCategoryValue,
 		RuntimeHelperPointerValue:             RuntimeHelperCategoryValue,
+		RuntimeHelperNamedStructConversion:    RuntimeHelperCategoryValue,
+		RuntimeHelperUnsafePointerCast:        RuntimeHelperCategoryValue,
 		RuntimeHelperMakeSlice:                RuntimeHelperCategorySlice,
 		RuntimeHelperAppend:                   RuntimeHelperCategorySlice,
 		RuntimeHelperAppendSlice:              RuntimeHelperCategorySlice,

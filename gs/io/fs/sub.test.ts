@@ -40,7 +40,7 @@ describe('io/fs Sub override', () => {
       async Stat(): Promise<[FileInfo, $.GoError]> {
         return [dirInfo, null]
       },
-    } as unknown as File
+    } as File
 
     const [sub, subErr] = await Sub(
       {
@@ -72,7 +72,7 @@ describe('io/fs Sub override', () => {
       async Stat(): Promise<[FileInfo, $.GoError]> {
         return [fileInfoValue, null]
       },
-    } as unknown as File
+    } as File
 
     const backingFS = {
       async Open(name: string): Promise<[File, $.GoError]> {

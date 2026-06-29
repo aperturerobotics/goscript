@@ -89,8 +89,8 @@ export class fakeSockAddr {
 
 	constructor(init?: Partial<{family?: number, address?: string}>) {
 		this._fields = {
-			family: $.varRef(init?.family ?? (0 as unknown as number)),
-			address: $.varRef(init?.address ?? ("" as unknown as string))
+			family: $.varRef(init?.family ?? (0 as number)),
+			address: $.varRef(init?.address ?? ("" as string))
 		}
 	}
 
@@ -200,16 +200,16 @@ export class fakeNetFD {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, assignedPort?: number, queue?: packetQueue | $.VarRef<packetQueue> | null, peer?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, readDeadline?: atomic.Pointer<deadlineTimer>, writeDeadline?: atomic.Pointer<deadlineTimer>, fakeAddr?: fakeSockAddr, incoming?: $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null, incomingFull?: $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null, incomingEmpty?: $.Channel<boolean> | null}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
-			assignedPort: $.varRef(init?.assignedPort ?? (0 as unknown as number)),
-			queue: $.varRef(init?.queue ?? (null as unknown as packetQueue | $.VarRef<packetQueue> | null)),
-			peer: $.varRef(init?.peer ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
+			fd: $.varRef(init?.fd ?? (null as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
+			assignedPort: $.varRef(init?.assignedPort ?? (0 as number)),
+			queue: $.varRef(init?.queue ?? (null as packetQueue | $.VarRef<packetQueue> | null)),
+			peer: $.varRef(init?.peer ?? (null as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
 			readDeadline: $.varRef(init?.readDeadline ? $.markAsStructValue($.cloneStructValue(init.readDeadline)) : $.markAsStructValue(new atomic.Pointer<deadlineTimer>())),
 			writeDeadline: $.varRef(init?.writeDeadline ? $.markAsStructValue($.cloneStructValue(init.writeDeadline)) : $.markAsStructValue(new atomic.Pointer<deadlineTimer>())),
 			fakeAddr: $.varRef(init?.fakeAddr ? $.markAsStructValue($.cloneStructValue(init.fakeAddr)) : $.markAsStructValue(new fakeSockAddr())),
-			incoming: $.varRef(init?.incoming ?? (null as unknown as $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null)),
-			incomingFull: $.varRef(init?.incomingFull ?? (null as unknown as $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null)),
-			incomingEmpty: $.varRef(init?.incomingEmpty ?? (null as unknown as $.Channel<boolean> | null))
+			incoming: $.varRef(init?.incoming ?? (null as $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null)),
+			incomingFull: $.varRef(init?.incomingFull ?? (null as $.Channel<$.Slice<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>> | null)),
+			incomingEmpty: $.varRef(init?.incomingEmpty ?? (null as $.Channel<boolean> | null))
 		}
 	}
 
@@ -975,10 +975,10 @@ export class packet {
 
 	constructor(init?: Partial<{buf?: $.Slice<number>, bufOffset?: number, next?: packet | $.VarRef<packet> | null, _from?: __goscript_sockaddr_posix.sockaddr | null}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			bufOffset: $.varRef(init?.bufOffset ?? (0 as unknown as number)),
-			next: $.varRef(init?.next ?? (null as unknown as packet | $.VarRef<packet> | null)),
-			_from: $.varRef(init?._from ?? (null as unknown as __goscript_sockaddr_posix.sockaddr | null))
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			bufOffset: $.varRef(init?.bufOffset ?? (0 as number)),
+			next: $.varRef(init?.next ?? (null as packet | $.VarRef<packet> | null)),
+			_from: $.varRef(init?._from ?? (null as __goscript_sockaddr_posix.sockaddr | null))
 		}
 	}
 
@@ -1072,13 +1072,13 @@ export class packetQueueState {
 
 	constructor(init?: Partial<{head?: packet | $.VarRef<packet> | null, tail?: packet | $.VarRef<packet> | null, nBytes?: number, readBufferBytes?: number, readClosed?: boolean, writeClosed?: boolean, noLinger?: boolean}>) {
 		this._fields = {
-			head: $.varRef(init?.head ?? (null as unknown as packet | $.VarRef<packet> | null)),
-			tail: $.varRef(init?.tail ?? (null as unknown as packet | $.VarRef<packet> | null)),
-			nBytes: $.varRef(init?.nBytes ?? (0 as unknown as number)),
-			readBufferBytes: $.varRef(init?.readBufferBytes ?? (0 as unknown as number)),
-			readClosed: $.varRef(init?.readClosed ?? (false as unknown as boolean)),
-			writeClosed: $.varRef(init?.writeClosed ?? (false as unknown as boolean)),
-			noLinger: $.varRef(init?.noLinger ?? (false as unknown as boolean))
+			head: $.varRef(init?.head ?? (null as packet | $.VarRef<packet> | null)),
+			tail: $.varRef(init?.tail ?? (null as packet | $.VarRef<packet> | null)),
+			nBytes: $.varRef(init?.nBytes ?? (0 as number)),
+			readBufferBytes: $.varRef(init?.readBufferBytes ?? (0 as number)),
+			readClosed: $.varRef(init?.readClosed ?? (false as boolean)),
+			writeClosed: $.varRef(init?.writeClosed ?? (false as boolean)),
+			noLinger: $.varRef(init?.noLinger ?? (false as boolean))
 		}
 	}
 
@@ -1135,9 +1135,9 @@ export class packetQueue {
 
 	constructor(init?: Partial<{empty?: $.Channel<packetQueueState> | null, ready?: $.Channel<packetQueueState> | null, full?: $.Channel<packetQueueState> | null}>) {
 		this._fields = {
-			empty: $.varRef(init?.empty ?? (null as unknown as $.Channel<packetQueueState> | null)),
-			ready: $.varRef(init?.ready ?? (null as unknown as $.Channel<packetQueueState> | null)),
-			full: $.varRef(init?.full ?? (null as unknown as $.Channel<packetQueueState> | null))
+			empty: $.varRef(init?.empty ?? (null as $.Channel<packetQueueState> | null)),
+			ready: $.varRef(init?.ready ?? (null as $.Channel<packetQueueState> | null)),
+			full: $.varRef(init?.full ?? (null as $.Channel<packetQueueState> | null))
 		}
 	}
 
@@ -1602,8 +1602,8 @@ export class deadlineTimer {
 
 	constructor(init?: Partial<{timer?: $.Channel<time.Timer | $.VarRef<time.Timer> | null> | null, expired?: $.Channel<{}> | null}>) {
 		this._fields = {
-			timer: $.varRef(init?.timer ?? (null as unknown as $.Channel<time.Timer | $.VarRef<time.Timer> | null> | null)),
-			expired: $.varRef(init?.expired ?? (null as unknown as $.Channel<{}> | null))
+			timer: $.varRef(init?.timer ?? (null as $.Channel<time.Timer | $.VarRef<time.Timer> | null> | null)),
+			expired: $.varRef(init?.expired ?? (null as $.Channel<{}> | null))
 		}
 	}
 

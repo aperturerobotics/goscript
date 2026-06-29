@@ -39,9 +39,9 @@ export class Error {
 
 	constructor(init?: Partial<{msg?: string, timeout?: boolean, temporary?: boolean}>) {
 		this._fields = {
-			msg: $.varRef(init?.msg ?? ("" as unknown as string)),
-			timeout: $.varRef(init?.timeout ?? (false as unknown as boolean)),
-			temporary: $.varRef(init?.temporary ?? (false as unknown as boolean))
+			msg: $.varRef(init?.msg ?? ("" as string)),
+			timeout: $.varRef(init?.timeout ?? (false as boolean)),
+			temporary: $.varRef(init?.temporary ?? (false as boolean))
 		}
 	}
 

@@ -64,9 +64,9 @@ export class MockFileInfo {
 
 	constructor(init?: Partial<{name?: string, size?: bigint, isDir?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string)),
-			size: $.varRef(init?.size ?? (0n as unknown as bigint)),
-			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean))
+			name: $.varRef(init?.name ?? ("" as string)),
+			size: $.varRef(init?.size ?? (0n as bigint)),
+			isDir: $.varRef(init?.isDir ?? (false as boolean))
 		}
 	}
 

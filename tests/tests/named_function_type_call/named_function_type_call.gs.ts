@@ -72,9 +72,9 @@ export class MockFileInfo {
 
 	constructor(init?: Partial<{name?: string, size?: bigint, isDir?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string)),
-			size: $.varRef(init?.size ?? (0n as unknown as bigint)),
-			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean))
+			name: $.varRef(init?.name ?? ("" as string)),
+			size: $.varRef(init?.size ?? (0n as bigint)),
+			isDir: $.varRef(init?.isDir ?? (false as boolean))
 		}
 	}
 
@@ -156,7 +156,7 @@ export class shapeNode {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? (0 as unknown as number))
+			value: $.varRef(init?.value ?? (0 as number))
 		}
 	}
 
@@ -196,7 +196,7 @@ export class MorphismHolder {
 
 	constructor(init?: Partial<{morphism?: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null}>) {
 		this._fields = {
-			morphism: $.varRef(init?.morphism ?? (null as unknown as ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null))
+			morphism: $.varRef(init?.morphism ?? (null as ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null))
 		}
 	}
 
@@ -241,7 +241,7 @@ export class morphismWorker {
 
 	constructor(init?: Partial<{ready?: $.Channel<boolean> | null}>) {
 		this._fields = {
-			ready: $.varRef(init?.ready ?? (null as unknown as $.Channel<boolean> | null))
+			ready: $.varRef(init?.ready ?? (null as $.Channel<boolean> | null))
 		}
 	}
 

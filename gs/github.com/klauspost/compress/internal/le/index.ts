@@ -67,7 +67,7 @@ export function Load64(
   typeArgsOrB: $.GenericTypeArgs | $.Slice<number> | undefined,
   bOrI?: $.Slice<number> | unknown,
   i?: unknown,
-): number {
+): bigint {
   const [b, off] = loadArgs(typeArgsOrB, bOrI, i)
   const value =
     BigInt(byteAt(b, off)) |
@@ -78,7 +78,7 @@ export function Load64(
     (BigInt(byteAt(b, off + 5)) << 40n) |
     (BigInt(byteAt(b, off + 6)) << 48n) |
     (BigInt(byteAt(b, off + 7)) << 56n)
-  return value as unknown as number
+  return value
 }
 
 export function Store16(b: $.Slice<number>, v: number): void {

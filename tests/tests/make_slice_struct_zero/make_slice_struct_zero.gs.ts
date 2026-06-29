@@ -17,7 +17,7 @@ export class code {
 
 	constructor(init?: Partial<{len?: number}>) {
 		this._fields = {
-			len: $.varRef(init?.len ?? (0 as unknown as number))
+			len: $.varRef(init?.len ?? (0 as number))
 		}
 	}
 

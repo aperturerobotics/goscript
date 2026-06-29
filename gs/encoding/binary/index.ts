@@ -4,17 +4,17 @@ import * as io from '@goscript/io/index.js'
 export interface ByteOrder {
   Uint16(b: $.Slice<number>): number
   Uint32(b: $.Slice<number>): number
-  Uint64(b: $.Slice<number>): number
+  Uint64(b: $.Slice<number>): bigint
   PutUint16(b: $.Slice<number>, v: number): void
   PutUint32(b: $.Slice<number>, v: number): void
-  PutUint64(b: $.Slice<number>, v: number): void
+  PutUint64(b: $.Slice<number>, v: number | bigint): void
   String(): string
 }
 
 export interface AppendByteOrder {
   AppendUint16(b: $.Slice<number>, v: number): $.Slice<number>
   AppendUint32(b: $.Slice<number>, v: number): $.Slice<number>
-  AppendUint64(b: $.Slice<number>, v: number): $.Slice<number>
+  AppendUint64(b: $.Slice<number>, v: number | bigint): $.Slice<number>
   String(): string
 }
 
@@ -75,7 +75,7 @@ export const MaxVarintLen32 = 5
 export const MaxVarintLen64 = 10
 
 class littleEndian implements ByteOrder, AppendByteOrder {
-  public Uint(b: $.Slice<number>): number {
+  public Uint(b: $.Slice<number>): bigint {
     return this.Uint64(b)
   }
 
@@ -95,7 +95,7 @@ class littleEndian implements ByteOrder, AppendByteOrder {
     )
   }
 
-  public Uint64(b: $.Slice<number>): number {
+  public Uint64(b: $.Slice<number>): bigint {
     requireLen(b, 8)
     let value = 0n
     for (let i = 0; i < 8; i++) {
@@ -119,7 +119,7 @@ class littleEndian implements ByteOrder, AppendByteOrder {
     setByte(b, 3, value >>> 24)
   }
 
-  public PutUint64(b: $.Slice<number>, v: number): void {
+  public PutUint64(b: $.Slice<number>, v: number | bigint): void {
     requireLen(b, 8)
     const value = toUint64(v)
     for (let i = 0; i < 8; i++) {
@@ -136,7 +136,7 @@ class littleEndian implements ByteOrder, AppendByteOrder {
     return $.append(b, value, value >>> 8, value >>> 16, value >>> 24)
   }
 
-  public AppendUint64(b: $.Slice<number>, v: number): $.Slice<number> {
+  public AppendUint64(b: $.Slice<number>, v: number | bigint): $.Slice<number> {
     let out = b
     const value = toUint64(v)
     for (let i = 0; i < 8; i++) {
@@ -159,7 +159,7 @@ class littleEndian implements ByteOrder, AppendByteOrder {
 }
 
 class bigEndian implements ByteOrder, AppendByteOrder {
-  public Uint(b: $.Slice<number>): number {
+  public Uint(b: $.Slice<number>): bigint {
     return this.Uint64(b)
   }
 
@@ -179,7 +179,7 @@ class bigEndian implements ByteOrder, AppendByteOrder {
     )
   }
 
-  public Uint64(b: $.Slice<number>): number {
+  public Uint64(b: $.Slice<number>): bigint {
     requireLen(b, 8)
     let value = 0n
     for (let i = 0; i < 8; i++) {
@@ -203,7 +203,7 @@ class bigEndian implements ByteOrder, AppendByteOrder {
     setByte(b, 3, value)
   }
 
-  public PutUint64(b: $.Slice<number>, v: number): void {
+  public PutUint64(b: $.Slice<number>, v: number | bigint): void {
     requireLen(b, 8)
     const value = toUint64(v)
     for (let i = 0; i < 8; i++) {
@@ -220,7 +220,7 @@ class bigEndian implements ByteOrder, AppendByteOrder {
     return $.append(b, value >>> 24, value >>> 16, value >>> 8, value)
   }
 
-  public AppendUint64(b: $.Slice<number>, v: number): $.Slice<number> {
+  public AppendUint64(b: $.Slice<number>, v: number | bigint): $.Slice<number> {
     let out = b
     const value = toUint64(v)
     for (let i = 0; i < 8; i++) {
@@ -260,7 +260,7 @@ $.registerInterfaceType('binary.ByteOrder', null, [
   {
     name: 'Uint64',
     args: [byteSliceArg('b')],
-    returns: [numberReturn()],
+    returns: [{ type: { kind: $.TypeKind.Basic, name: 'uint64' } }],
   },
   {
     name: 'PutUint16',
@@ -274,7 +274,10 @@ $.registerInterfaceType('binary.ByteOrder', null, [
   },
   {
     name: 'PutUint64',
-    args: [byteSliceArg('b'), numberArg('v')],
+    args: [
+      byteSliceArg('b'),
+      { name: 'v', type: { kind: $.TypeKind.Basic, name: 'uint64' } },
+    ],
     returns: [],
   },
   {
@@ -297,7 +300,10 @@ $.registerInterfaceType('binary.AppendByteOrder', null, [
   },
   {
     name: 'AppendUint64',
-    args: [byteSliceArg('b'), numberArg('v')],
+    args: [
+      byteSliceArg('b'),
+      { name: 'v', type: { kind: $.TypeKind.Basic, name: 'uint64' } },
+    ],
     returns: [{ type: byteSliceType() }],
   },
   {
@@ -309,7 +315,7 @@ $.registerInterfaceType('binary.AppendByteOrder', null, [
 
 export function AppendUvarint(
   buf: $.Slice<number>,
-  x: number,
+  x: number | bigint,
 ): $.Slice<number> {
   let out = buf
   let value = toUint64(x)
@@ -320,7 +326,7 @@ export function AppendUvarint(
   return $.append(out, Number(value))
 }
 
-export function PutUvarint(buf: $.Slice<number>, x: number): number {
+export function PutUvarint(buf: $.Slice<number>, x: number | bigint): number {
   let value = toUint64(x)
   let i = 0
   while (value >= 0x80n) {
@@ -332,7 +338,7 @@ export function PutUvarint(buf: $.Slice<number>, x: number): number {
   return i + 1
 }
 
-export function Uvarint(buf: $.Slice<number>): [number, number] {
+export function Uvarint(buf: $.Slice<number>): [bigint, number] {
   let x = 0n
   let s = 0n
   for (let i = 0; i < $.len(buf); i++) {
@@ -352,20 +358,20 @@ export function Uvarint(buf: $.Slice<number>): [number, number] {
   return [uint64Result(0n), 0]
 }
 
-export function AppendVarint(buf: $.Slice<number>, x: number): $.Slice<number> {
+export function AppendVarint(buf: $.Slice<number>, x: number | bigint): $.Slice<number> {
   return AppendUvarint(buf, encodeSignedVarint(x))
 }
 
-export function PutVarint(buf: $.Slice<number>, x: number): number {
+export function PutVarint(buf: $.Slice<number>, x: number | bigint): number {
   return PutUvarint(buf, encodeSignedVarint(x))
 }
 
-export function Varint(buf: $.Slice<number>): [number, number] {
+export function Varint(buf: $.Slice<number>): [bigint, number] {
   const [ux, n] = Uvarint(buf)
   return [decodeSignedVarint(ux), n]
 }
 
-export async function ReadUvarint(r: byteReader): Promise<[number, $.GoError]> {
+export async function ReadUvarint(r: byteReader): Promise<[bigint, $.GoError]> {
   let x = 0n
   let s = 0n
   for (let i = 0; i < MaxVarintLen64; i++) {
@@ -385,7 +391,7 @@ export async function ReadUvarint(r: byteReader): Promise<[number, $.GoError]> {
   return [uint64Result(x), errOverflow]
 }
 
-export async function ReadVarint(r: byteReader): Promise<[number, $.GoError]> {
+export async function ReadVarint(r: byteReader): Promise<[bigint, $.GoError]> {
   const [ux, err] = await ReadUvarint(r)
   return [decodeSignedVarint(ux), err]
 }
@@ -658,7 +664,7 @@ function encodeScalar(
       order.PutUint32(buf, float32Bits(Number(value)))
       return
     case 'float64':
-      order.PutUint64(buf, float64Bits(Number(value)) as unknown as number)
+      order.PutUint64(buf, float64Bits(Number(value)))
       return
   }
 }
@@ -949,14 +955,8 @@ function shapeEncode(
         order.PutUint32($.goSlice(buf, 0, 4), float32Bits(c.real))
         order.PutUint32($.goSlice(buf, 4, 8), float32Bits(c.imag))
       } else {
-        order.PutUint64(
-          $.goSlice(buf, 0, 8),
-          float64Bits(c.real) as unknown as number,
-        )
-        order.PutUint64(
-          $.goSlice(buf, 8, 16),
-          float64Bits(c.imag) as unknown as number,
-        )
+        order.PutUint64($.goSlice(buf, 0, 8), float64Bits(c.real))
+        order.PutUint64($.goSlice(buf, 8, 16), float64Bits(c.imag))
       }
       return
     }
@@ -1109,7 +1109,7 @@ function setByte(b: $.Slice<number>, i: number, v: number): void {
   ;(b as any)[i] = Number(v) & 0xff
 }
 
-function encodeSignedVarint(x: number): number {
+function encodeSignedVarint(x: number | bigint): bigint {
   let ux = BigInt.asUintN(64, BigInt.asIntN(64, toBigInt(x)) << 1n)
   if (isNegativeInt64(x)) {
     ux = BigInt.asUintN(64, ~ux)
@@ -1117,7 +1117,7 @@ function encodeSignedVarint(x: number): number {
   return uint64Result(ux)
 }
 
-function decodeSignedVarint(uxValue: number): number {
+function decodeSignedVarint(uxValue: number | bigint): bigint {
   const ux = toUint64(uxValue)
   let x = ux >> 1n
   if ((ux & 1n) !== 0n) {
@@ -1149,16 +1149,16 @@ function isNegativeInt64(value: number | bigint): boolean {
 // bigint, even when the value fits in a float. Returning a number for small
 // values made binary.Uint64 yield number|bigint, and a later raw operator
 // mixing that number with a bigint uint64 threw "Cannot mix BigInt and other
-// types". The cast satisfies the ByteOrder interface's number-typed signature.
-function uint64Result(value: bigint): number {
-  return BigInt.asUintN(64, value) as unknown as number
+// types".
+function uint64Result(value: bigint): bigint {
+  return BigInt.asUintN(64, value)
 }
 
 // int64Result normalizes an int64 computation to its runtime representation. As
 // with uint64Result, Go int64 is always a JS bigint in GoScript, so this never
 // narrows to a number.
-function int64Result(value: bigint): number {
-  return BigInt.asIntN(64, value) as unknown as number
+function int64Result(value: bigint): bigint {
+  return BigInt.asIntN(64, value)
 }
 
 function intN(value: number, bits: number): number {
@@ -1182,14 +1182,14 @@ function float32FromBits(value: number): number {
   return view.getFloat32(0, true)
 }
 
-function float64Bits(value: number): number | bigint {
+function float64Bits(value: number): bigint {
   const bytes = new ArrayBuffer(8)
   const view = new DataView(bytes)
   view.setFloat64(0, value, true)
   return view.getBigUint64(0, true)
 }
 
-function float64FromBits(value: number): number {
+function float64FromBits(value: number | bigint): number {
   const bytes = new ArrayBuffer(8)
   const view = new DataView(bytes)
   view.setBigUint64(0, toUint64(value), true)

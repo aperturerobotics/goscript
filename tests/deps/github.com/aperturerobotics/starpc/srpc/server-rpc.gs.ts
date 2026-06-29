@@ -68,7 +68,7 @@ export class ServerRPC {
 	constructor(init?: Partial<{commonRPC?: __goscript_common_rpc.commonRPC, invoker?: __goscript_invoker.Invoker | null}>) {
 		this._fields = {
 			commonRPC: $.varRef(init?.commonRPC ? $.markAsStructValue($.cloneStructValue(init.commonRPC)) : $.markAsStructValue(new __goscript_common_rpc.commonRPC())),
-			invoker: $.varRef(init?.invoker ?? (null as unknown as __goscript_invoker.Invoker | null))
+			invoker: $.varRef(init?.invoker ?? (null as __goscript_invoker.Invoker | null))
 		}
 	}
 

@@ -70,12 +70,12 @@ function readUint(bytes: $.Bytes): number {
   return out
 }
 
-function readUint64Value(bytes: $.Bytes): number {
+function readUint64Value(bytes: $.Bytes): bigint {
   let out = 0n
   for (const b of bytesArray(bytes)) {
     out = (out << 8n) | BigInt(b)
   }
-  return $.uint(out, 64)
+  return $.uint64(out)
 }
 
 function writeRef<T>(out: $.VarRef<T> | null, value: T): void {
@@ -153,7 +153,7 @@ export function String_ReadUint48(
 
 export function String_ReadUint64(
   s: $.VarRef<String> | null,
-  out: $.VarRef<number> | null,
+  out: $.VarRef<bigint> | null,
 ): boolean {
   const v = read(s, 8)
   if (v == null) {
@@ -285,10 +285,10 @@ export class Builder {
   public Bytes(): [$.Bytes, $.GoError] {
     this.flushChild()
     if (this.err != null) {
-      return [null as unknown as $.Bytes, this.err]
+      return [null as $.Bytes, this.err]
     }
     if (this.fixedSize && this.result.length !== this.capacityLimit) {
-      return [null as unknown as $.Bytes, $.newError('cryptobyte: Builder is not full')]
+      return [null as $.Bytes, $.newError('cryptobyte: Builder is not full')]
     }
     return [bytesFromArray(this.result), null]
   }
@@ -328,7 +328,7 @@ export class Builder {
     )
   }
 
-  public AddUint64(v: number): void {
+  public AddUint64(v: number | bigint): void {
     let value = toUint64BigInt(v)
     const out = new Array<number>(8)
     for (let i = 7; i >= 0; i--) {
@@ -390,7 +390,7 @@ export class Builder {
     this.addASN1Signed(BigInt(Math.trunc(v)), asn1.ENUM)
   }
 
-  public AddASN1Uint64(v: number): void {
+  public AddASN1Uint64(v: number | bigint): void {
     this.AddASN1(asn1.INTEGER, (child) => {
       child!.add(...encodeASN1Unsigned(toUint64BigInt(v)))
     })

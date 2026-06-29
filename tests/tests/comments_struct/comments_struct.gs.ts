@@ -27,8 +27,8 @@ export class TestStruct {
 
 	constructor(init?: Partial<{IntField?: number, StringField?: string}>) {
 		this._fields = {
-			IntField: $.varRef(init?.IntField ?? (0 as unknown as number)),
-			StringField: $.varRef(init?.StringField ?? ("" as unknown as string))
+			IntField: $.varRef(init?.IntField ?? (0 as number)),
+			StringField: $.varRef(init?.StringField ?? ("" as string))
 		}
 	}
 

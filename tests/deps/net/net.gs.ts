@@ -151,7 +151,7 @@ export class conn {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null))
+			fd: $.varRef(init?.fd ?? (null as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null))
 		}
 	}
 
@@ -406,11 +406,11 @@ export class OpError {
 
 	constructor(init?: Partial<{Op?: string, Net?: string, Source?: Addr | null, Addr?: Addr | null, Err?: $.GoError}>) {
 		this._fields = {
-			Op: $.varRef(init?.Op ?? ("" as unknown as string)),
-			Net: $.varRef(init?.Net ?? ("" as unknown as string)),
-			Source: $.varRef(init?.Source ?? (null as unknown as Addr | null)),
-			Addr: $.varRef(init?.Addr ?? (null as unknown as Addr | null)),
-			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
+			Op: $.varRef(init?.Op ?? ("" as string)),
+			Net: $.varRef(init?.Net ?? ("" as string)),
+			Source: $.varRef(init?.Source ?? (null as Addr | null)),
+			Addr: $.varRef(init?.Addr ?? (null as Addr | null)),
+			Err: $.varRef(init?.Err ?? (null as $.GoError))
 		}
 	}
 
@@ -525,8 +525,8 @@ export class ParseError {
 
 	constructor(init?: Partial<{Type?: string, Text?: string}>) {
 		this._fields = {
-			Type: $.varRef(init?.Type ?? ("" as unknown as string)),
-			Text: $.varRef(init?.Text ?? ("" as unknown as string))
+			Type: $.varRef(init?.Type ?? ("" as string)),
+			Text: $.varRef(init?.Text ?? ("" as string))
 		}
 	}
 
@@ -585,8 +585,8 @@ export class AddrError {
 
 	constructor(init?: Partial<{Err?: string, Addr?: string}>) {
 		this._fields = {
-			Err: $.varRef(init?.Err ?? ("" as unknown as string)),
-			Addr: $.varRef(init?.Addr ?? ("" as unknown as string))
+			Err: $.varRef(init?.Err ?? ("" as string)),
+			Addr: $.varRef(init?.Addr ?? ("" as string))
 		}
 	}
 
@@ -689,7 +689,7 @@ export class DNSConfigError {
 
 	constructor(init?: Partial<{Err?: $.GoError}>) {
 		this._fields = {
-			Err: $.varRef(init?.Err ?? (null as unknown as $.GoError))
+			Err: $.varRef(init?.Err ?? (null as $.GoError))
 		}
 	}
 
@@ -744,7 +744,7 @@ export class notFoundError {
 
 	constructor(init?: Partial<{s?: string}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? ("" as unknown as string))
+			s: $.varRef(init?.s ?? ("" as string))
 		}
 	}
 
@@ -784,7 +784,7 @@ export class temporaryError {
 
 	constructor(init?: Partial<{s?: string}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? ("" as unknown as string))
+			s: $.varRef(init?.s ?? ("" as string))
 		}
 	}
 
@@ -885,13 +885,13 @@ export class DNSError {
 
 	constructor(init?: Partial<{UnwrapErr?: $.GoError, Err?: string, Name?: string, Server?: string, IsTimeout?: boolean, IsTemporary?: boolean, IsNotFound?: boolean}>) {
 		this._fields = {
-			UnwrapErr: $.varRef(init?.UnwrapErr ?? (null as unknown as $.GoError)),
-			Err: $.varRef(init?.Err ?? ("" as unknown as string)),
-			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
-			Server: $.varRef(init?.Server ?? ("" as unknown as string)),
-			IsTimeout: $.varRef(init?.IsTimeout ?? (false as unknown as boolean)),
-			IsTemporary: $.varRef(init?.IsTemporary ?? (false as unknown as boolean)),
-			IsNotFound: $.varRef(init?.IsNotFound ?? (false as unknown as boolean))
+			UnwrapErr: $.varRef(init?.UnwrapErr ?? (null as $.GoError)),
+			Err: $.varRef(init?.Err ?? ("" as string)),
+			Name: $.varRef(init?.Name ?? ("" as string)),
+			Server: $.varRef(init?.Server ?? ("" as string)),
+			IsTimeout: $.varRef(init?.IsTimeout ?? (false as boolean)),
+			IsTemporary: $.varRef(init?.IsTemporary ?? (false as boolean)),
+			IsNotFound: $.varRef(init?.IsNotFound ?? (false as boolean))
 		}
 	}
 
@@ -999,7 +999,7 @@ export class tcpConnWithoutReadFrom {
 	constructor(init?: Partial<{noReadFrom?: noReadFrom, TCPConn?: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null}>) {
 		this._fields = {
 			noReadFrom: $.varRef(init?.noReadFrom ? $.markAsStructValue($.cloneStructValue(init.noReadFrom)) : $.markAsStructValue(new noReadFrom())),
-			TCPConn: $.varRef(init?.TCPConn ?? (null as unknown as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
+			TCPConn: $.varRef(init?.TCPConn ?? (null as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
 		}
 	}
 
@@ -1174,7 +1174,7 @@ export class tcpConnWithoutWriteTo {
 	constructor(init?: Partial<{noWriteTo?: noWriteTo, TCPConn?: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null}>) {
 		this._fields = {
 			noWriteTo: $.varRef(init?.noWriteTo ? $.markAsStructValue($.cloneStructValue(init.noWriteTo)) : $.markAsStructValue(new noWriteTo())),
-			TCPConn: $.varRef(init?.TCPConn ?? (null as unknown as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
+			TCPConn: $.varRef(init?.TCPConn ?? (null as __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null))
 		}
 	}
 

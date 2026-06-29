@@ -114,17 +114,17 @@ export class Scanner {
 
 	constructor(init?: Partial<{r?: io.Reader | null, split?: ((data: $.Slice<number>, atEOF: boolean) => [number, $.Slice<number>, $.GoError] | globalThis.Promise<[number, $.Slice<number>, $.GoError]>) | null, maxTokenSize?: number, token?: $.Slice<number>, buf?: $.Slice<number>, start?: number, end?: number, err?: $.GoError, empties?: number, scanCalled?: boolean, done?: boolean}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
-			split: $.varRef(init?.split ?? (null as unknown as ((data: $.Slice<number>, atEOF: boolean) => [number, $.Slice<number>, $.GoError] | globalThis.Promise<[number, $.Slice<number>, $.GoError]>) | null)),
-			maxTokenSize: $.varRef(init?.maxTokenSize ?? (0 as unknown as number)),
-			token: $.varRef(init?.token ?? (null as unknown as $.Slice<number>)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			start: $.varRef(init?.start ?? (0 as unknown as number)),
-			end: $.varRef(init?.end ?? (0 as unknown as number)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			empties: $.varRef(init?.empties ?? (0 as unknown as number)),
-			scanCalled: $.varRef(init?.scanCalled ?? (false as unknown as boolean)),
-			done: $.varRef(init?.done ?? (false as unknown as boolean))
+			r: $.varRef(init?.r ?? (null as io.Reader | null)),
+			split: $.varRef(init?.split ?? (null as ((data: $.Slice<number>, atEOF: boolean) => [number, $.Slice<number>, $.GoError] | globalThis.Promise<[number, $.Slice<number>, $.GoError]>) | null)),
+			maxTokenSize: $.varRef(init?.maxTokenSize ?? (0 as number)),
+			token: $.varRef(init?.token ?? (null as $.Slice<number>)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			start: $.varRef(init?.start ?? (0 as number)),
+			end: $.varRef(init?.end ?? (0 as number)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			empties: $.varRef(init?.empties ?? (0 as number)),
+			scanCalled: $.varRef(init?.scanCalled ?? (false as boolean)),
+			done: $.varRef(init?.done ?? (false as boolean))
 		}
 	}
 

@@ -25,8 +25,8 @@ export class file {
 
 	constructor(init?: Partial<{name?: string, data?: $.Slice<number>}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string)),
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			name: $.varRef(init?.name ?? ("" as string)),
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -70,8 +70,8 @@ export class storage {
 
 	constructor(init?: Partial<{files?: globalThis.Map<string, file | $.VarRef<file> | null> | null, children?: globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null}>) {
 		this._fields = {
-			files: $.varRef(init?.files ?? (null as unknown as globalThis.Map<string, file | $.VarRef<file> | null> | null)),
-			children: $.varRef(init?.children ?? (null as unknown as globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null))
+			files: $.varRef(init?.files ?? (null as globalThis.Map<string, file | $.VarRef<file> | null> | null)),
+			children: $.varRef(init?.children ?? (null as globalThis.Map<string, globalThis.Map<string, file | $.VarRef<file> | null> | null> | null))
 		}
 	}
 

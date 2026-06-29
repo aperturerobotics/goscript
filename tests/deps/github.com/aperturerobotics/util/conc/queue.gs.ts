@@ -64,10 +64,10 @@ export class ConcurrentQueue {
 	constructor(init?: Partial<{bcast?: broadcast2.Broadcast, maxConcurrency?: number, running?: number, jobQueue?: linkedlist.LinkedList | $.VarRef<linkedlist.LinkedList> | null, jobQueueSize?: number}>) {
 		this._fields = {
 			bcast: $.varRef(init?.bcast ? $.markAsStructValue($.cloneStructValue(init.bcast)) : $.markAsStructValue(new broadcast2.Broadcast())),
-			maxConcurrency: $.varRef(init?.maxConcurrency ?? (0 as unknown as number)),
-			running: $.varRef(init?.running ?? (0 as unknown as number)),
-			jobQueue: $.varRef(init?.jobQueue ?? (null as unknown as linkedlist.LinkedList | $.VarRef<linkedlist.LinkedList> | null)),
-			jobQueueSize: $.varRef(init?.jobQueueSize ?? (0 as unknown as number))
+			maxConcurrency: $.varRef(init?.maxConcurrency ?? (0 as number)),
+			running: $.varRef(init?.running ?? (0 as number)),
+			jobQueue: $.varRef(init?.jobQueue ?? (null as linkedlist.LinkedList | $.VarRef<linkedlist.LinkedList> | null)),
+			jobQueueSize: $.varRef(init?.jobQueueSize ?? (0 as number))
 		}
 	}
 

@@ -153,15 +153,15 @@ export class Entry {
 
 	constructor(init?: Partial<{Logger?: __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null, Data?: __goscript_logrus.Fields, Time?: time.Time, Level?: __goscript_logrus.Level, Caller?: runtime.Frame | $.VarRef<runtime.Frame> | null, Message?: string, Buffer?: bytes.Buffer | $.VarRef<bytes.Buffer> | null, Context?: context.Context | null, err?: string}>) {
 		this._fields = {
-			Logger: $.varRef(init?.Logger ?? (null as unknown as __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null)),
-			Data: $.varRef(init?.Data ?? (null as unknown as __goscript_logrus.Fields)),
+			Logger: $.varRef(init?.Logger ?? (null as __goscript_logger.Logger | $.VarRef<__goscript_logger.Logger> | null)),
+			Data: $.varRef(init?.Data ?? (null as __goscript_logrus.Fields)),
 			Time: $.varRef(init?.Time ? $.markAsStructValue($.cloneStructValue(init.Time)) : $.markAsStructValue(new time.Time())),
-			Level: $.varRef(init?.Level ?? (0 as unknown as __goscript_logrus.Level)),
-			Caller: $.varRef(init?.Caller ?? (null as unknown as runtime.Frame | $.VarRef<runtime.Frame> | null)),
-			Message: $.varRef(init?.Message ?? ("" as unknown as string)),
-			Buffer: $.varRef(init?.Buffer ?? (null as unknown as bytes.Buffer | $.VarRef<bytes.Buffer> | null)),
-			Context: $.varRef(init?.Context ?? (null as unknown as context.Context | null)),
-			err: $.varRef(init?.err ?? ("" as unknown as string))
+			Level: $.varRef(init?.Level ?? (0 as __goscript_logrus.Level)),
+			Caller: $.varRef(init?.Caller ?? (null as runtime.Frame | $.VarRef<runtime.Frame> | null)),
+			Message: $.varRef(init?.Message ?? ("" as string)),
+			Buffer: $.varRef(init?.Buffer ?? (null as bytes.Buffer | $.VarRef<bytes.Buffer> | null)),
+			Context: $.varRef(init?.Context ?? (null as context.Context | null)),
+			err: $.varRef(init?.err ?? ("" as string))
 		}
 	}
 

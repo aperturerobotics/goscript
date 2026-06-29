@@ -47,8 +47,8 @@ export class PrefixClient {
 
 	constructor(init?: Partial<{client?: __goscript_client.Client | null, serviceIDPrefixes?: $.Slice<string>}>) {
 		this._fields = {
-			client: $.varRef(init?.client ?? (null as unknown as __goscript_client.Client | null)),
-			serviceIDPrefixes: $.varRef(init?.serviceIDPrefixes ?? (null as unknown as $.Slice<string>))
+			client: $.varRef(init?.client ?? (null as __goscript_client.Client | null)),
+			serviceIDPrefixes: $.varRef(init?.serviceIDPrefixes ?? (null as $.Slice<string>))
 		}
 	}
 

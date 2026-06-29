@@ -251,22 +251,22 @@ export class TextFormatter {
 
 	constructor(init?: Partial<{ForceColors?: boolean, DisableColors?: boolean, ForceQuote?: boolean, DisableQuote?: boolean, EnvironmentOverrideColors?: boolean, DisableTimestamp?: boolean, FullTimestamp?: boolean, TimestampFormat?: string, DisableSorting?: boolean, SortingFunc?: ((_p0: $.Slice<string>) => void) | null, DisableLevelTruncation?: boolean, PadLevelText?: boolean, QuoteEmptyFields?: boolean, terminal?: boolean, FieldMap?: __goscript_json_formatter.FieldMap, CallerPrettyfier?: ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null, terminalInitOnce?: sync.Once}>) {
 		this._fields = {
-			ForceColors: $.varRef(init?.ForceColors ?? (false as unknown as boolean)),
-			DisableColors: $.varRef(init?.DisableColors ?? (false as unknown as boolean)),
-			ForceQuote: $.varRef(init?.ForceQuote ?? (false as unknown as boolean)),
-			DisableQuote: $.varRef(init?.DisableQuote ?? (false as unknown as boolean)),
-			EnvironmentOverrideColors: $.varRef(init?.EnvironmentOverrideColors ?? (false as unknown as boolean)),
-			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as unknown as boolean)),
-			FullTimestamp: $.varRef(init?.FullTimestamp ?? (false as unknown as boolean)),
-			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as unknown as string)),
-			DisableSorting: $.varRef(init?.DisableSorting ?? (false as unknown as boolean)),
-			SortingFunc: $.varRef(init?.SortingFunc ?? (null as unknown as ((_p0: $.Slice<string>) => void) | null)),
-			DisableLevelTruncation: $.varRef(init?.DisableLevelTruncation ?? (false as unknown as boolean)),
-			PadLevelText: $.varRef(init?.PadLevelText ?? (false as unknown as boolean)),
-			QuoteEmptyFields: $.varRef(init?.QuoteEmptyFields ?? (false as unknown as boolean)),
-			terminal: $.varRef(init?.terminal ?? (false as unknown as boolean)),
-			FieldMap: $.varRef(init?.FieldMap ?? (null as unknown as __goscript_json_formatter.FieldMap)),
-			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as unknown as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
+			ForceColors: $.varRef(init?.ForceColors ?? (false as boolean)),
+			DisableColors: $.varRef(init?.DisableColors ?? (false as boolean)),
+			ForceQuote: $.varRef(init?.ForceQuote ?? (false as boolean)),
+			DisableQuote: $.varRef(init?.DisableQuote ?? (false as boolean)),
+			EnvironmentOverrideColors: $.varRef(init?.EnvironmentOverrideColors ?? (false as boolean)),
+			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as boolean)),
+			FullTimestamp: $.varRef(init?.FullTimestamp ?? (false as boolean)),
+			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as string)),
+			DisableSorting: $.varRef(init?.DisableSorting ?? (false as boolean)),
+			SortingFunc: $.varRef(init?.SortingFunc ?? (null as ((_p0: $.Slice<string>) => void) | null)),
+			DisableLevelTruncation: $.varRef(init?.DisableLevelTruncation ?? (false as boolean)),
+			PadLevelText: $.varRef(init?.PadLevelText ?? (false as boolean)),
+			QuoteEmptyFields: $.varRef(init?.QuoteEmptyFields ?? (false as boolean)),
+			terminal: $.varRef(init?.terminal ?? (false as boolean)),
+			FieldMap: $.varRef(init?.FieldMap ?? (null as __goscript_json_formatter.FieldMap)),
+			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
 			terminalInitOnce: $.varRef(init?.terminalInitOnce ? $.markAsStructValue($.cloneStructValue(init.terminalInitOnce)) : $.markAsStructValue(new sync.Once()))
 		}
 	}

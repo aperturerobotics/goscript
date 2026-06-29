@@ -54,8 +54,8 @@ export class RpcStreamPacket {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Body?: isRpcStreamPacket_Body | null}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			Body: $.varRef(init?.Body ?? (null as unknown as isRpcStreamPacket_Body | null))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			Body: $.varRef(init?.Body ?? (null as isRpcStreamPacket_Body | null))
 		}
 	}
 
@@ -611,7 +611,7 @@ export class RpcStreamPacket_Init {
 
 	constructor(init?: Partial<{Init?: RpcStreamInit | $.VarRef<RpcStreamInit> | null}>) {
 		this._fields = {
-			Init: $.varRef(init?.Init ?? (null as unknown as RpcStreamInit | $.VarRef<RpcStreamInit> | null))
+			Init: $.varRef(init?.Init ?? (null as RpcStreamInit | $.VarRef<RpcStreamInit> | null))
 		}
 	}
 
@@ -741,7 +741,7 @@ export class RpcStreamPacket_Ack {
 
 	constructor(init?: Partial<{Ack?: RpcAck | $.VarRef<RpcAck> | null}>) {
 		this._fields = {
-			Ack: $.varRef(init?.Ack ?? (null as unknown as RpcAck | $.VarRef<RpcAck> | null))
+			Ack: $.varRef(init?.Ack ?? (null as RpcAck | $.VarRef<RpcAck> | null))
 		}
 	}
 
@@ -870,7 +870,7 @@ export class RpcStreamPacket_Data {
 
 	constructor(init?: Partial<{Data?: $.Slice<number>}>) {
 		this._fields = {
-			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>))
+			Data: $.varRef(init?.Data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -987,8 +987,8 @@ export class RpcStreamInit {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, ComponentId?: string}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			ComponentId: $.varRef(init?.ComponentId ?? ("" as unknown as string))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			ComponentId: $.varRef(init?.ComponentId ?? ("" as string))
 		}
 	}
 
@@ -1303,8 +1303,8 @@ export class RpcAck {
 
 	constructor(init?: Partial<{unknownFields?: $.Slice<number>, Error?: string}>) {
 		this._fields = {
-			unknownFields: $.varRef(init?.unknownFields ?? (null as unknown as $.Slice<number>)),
-			Error: $.varRef(init?.Error ?? ("" as unknown as string))
+			unknownFields: $.varRef(init?.unknownFields ?? (null as $.Slice<number>)),
+			Error: $.varRef(init?.Error ?? ("" as string))
 		}
 	}
 

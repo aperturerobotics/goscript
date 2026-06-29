@@ -20,7 +20,7 @@ export class aValue {
 
 	constructor(init?: Partial<{next?: __goscript_b.bValue | $.VarRef<__goscript_b.bValue> | null}>) {
 		this._fields = {
-			next: $.varRef(init?.next ?? (null as unknown as __goscript_b.bValue | $.VarRef<__goscript_b.bValue> | null))
+			next: $.varRef(init?.next ?? (null as __goscript_b.bValue | $.VarRef<__goscript_b.bValue> | null))
 		}
 	}
 

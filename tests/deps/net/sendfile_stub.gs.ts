@@ -34,7 +34,7 @@ import "./net.gs.ts"
 import "./net_fake.gs.ts"
 import "./sockaddr_posix.gs.ts"
 
-export let testHookSupportsSendfile: (() => boolean | globalThis.Promise<boolean>) | null = null as unknown as (() => boolean | globalThis.Promise<boolean>) | null
+export let testHookSupportsSendfile: (() => boolean | globalThis.Promise<boolean>) | null = null as (() => boolean | globalThis.Promise<boolean>) | null
 
 export function __goscript_set_testHookSupportsSendfile(__goscriptValue: (() => boolean | globalThis.Promise<boolean>) | null): void {
 	testHookSupportsSendfile = __goscriptValue

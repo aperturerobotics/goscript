@@ -17,7 +17,7 @@ export class stream {
 
 	constructor(init?: Partial<{name?: string}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string))
+			name: $.varRef(init?.name ?? ("" as string))
 		}
 	}
 
@@ -96,7 +96,7 @@ export class pointerStopStream {
 
 	constructor(init?: Partial<{stream?: stream | $.VarRef<stream> | null}>) {
 		this._fields = {
-			stream: $.varRef(init?.stream ?? (null as unknown as stream | $.VarRef<stream> | null))
+			stream: $.varRef(init?.stream ?? (null as stream | $.VarRef<stream> | null))
 		}
 	}
 

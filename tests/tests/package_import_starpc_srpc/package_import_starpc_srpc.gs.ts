@@ -99,7 +99,7 @@ export class embeddedStream {
 
 	constructor(init?: Partial<{Stream?: srpc.Stream | null}>) {
 		this._fields = {
-			Stream: $.varRef(init?.Stream ?? (null as unknown as srpc.Stream | null))
+			Stream: $.varRef(init?.Stream ?? (null as srpc.Stream | null))
 		}
 	}
 
@@ -162,8 +162,8 @@ export class streamOpenResult {
 
 	constructor(init?: Partial<{stream?: srpc.Stream | null, err?: $.GoError}>) {
 		this._fields = {
-			stream: $.varRef(init?.stream ?? (null as unknown as srpc.Stream | null)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			stream: $.varRef(init?.stream ?? (null as srpc.Stream | null)),
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 
@@ -207,8 +207,8 @@ export class streamProbeResult {
 
 	constructor(init?: Partial<{total?: number, err?: string}>) {
 		this._fields = {
-			total: $.varRef(init?.total ?? (0 as unknown as number)),
-			err: $.varRef(init?.err ?? ("" as unknown as string))
+			total: $.varRef(init?.total ?? (0 as number)),
+			err: $.varRef(init?.err ?? ("" as string))
 		}
 	}
 
@@ -244,7 +244,7 @@ export class rpcStreamServerResult {
 
 	constructor(init?: Partial<{err?: string}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? ("" as unknown as string))
+			err: $.varRef(init?.err ?? ("" as string))
 		}
 	}
 
@@ -319,10 +319,10 @@ export class memoryRpcStream {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, cancel?: (() => void) | null, recv?: $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null, send?: $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null, closeSend?: sync.Once, cancelLocal?: sync.Once}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			cancel: $.varRef(init?.cancel ?? (null as unknown as (() => void) | null)),
-			recv: $.varRef(init?.recv ?? (null as unknown as $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null)),
-			send: $.varRef(init?.send ?? (null as unknown as $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			cancel: $.varRef(init?.cancel ?? (null as (() => void) | null)),
+			recv: $.varRef(init?.recv ?? (null as $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null)),
+			send: $.varRef(init?.send ?? (null as $.Channel<rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null> | null)),
 			closeSend: $.varRef(init?.closeSend ? $.markAsStructValue($.cloneStructValue(init.closeSend)) : $.markAsStructValue(new sync.Once())),
 			cancelLocal: $.varRef(init?.cancelLocal ? $.markAsStructValue($.cloneStructValue(init.cancelLocal)) : $.markAsStructValue(new sync.Once()))
 		}
@@ -483,7 +483,7 @@ export class memoryRpcContext {
 
 	constructor(init?: Partial<{done?: $.Channel<{}> | null, once?: sync.Once}>) {
 		this._fields = {
-			done: $.varRef(init?.done ?? (null as unknown as $.Channel<{}> | null)),
+			done: $.varRef(init?.done ?? (null as $.Channel<{}> | null)),
 			once: $.varRef(init?.once ? $.markAsStructValue($.cloneStructValue(init.once)) : $.markAsStructValue(new sync.Once()))
 		}
 	}

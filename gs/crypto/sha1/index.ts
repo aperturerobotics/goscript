@@ -87,7 +87,7 @@ async function sum(data: $.Bytes): Promise<Uint8Array> {
 
   const digest = await subtle.digest(
     'SHA-1',
-    $.bytesToUint8Array(data) as unknown as BufferSource,
+    $.bytesToUint8Array(data) as BufferSource,
   )
   return new Uint8Array(digest)
 }

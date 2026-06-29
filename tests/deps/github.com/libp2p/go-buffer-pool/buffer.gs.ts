@@ -54,9 +54,9 @@ export class Buffer {
 
 	constructor(init?: Partial<{Pool?: __goscript_pool.BufferPool | $.VarRef<__goscript_pool.BufferPool> | null, buf?: $.Slice<number>, rOff?: number, bootstrap?: Uint8Array}>) {
 		this._fields = {
-			Pool: $.varRef(init?.Pool ?? (null as unknown as __goscript_pool.BufferPool | $.VarRef<__goscript_pool.BufferPool> | null)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			rOff: $.varRef(init?.rOff ?? (0 as unknown as number)),
+			Pool: $.varRef(init?.Pool ?? (null as __goscript_pool.BufferPool | $.VarRef<__goscript_pool.BufferPool> | null)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			rOff: $.varRef(init?.rOff ?? (0 as number)),
 			bootstrap: $.varRef(init?.bootstrap !== undefined ? $.cloneArrayValue(init.bootstrap) : new Uint8Array(64))
 		}
 	}

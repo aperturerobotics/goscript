@@ -32,7 +32,7 @@ export class RpcStreamWriter {
 
 	constructor(init?: Partial<{RpcStream?: __goscript_rpcstream.RpcStream | null}>) {
 		this._fields = {
-			RpcStream: $.varRef(init?.RpcStream ?? (null as unknown as __goscript_rpcstream.RpcStream | null))
+			RpcStream: $.varRef(init?.RpcStream ?? (null as __goscript_rpcstream.RpcStream | null))
 		}
 	}
 

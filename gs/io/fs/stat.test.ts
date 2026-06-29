@@ -61,7 +61,7 @@ describe('io/fs Stat override', () => {
         expect(closed).toBe(false)
         return [info, null]
       },
-    } as unknown as File
+    } as File
 
     const [got, err] = await Stat(
       {

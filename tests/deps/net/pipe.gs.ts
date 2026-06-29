@@ -49,8 +49,8 @@ export class pipeDeadline {
 	constructor(init?: Partial<{mu?: sync.Mutex, timer?: time.Timer | $.VarRef<time.Timer> | null, cancel?: $.Channel<{}> | null}>) {
 		this._fields = {
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
-			timer: $.varRef(init?.timer ?? (null as unknown as time.Timer | $.VarRef<time.Timer> | null)),
-			cancel: $.varRef(init?.cancel ?? (null as unknown as $.Channel<{}> | null))
+			timer: $.varRef(init?.timer ?? (null as time.Timer | $.VarRef<time.Timer> | null)),
+			cancel: $.varRef(init?.cancel ?? (null as $.Channel<{}> | null))
 		}
 	}
 
@@ -245,13 +245,13 @@ export class pipe {
 	constructor(init?: Partial<{wrMu?: sync.Mutex, rdRx?: $.Channel<$.Slice<number>> | null, rdTx?: $.Channel<number> | null, wrTx?: $.Channel<$.Slice<number>> | null, wrRx?: $.Channel<number> | null, once?: sync.Once, localDone?: $.Channel<{}> | null, remoteDone?: $.Channel<{}> | null, readDeadline?: pipeDeadline, writeDeadline?: pipeDeadline}>) {
 		this._fields = {
 			wrMu: $.varRef(init?.wrMu ? $.markAsStructValue($.cloneStructValue(init.wrMu)) : $.markAsStructValue(new sync.Mutex())),
-			rdRx: $.varRef(init?.rdRx ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
-			rdTx: $.varRef(init?.rdTx ?? (null as unknown as $.Channel<number> | null)),
-			wrTx: $.varRef(init?.wrTx ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
-			wrRx: $.varRef(init?.wrRx ?? (null as unknown as $.Channel<number> | null)),
+			rdRx: $.varRef(init?.rdRx ?? (null as $.Channel<$.Slice<number>> | null)),
+			rdTx: $.varRef(init?.rdTx ?? (null as $.Channel<number> | null)),
+			wrTx: $.varRef(init?.wrTx ?? (null as $.Channel<$.Slice<number>> | null)),
+			wrRx: $.varRef(init?.wrRx ?? (null as $.Channel<number> | null)),
 			once: $.varRef(init?.once ? $.markAsStructValue($.cloneStructValue(init.once)) : $.markAsStructValue(new sync.Once())),
-			localDone: $.varRef(init?.localDone ?? (null as unknown as $.Channel<{}> | null)),
-			remoteDone: $.varRef(init?.remoteDone ?? (null as unknown as $.Channel<{}> | null)),
+			localDone: $.varRef(init?.localDone ?? (null as $.Channel<{}> | null)),
+			remoteDone: $.varRef(init?.remoteDone ?? (null as $.Channel<{}> | null)),
 			readDeadline: $.varRef(init?.readDeadline ? $.markAsStructValue($.cloneStructValue(init.readDeadline)) : $.markAsStructValue(new pipeDeadline())),
 			writeDeadline: $.varRef(init?.writeDeadline ? $.markAsStructValue($.cloneStructValue(init.writeDeadline)) : $.markAsStructValue(new pipeDeadline()))
 		}

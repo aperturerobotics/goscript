@@ -47,7 +47,7 @@ export class writeBuffer {
 
 	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -101,7 +101,7 @@ export class PacketReadWriter {
 
 	constructor(init?: Partial<{rw?: io.ReadWriteCloser | null, buf?: bytes.Buffer, writeMtx?: sync.Mutex}>) {
 		this._fields = {
-			rw: $.varRef(init?.rw ?? (null as unknown as io.ReadWriteCloser | null)),
+			rw: $.varRef(init?.rw ?? (null as io.ReadWriteCloser | null)),
 			buf: $.varRef(init?.buf ? $.markAsStructValue($.cloneStructValue(init.buf)) : $.markAsStructValue(new bytes.Buffer())),
 			writeMtx: $.varRef(init?.writeMtx ? $.markAsStructValue($.cloneStructValue(init.writeMtx)) : $.markAsStructValue(new sync.Mutex()))
 		}

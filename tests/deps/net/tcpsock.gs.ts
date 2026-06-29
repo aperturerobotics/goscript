@@ -156,9 +156,9 @@ export class TCPAddr {
 
 	constructor(init?: Partial<{IP?: __goscript_ip.IP, Port?: number, Zone?: string}>) {
 		this._fields = {
-			IP: $.varRef(init?.IP ?? (null as unknown as __goscript_ip.IP)),
-			Port: $.varRef(init?.Port ?? (0 as unknown as number)),
-			Zone: $.varRef(init?.Zone ?? ("" as unknown as string))
+			IP: $.varRef(init?.IP ?? (null as __goscript_ip.IP)),
+			Port: $.varRef(init?.Port ?? (0 as number)),
+			Zone: $.varRef(init?.Zone ?? ("" as string))
 		}
 	}
 
@@ -564,10 +564,10 @@ export class KeepAliveConfig {
 
 	constructor(init?: Partial<{Enable?: boolean, Idle?: time.Duration, Interval?: time.Duration, Count?: number}>) {
 		this._fields = {
-			Enable: $.varRef(init?.Enable ?? (false as unknown as boolean)),
-			Idle: $.varRef(init?.Idle ?? (0n as unknown as time.Duration)),
-			Interval: $.varRef(init?.Interval ?? (0n as unknown as time.Duration)),
-			Count: $.varRef(init?.Count ?? (0 as unknown as number))
+			Enable: $.varRef(init?.Enable ?? (false as boolean)),
+			Idle: $.varRef(init?.Idle ?? (0n as time.Duration)),
+			Interval: $.varRef(init?.Interval ?? (0n as time.Duration)),
+			Count: $.varRef(init?.Count ?? (0 as number))
 		}
 	}
 
@@ -613,7 +613,7 @@ export class TCPListener {
 
 	constructor(init?: Partial<{fd?: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, lc?: __goscript_dial.ListenConfig}>) {
 		this._fields = {
-			fd: $.varRef(init?.fd ?? (null as unknown as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
+			fd: $.varRef(init?.fd ?? (null as __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null)),
 			lc: $.varRef(init?.lc ? $.markAsStructValue($.cloneStructValue(init.lc)) : $.markAsStructValue(new __goscript_dial.ListenConfig()))
 		}
 	}

@@ -33,8 +33,8 @@ export class RawMessage {
 
 	constructor(init?: Partial<{data?: $.Slice<number>, copy?: boolean}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>)),
-			copy: $.varRef(init?.copy ?? (false as unknown as boolean))
+			data: $.varRef(init?.data ?? (null as $.Slice<number>)),
+			copy: $.varRef(init?.copy ?? (false as boolean))
 		}
 	}
 

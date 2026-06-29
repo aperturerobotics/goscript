@@ -187,19 +187,19 @@ export class Config {
 
 	constructor(init?: Partial<{AcceptBacklog?: number, PingBacklog?: number, EnableKeepAlive?: boolean, KeepAliveInterval?: time.Duration, MeasureRTTInterval?: time.Duration, ConnectionWriteTimeout?: time.Duration, MaxIncomingStreams?: number, InitialStreamWindowSize?: number, MaxStreamWindowSize?: number, LogOutput?: io.Writer | null, ReadBufSize?: number, WriteCoalesceDelay?: time.Duration, MaxMessageSize?: number}>) {
 		this._fields = {
-			AcceptBacklog: $.varRef(init?.AcceptBacklog ?? (0 as unknown as number)),
-			PingBacklog: $.varRef(init?.PingBacklog ?? (0 as unknown as number)),
-			EnableKeepAlive: $.varRef(init?.EnableKeepAlive ?? (false as unknown as boolean)),
-			KeepAliveInterval: $.varRef(init?.KeepAliveInterval ?? (0n as unknown as time.Duration)),
-			MeasureRTTInterval: $.varRef(init?.MeasureRTTInterval ?? (0n as unknown as time.Duration)),
-			ConnectionWriteTimeout: $.varRef(init?.ConnectionWriteTimeout ?? (0n as unknown as time.Duration)),
-			MaxIncomingStreams: $.varRef(init?.MaxIncomingStreams ?? (0 as unknown as number)),
-			InitialStreamWindowSize: $.varRef(init?.InitialStreamWindowSize ?? (0 as unknown as number)),
-			MaxStreamWindowSize: $.varRef(init?.MaxStreamWindowSize ?? (0 as unknown as number)),
-			LogOutput: $.varRef(init?.LogOutput ?? (null as unknown as io.Writer | null)),
-			ReadBufSize: $.varRef(init?.ReadBufSize ?? (0 as unknown as number)),
-			WriteCoalesceDelay: $.varRef(init?.WriteCoalesceDelay ?? (0n as unknown as time.Duration)),
-			MaxMessageSize: $.varRef(init?.MaxMessageSize ?? (0 as unknown as number))
+			AcceptBacklog: $.varRef(init?.AcceptBacklog ?? (0 as number)),
+			PingBacklog: $.varRef(init?.PingBacklog ?? (0 as number)),
+			EnableKeepAlive: $.varRef(init?.EnableKeepAlive ?? (false as boolean)),
+			KeepAliveInterval: $.varRef(init?.KeepAliveInterval ?? (0n as time.Duration)),
+			MeasureRTTInterval: $.varRef(init?.MeasureRTTInterval ?? (0n as time.Duration)),
+			ConnectionWriteTimeout: $.varRef(init?.ConnectionWriteTimeout ?? (0n as time.Duration)),
+			MaxIncomingStreams: $.varRef(init?.MaxIncomingStreams ?? (0 as number)),
+			InitialStreamWindowSize: $.varRef(init?.InitialStreamWindowSize ?? (0 as number)),
+			MaxStreamWindowSize: $.varRef(init?.MaxStreamWindowSize ?? (0 as number)),
+			LogOutput: $.varRef(init?.LogOutput ?? (null as io.Writer | null)),
+			ReadBufSize: $.varRef(init?.ReadBufSize ?? (0 as number)),
+			WriteCoalesceDelay: $.varRef(init?.WriteCoalesceDelay ?? (0n as time.Duration)),
+			MaxMessageSize: $.varRef(init?.MaxMessageSize ?? (0 as number))
 		}
 	}
 

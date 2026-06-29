@@ -61,10 +61,10 @@ export class MapFile {
 
 	constructor(init?: Partial<{Data?: $.Slice<number>, Mode?: fs.FileMode, ModTime?: time.Time, Sys?: any}>) {
 		this._fields = {
-			Data: $.varRef(init?.Data ?? (null as unknown as $.Slice<number>)),
-			Mode: $.varRef(init?.Mode ?? (0 as unknown as fs.FileMode)),
+			Data: $.varRef(init?.Data ?? (null as $.Slice<number>)),
+			Mode: $.varRef(init?.Mode ?? (0 as fs.FileMode)),
 			ModTime: $.varRef(init?.ModTime ? $.markAsStructValue($.cloneStructValue(init.ModTime)) : $.markAsStructValue(new time.Time())),
-			Sys: $.varRef(init?.Sys ?? (null as unknown as any))
+			Sys: $.varRef(init?.Sys ?? (null as any))
 		}
 	}
 
@@ -102,7 +102,7 @@ export class fsOnly {
 
 	constructor(init?: Partial<{FS?: fs.FS | null}>) {
 		this._fields = {
-			FS: $.varRef(init?.FS ?? (null as unknown as fs.FS | null))
+			FS: $.varRef(init?.FS ?? (null as fs.FS | null))
 		}
 	}
 
@@ -141,7 +141,7 @@ export class noSub {
 
 	constructor(init?: Partial<{MapFS?: MapFS}>) {
 		this._fields = {
-			MapFS: $.varRef(init?.MapFS ?? (null as unknown as MapFS))
+			MapFS: $.varRef(init?.MapFS ?? (null as MapFS))
 		}
 	}
 
@@ -187,8 +187,8 @@ export class mapFileInfo {
 
 	constructor(init?: Partial<{name?: string, f?: MapFile | $.VarRef<MapFile> | null}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string)),
-			f: $.varRef(init?.f ?? (null as unknown as MapFile | $.VarRef<MapFile> | null))
+			name: $.varRef(init?.name ?? ("" as string)),
+			f: $.varRef(init?.f ?? (null as MapFile | $.VarRef<MapFile> | null))
 		}
 	}
 
@@ -285,9 +285,9 @@ export class openMapFile {
 
 	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, offset?: bigint}>) {
 		this._fields = {
-			path: $.varRef(init?.path ?? ("" as unknown as string)),
+			path: $.varRef(init?.path ?? ("" as string)),
 			mapFileInfo: $.varRef(init?.mapFileInfo ? $.markAsStructValue($.cloneStructValue(init.mapFileInfo)) : $.markAsStructValue(new mapFileInfo())),
-			offset: $.varRef(init?.offset ?? (0n as unknown as bigint))
+			offset: $.varRef(init?.offset ?? (0n as bigint))
 		}
 	}
 
@@ -444,10 +444,10 @@ export class mapDir {
 
 	constructor(init?: Partial<{path?: string, mapFileInfo?: mapFileInfo, entry?: $.Slice<mapFileInfo>, offset?: number}>) {
 		this._fields = {
-			path: $.varRef(init?.path ?? ("" as unknown as string)),
+			path: $.varRef(init?.path ?? ("" as string)),
 			mapFileInfo: $.varRef(init?.mapFileInfo ? $.markAsStructValue($.cloneStructValue(init.mapFileInfo)) : $.markAsStructValue(new mapFileInfo())),
-			entry: $.varRef(init?.entry ?? (null as unknown as $.Slice<mapFileInfo>)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			entry: $.varRef(init?.entry ?? (null as $.Slice<mapFileInfo>)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 

@@ -42,8 +42,8 @@ export class LinkedList {
 	constructor(init?: Partial<{mtx?: sync.RWMutex, head?: linkedListElem | $.VarRef<linkedListElem> | null, tail?: linkedListElem | $.VarRef<linkedListElem> | null}>) {
 		this._fields = {
 			mtx: $.varRef(init?.mtx ? $.markAsStructValue($.cloneStructValue(init.mtx)) : $.markAsStructValue(new sync.RWMutex())),
-			head: $.varRef(init?.head ?? (null as unknown as linkedListElem | $.VarRef<linkedListElem> | null)),
-			tail: $.varRef(init?.tail ?? (null as unknown as linkedListElem | $.VarRef<linkedListElem> | null))
+			head: $.varRef(init?.head ?? (null as linkedListElem | $.VarRef<linkedListElem> | null)),
+			tail: $.varRef(init?.tail ?? (null as linkedListElem | $.VarRef<linkedListElem> | null))
 		}
 	}
 
@@ -181,8 +181,8 @@ export class linkedListElem {
 
 	constructor(init?: Partial<{next?: linkedListElem | $.VarRef<linkedListElem> | null, val?: any}>) {
 		this._fields = {
-			next: $.varRef(init?.next ?? (null as unknown as linkedListElem | $.VarRef<linkedListElem> | null)),
-			val: $.varRef(init?.val ?? (null as unknown as any))
+			next: $.varRef(init?.next ?? (null as linkedListElem | $.VarRef<linkedListElem> | null)),
+			val: $.varRef(init?.val ?? (null as any))
 		}
 	}
 

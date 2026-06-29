@@ -240,7 +240,7 @@ export class rawRunner {
 
 	constructor(init?: Partial<{runner?: runner | null}>) {
 		this._fields = {
-			runner: $.varRef(init?.runner ?? (null as unknown as runner | null))
+			runner: $.varRef(init?.runner ?? (null as runner | null))
 		}
 	}
 

@@ -1596,7 +1596,7 @@ func TestCompilePackagesLowersUnsafeBytePointerArithmetic(t *testing.T) {
 	if !strings.Contains(text, "$.arrayPointerFromIndexRef<number>($.indexRef($.pointerValue<number[]>(words), 0), 64, 4, 1)") {
 		t.Fatalf("missing byte-view array pointer conversion:\n%s", text)
 	}
-	if !strings.Contains(text, "($.arrayPointerFromIndexRef<number>($.indexRef(dst!, 0), 64, 1, 1) as unknown as $.VarRef<Uint8Array> | null)!.value =") {
+	if !strings.Contains(text, "$.unsafePointerCast<$.VarRef<Uint8Array> | null>($.arrayPointerFromIndexRef<number>($.indexRef(dst!, 0), 64, 1, 1))!.value =") {
 		t.Fatalf("missing non-null byte-view array pointer storage:\n%s", text)
 	}
 }
@@ -3142,7 +3142,7 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	for _, want := range []string{
 		"export type Callback = ((value: number) => string | globalThis.Promise<string>) | null",
 		"export async function call(cb: ((value: number) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {\n\treturn await cb!(1)",
-		"let zero: Callback | null = null as unknown as Callback | null",
+		"let zero: Callback | null = null as Callback | null",
 		"let cb: Callback | null = (null as Callback | null)",
 		"$.functionValue((value: number): string => {",
 		"kind: $.TypeKind.Function",
@@ -5178,7 +5178,7 @@ func TestCompilePackagesQualifiesImportedTypesInSignaturesAndZeroValues(t *testi
 		"Header: $.VarRef<lib.Header>",
 		"Fn: $.VarRef<((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null>",
 		"Ptr: $.VarRef<atomic.Pointer<(() => void) | null>>",
-		"Header: $.varRef(init?.Header ?? (null as unknown as lib.Header))",
+		"Header: $.varRef(init?.Header ?? (null as lib.Header))",
 		"$.markAsStructValue(new lib.Box())",
 		"$.markAsStructValue(new atomic.Pointer<(() => void) | null>())",
 		"export async function Use(fn: ((_p0: lib.Box) => [lib.Box, $.GoError] | globalThis.Promise<[lib.Box, $.GoError]>) | null, box: lib.Box): globalThis.Promise<[lib.Box, $.GoError]>",

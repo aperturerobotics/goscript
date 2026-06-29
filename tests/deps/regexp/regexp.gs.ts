@@ -172,22 +172,22 @@ export class Regexp {
 
 	constructor(init?: Partial<{expr?: string, prog?: syntax.Prog | $.VarRef<syntax.Prog> | null, onepass?: __goscript_onepass.onePassProg | $.VarRef<__goscript_onepass.onePassProg> | null, numSubexp?: number, maxBitStateLen?: number, subexpNames?: $.Slice<string>, prefix?: string, prefixBytes?: $.Slice<number>, prefixRune?: number, prefixEnd?: number, mpool?: number, matchcap?: number, prefixComplete?: boolean, cond?: syntax.EmptyOp, minInputLen?: number, longest?: boolean}>) {
 		this._fields = {
-			expr: $.varRef(init?.expr ?? ("" as unknown as string)),
-			prog: $.varRef(init?.prog ?? (null as unknown as syntax.Prog | $.VarRef<syntax.Prog> | null)),
-			onepass: $.varRef(init?.onepass ?? (null as unknown as __goscript_onepass.onePassProg | $.VarRef<__goscript_onepass.onePassProg> | null)),
-			numSubexp: $.varRef(init?.numSubexp ?? (0 as unknown as number)),
-			maxBitStateLen: $.varRef(init?.maxBitStateLen ?? (0 as unknown as number)),
-			subexpNames: $.varRef(init?.subexpNames ?? (null as unknown as $.Slice<string>)),
-			prefix: $.varRef(init?.prefix ?? ("" as unknown as string)),
-			prefixBytes: $.varRef(init?.prefixBytes ?? (null as unknown as $.Slice<number>)),
-			prefixRune: $.varRef(init?.prefixRune ?? (0 as unknown as number)),
-			prefixEnd: $.varRef(init?.prefixEnd ?? (0 as unknown as number)),
-			mpool: $.varRef(init?.mpool ?? (0 as unknown as number)),
-			matchcap: $.varRef(init?.matchcap ?? (0 as unknown as number)),
-			prefixComplete: $.varRef(init?.prefixComplete ?? (false as unknown as boolean)),
-			cond: $.varRef(init?.cond ?? (0 as unknown as syntax.EmptyOp)),
-			minInputLen: $.varRef(init?.minInputLen ?? (0 as unknown as number)),
-			longest: $.varRef(init?.longest ?? (false as unknown as boolean))
+			expr: $.varRef(init?.expr ?? ("" as string)),
+			prog: $.varRef(init?.prog ?? (null as syntax.Prog | $.VarRef<syntax.Prog> | null)),
+			onepass: $.varRef(init?.onepass ?? (null as __goscript_onepass.onePassProg | $.VarRef<__goscript_onepass.onePassProg> | null)),
+			numSubexp: $.varRef(init?.numSubexp ?? (0 as number)),
+			maxBitStateLen: $.varRef(init?.maxBitStateLen ?? (0 as number)),
+			subexpNames: $.varRef(init?.subexpNames ?? (null as $.Slice<string>)),
+			prefix: $.varRef(init?.prefix ?? ("" as string)),
+			prefixBytes: $.varRef(init?.prefixBytes ?? (null as $.Slice<number>)),
+			prefixRune: $.varRef(init?.prefixRune ?? (0 as number)),
+			prefixEnd: $.varRef(init?.prefixEnd ?? (0 as number)),
+			mpool: $.varRef(init?.mpool ?? (0 as number)),
+			matchcap: $.varRef(init?.matchcap ?? (0 as number)),
+			prefixComplete: $.varRef(init?.prefixComplete ?? (false as boolean)),
+			cond: $.varRef(init?.cond ?? (0 as syntax.EmptyOp)),
+			minInputLen: $.varRef(init?.minInputLen ?? (0 as number)),
+			longest: $.varRef(init?.longest ?? (false as boolean))
 		}
 	}
 
@@ -1353,7 +1353,7 @@ export class inputString {
 
 	constructor(init?: Partial<{str?: string}>) {
 		this._fields = {
-			str: $.varRef(init?.str ?? ("" as unknown as string))
+			str: $.varRef(init?.str ?? ("" as string))
 		}
 	}
 
@@ -1429,7 +1429,7 @@ export class inputBytes {
 
 	constructor(init?: Partial<{str?: $.Slice<number>}>) {
 		this._fields = {
-			str: $.varRef(init?.str ?? (null as unknown as $.Slice<number>))
+			str: $.varRef(init?.str ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -1521,9 +1521,9 @@ export class inputReader {
 
 	constructor(init?: Partial<{r?: io.RuneReader | null, atEOT?: boolean, pos?: number}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.RuneReader | null)),
-			atEOT: $.varRef(init?.atEOT ?? (false as unknown as boolean)),
-			pos: $.varRef(init?.pos ?? (0 as unknown as number))
+			r: $.varRef(init?.r ?? (null as io.RuneReader | null)),
+			atEOT: $.varRef(init?.atEOT ?? (false as boolean)),
+			pos: $.varRef(init?.pos ?? (0 as number))
 		}
 	}
 

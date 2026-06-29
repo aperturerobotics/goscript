@@ -51,7 +51,7 @@ export class RpcStreamReadWriter {
 
 	constructor(init?: Partial<{stream?: __goscript_rpcstream.RpcStream | null, buf?: bytes.Buffer}>) {
 		this._fields = {
-			stream: $.varRef(init?.stream ?? (null as unknown as __goscript_rpcstream.RpcStream | null)),
+			stream: $.varRef(init?.stream ?? (null as __goscript_rpcstream.RpcStream | null)),
 			buf: $.varRef(init?.buf ? $.markAsStructValue($.cloneStructValue(init.buf)) : $.markAsStructValue(new bytes.Buffer()))
 		}
 	}

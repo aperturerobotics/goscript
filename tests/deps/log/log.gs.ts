@@ -74,7 +74,7 @@ export class Logger {
 	constructor(init?: Partial<{outMu?: sync.Mutex, out?: io.Writer | null, prefix?: atomic.Pointer<string>, flag?: atomic.Int32, isDiscard?: atomic.Bool}>) {
 		this._fields = {
 			outMu: $.varRef(init?.outMu ? $.markAsStructValue($.cloneStructValue(init.outMu)) : $.markAsStructValue(new sync.Mutex())),
-			out: $.varRef(init?.out ?? (null as unknown as io.Writer | null)),
+			out: $.varRef(init?.out ?? (null as io.Writer | null)),
 			prefix: $.varRef(init?.prefix ? $.markAsStructValue($.cloneStructValue(init.prefix)) : $.markAsStructValue(new atomic.Pointer<string>())),
 			flag: $.varRef(init?.flag ? $.markAsStructValue($.cloneStructValue(init.flag)) : $.markAsStructValue(new atomic.Int32())),
 			isDiscard: $.varRef(init?.isDiscard ? $.markAsStructValue($.cloneStructValue(init.isDiscard)) : $.markAsStructValue(new atomic.Bool()))

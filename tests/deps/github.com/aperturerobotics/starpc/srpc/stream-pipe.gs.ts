@@ -72,11 +72,11 @@ export class pipeStream {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, ctxCancel?: (() => void) | null, other?: pipeStream | $.VarRef<pipeStream> | null, closeOnce?: sync.Once, dataCh?: $.Channel<$.Slice<number>> | null}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			ctxCancel: $.varRef(init?.ctxCancel ?? (null as unknown as (() => void) | null)),
-			other: $.varRef(init?.other ?? (null as unknown as pipeStream | $.VarRef<pipeStream> | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			ctxCancel: $.varRef(init?.ctxCancel ?? (null as (() => void) | null)),
+			other: $.varRef(init?.other ?? (null as pipeStream | $.VarRef<pipeStream> | null)),
 			closeOnce: $.varRef(init?.closeOnce ? $.markAsStructValue($.cloneStructValue(init.closeOnce)) : $.markAsStructValue(new sync.Once())),
-			dataCh: $.varRef(init?.dataCh ?? (null as unknown as $.Channel<$.Slice<number>> | null))
+			dataCh: $.varRef(init?.dataCh ?? (null as $.Channel<$.Slice<number>> | null))
 		}
 	}
 

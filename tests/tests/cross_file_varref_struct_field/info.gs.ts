@@ -25,8 +25,8 @@ export class floatInfo {
 
 	constructor(init?: Partial<{mantbits?: number, expbits?: number}>) {
 		this._fields = {
-			mantbits: $.varRef(init?.mantbits ?? (0 as unknown as number)),
-			expbits: $.varRef(init?.expbits ?? (0 as unknown as number))
+			mantbits: $.varRef(init?.mantbits ?? (0 as number)),
+			expbits: $.varRef(init?.expbits ?? (0 as number))
 		}
 	}
 

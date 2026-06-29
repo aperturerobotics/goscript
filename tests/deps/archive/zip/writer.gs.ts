@@ -109,13 +109,13 @@ export class Writer {
 
 	constructor(init?: Partial<{cw?: countWriter | $.VarRef<countWriter> | null, dir?: $.Slice<header | $.VarRef<header> | null>, last?: fileWriter | $.VarRef<fileWriter> | null, closed?: boolean, compressors?: globalThis.Map<number, __goscript_register.Compressor | null> | null, comment?: string, testHookCloseSizeOffset?: ((size: bigint, offset: bigint) => void) | null}>) {
 		this._fields = {
-			cw: $.varRef(init?.cw ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
-			dir: $.varRef(init?.dir ?? (null as unknown as $.Slice<header | $.VarRef<header> | null>)),
-			last: $.varRef(init?.last ?? (null as unknown as fileWriter | $.VarRef<fileWriter> | null)),
-			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
-			compressors: $.varRef(init?.compressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Compressor | null> | null)),
-			comment: $.varRef(init?.comment ?? ("" as unknown as string)),
-			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as unknown as ((size: bigint, offset: bigint) => void) | null))
+			cw: $.varRef(init?.cw ?? (null as countWriter | $.VarRef<countWriter> | null)),
+			dir: $.varRef(init?.dir ?? (null as $.Slice<header | $.VarRef<header> | null>)),
+			last: $.varRef(init?.last ?? (null as fileWriter | $.VarRef<fileWriter> | null)),
+			closed: $.varRef(init?.closed ?? (false as boolean)),
+			compressors: $.varRef(init?.compressors ?? (null as globalThis.Map<number, __goscript_register.Compressor | null> | null)),
+			comment: $.varRef(init?.comment ?? ("" as string)),
+			testHookCloseSizeOffset: $.varRef(init?.testHookCloseSizeOffset ?? (null as ((size: bigint, offset: bigint) => void) | null))
 		}
 	}
 
@@ -621,9 +621,9 @@ export class header {
 
 	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null, offset?: bigint, raw?: boolean}>) {
 		this._fields = {
-			FileHeader: $.varRef(init?.FileHeader ?? (null as unknown as __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null)),
-			offset: $.varRef(init?.offset ?? (0n as unknown as bigint)),
-			raw: $.varRef(init?.raw ?? (false as unknown as boolean))
+			FileHeader: $.varRef(init?.FileHeader ?? (null as __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null)),
+			offset: $.varRef(init?.offset ?? (0n as bigint)),
+			raw: $.varRef(init?.raw ?? (false as boolean))
 		}
 	}
 
@@ -768,13 +768,13 @@ export class fileWriter {
 
 	constructor(init?: Partial<{header?: header | $.VarRef<header> | null, zipw?: io.Writer | null, rawCount?: countWriter | $.VarRef<countWriter> | null, comp?: io.WriteCloser | null, compCount?: countWriter | $.VarRef<countWriter> | null, crc32?: hash.Hash32 | null, closed?: boolean}>) {
 		this._fields = {
-			header: $.varRef(init?.header ?? (null as unknown as header | $.VarRef<header> | null)),
-			zipw: $.varRef(init?.zipw ?? (null as unknown as io.Writer | null)),
-			rawCount: $.varRef(init?.rawCount ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
-			comp: $.varRef(init?.comp ?? (null as unknown as io.WriteCloser | null)),
-			compCount: $.varRef(init?.compCount ?? (null as unknown as countWriter | $.VarRef<countWriter> | null)),
-			crc32: $.varRef(init?.crc32 ?? (null as unknown as hash.Hash32 | null)),
-			closed: $.varRef(init?.closed ?? (false as unknown as boolean))
+			header: $.varRef(init?.header ?? (null as header | $.VarRef<header> | null)),
+			zipw: $.varRef(init?.zipw ?? (null as io.Writer | null)),
+			rawCount: $.varRef(init?.rawCount ?? (null as countWriter | $.VarRef<countWriter> | null)),
+			comp: $.varRef(init?.comp ?? (null as io.WriteCloser | null)),
+			compCount: $.varRef(init?.compCount ?? (null as countWriter | $.VarRef<countWriter> | null)),
+			crc32: $.varRef(init?.crc32 ?? (null as hash.Hash32 | null)),
+			closed: $.varRef(init?.closed ?? (false as boolean))
 		}
 	}
 
@@ -927,8 +927,8 @@ export class countWriter {
 
 	constructor(init?: Partial<{w?: io.Writer | null, count?: bigint}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
-			count: $.varRef(init?.count ?? (0n as unknown as bigint))
+			w: $.varRef(init?.w ?? (null as io.Writer | null)),
+			count: $.varRef(init?.count ?? (0n as bigint))
 		}
 	}
 
@@ -971,7 +971,7 @@ export class nopCloser {
 
 	constructor(init?: Partial<{Writer?: io.Writer | null}>) {
 		this._fields = {
-			Writer: $.varRef(init?.Writer ?? (null as unknown as io.Writer | null))
+			Writer: $.varRef(init?.Writer ?? (null as io.Writer | null))
 		}
 	}
 

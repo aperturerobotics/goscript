@@ -26,7 +26,7 @@ export class writerHolder {
 
 	constructor(init?: Partial<{w?: io.Writer | null}>) {
 		this._fields = {
-			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null))
+			w: $.varRef(init?.w ?? (null as io.Writer | null))
 		}
 	}
 
@@ -101,7 +101,7 @@ export class staticReader {
 
 	constructor(init?: Partial<{done?: boolean}>) {
 		this._fields = {
-			done: $.varRef(init?.done ?? (false as unknown as boolean))
+			done: $.varRef(init?.done ?? (false as boolean))
 		}
 	}
 
@@ -146,7 +146,7 @@ export class asyncReader {
 
 	constructor(init?: Partial<{done?: boolean}>) {
 		this._fields = {
-			done: $.varRef(init?.done ?? (false as unknown as boolean))
+			done: $.varRef(init?.done ?? (false as boolean))
 		}
 	}
 
@@ -192,7 +192,7 @@ export class asyncReaderAt {
 
 	constructor(init?: Partial<{data?: $.Slice<number>}>) {
 		this._fields = {
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>))
+			data: $.varRef(init?.data ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -264,10 +264,10 @@ export class pipeReadResult {
 
 	constructor(init?: Partial<{n?: number, data?: string, errNil?: boolean, errEOF?: boolean}>) {
 		this._fields = {
-			n: $.varRef(init?.n ?? (0 as unknown as number)),
-			data: $.varRef(init?.data ?? ("" as unknown as string)),
-			errNil: $.varRef(init?.errNil ?? (false as unknown as boolean)),
-			errEOF: $.varRef(init?.errEOF ?? (false as unknown as boolean))
+			n: $.varRef(init?.n ?? (0 as number)),
+			data: $.varRef(init?.data ?? ("" as string)),
+			errNil: $.varRef(init?.errNil ?? (false as boolean)),
+			errEOF: $.varRef(init?.errEOF ?? (false as boolean))
 		}
 	}
 

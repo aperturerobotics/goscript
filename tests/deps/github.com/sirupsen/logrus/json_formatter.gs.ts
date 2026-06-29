@@ -136,13 +136,13 @@ export class JSONFormatter {
 
 	constructor(init?: Partial<{TimestampFormat?: string, DisableTimestamp?: boolean, DisableHTMLEscape?: boolean, DataKey?: string, FieldMap?: FieldMap, CallerPrettyfier?: ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null, PrettyPrint?: boolean}>) {
 		this._fields = {
-			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as unknown as string)),
-			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as unknown as boolean)),
-			DisableHTMLEscape: $.varRef(init?.DisableHTMLEscape ?? (false as unknown as boolean)),
-			DataKey: $.varRef(init?.DataKey ?? ("" as unknown as string)),
-			FieldMap: $.varRef(init?.FieldMap ?? (null as unknown as FieldMap)),
-			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as unknown as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
-			PrettyPrint: $.varRef(init?.PrettyPrint ?? (false as unknown as boolean))
+			TimestampFormat: $.varRef(init?.TimestampFormat ?? ("" as string)),
+			DisableTimestamp: $.varRef(init?.DisableTimestamp ?? (false as boolean)),
+			DisableHTMLEscape: $.varRef(init?.DisableHTMLEscape ?? (false as boolean)),
+			DataKey: $.varRef(init?.DataKey ?? ("" as string)),
+			FieldMap: $.varRef(init?.FieldMap ?? (null as FieldMap)),
+			CallerPrettyfier: $.varRef(init?.CallerPrettyfier ?? (null as ((_p0: runtime.Frame | $.VarRef<runtime.Frame> | null) => [string, string] | globalThis.Promise<[string, string]>) | null)),
+			PrettyPrint: $.varRef(init?.PrettyPrint ?? (false as boolean))
 		}
 	}
 

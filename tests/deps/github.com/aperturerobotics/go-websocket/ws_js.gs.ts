@@ -235,19 +235,19 @@ export class Conn {
 			ws: $.varRef(init?.ws ? $.markAsStructValue($.cloneStructValue(init.ws)) : $.markAsStructValue(new wsjs.WebSocket())),
 			msgReadLimit: $.varRef(init?.msgReadLimit ? $.markAsStructValue($.cloneStructValue(init.msgReadLimit)) : $.markAsStructValue(new atomic.Int64())),
 			closeReadMu: $.varRef(init?.closeReadMu ? $.markAsStructValue($.cloneStructValue(init.closeReadMu)) : $.markAsStructValue(new sync.Mutex())),
-			closeReadCtx: $.varRef(init?.closeReadCtx ?? (null as unknown as context.Context | null)),
+			closeReadCtx: $.varRef(init?.closeReadCtx ?? (null as context.Context | null)),
 			closingMu: $.varRef(init?.closingMu ? $.markAsStructValue($.cloneStructValue(init.closingMu)) : $.markAsStructValue(new sync.Mutex())),
 			closeOnce: $.varRef(init?.closeOnce ? $.markAsStructValue($.cloneStructValue(init.closeOnce)) : $.markAsStructValue(new sync.Once())),
-			closed: $.varRef(init?.closed ?? (null as unknown as $.Channel<{}> | null)),
+			closed: $.varRef(init?.closed ?? (null as $.Channel<{}> | null)),
 			closeErrOnce: $.varRef(init?.closeErrOnce ? $.markAsStructValue($.cloneStructValue(init.closeErrOnce)) : $.markAsStructValue(new sync.Once())),
-			closeErr: $.varRef(init?.closeErr ?? (null as unknown as $.GoError)),
-			closeWasClean: $.varRef(init?.closeWasClean ?? (false as unknown as boolean)),
-			releaseOnClose: $.varRef(init?.releaseOnClose ?? (null as unknown as (() => void) | null)),
-			releaseOnError: $.varRef(init?.releaseOnError ?? (null as unknown as (() => void) | null)),
-			releaseOnMessage: $.varRef(init?.releaseOnMessage ?? (null as unknown as (() => void) | null)),
-			readSignal: $.varRef(init?.readSignal ?? (null as unknown as $.Channel<{}> | null)),
+			closeErr: $.varRef(init?.closeErr ?? (null as $.GoError)),
+			closeWasClean: $.varRef(init?.closeWasClean ?? (false as boolean)),
+			releaseOnClose: $.varRef(init?.releaseOnClose ?? (null as (() => void) | null)),
+			releaseOnError: $.varRef(init?.releaseOnError ?? (null as (() => void) | null)),
+			releaseOnMessage: $.varRef(init?.releaseOnMessage ?? (null as (() => void) | null)),
+			readSignal: $.varRef(init?.readSignal ?? (null as $.Channel<{}> | null)),
 			readBufMu: $.varRef(init?.readBufMu ? $.markAsStructValue($.cloneStructValue(init.readBufMu)) : $.markAsStructValue(new sync.Mutex())),
-			readBuf: $.varRef(init?.readBuf ?? (null as unknown as $.Slice<wsjs.MessageEvent>))
+			readBuf: $.varRef(init?.readBuf ?? (null as $.Slice<wsjs.MessageEvent>))
 		}
 	}
 
@@ -668,7 +668,7 @@ export class DialOptions {
 
 	constructor(init?: Partial<{Subprotocols?: $.Slice<string>}>) {
 		this._fields = {
-			Subprotocols: $.varRef(init?.Subprotocols ?? (null as unknown as $.Slice<string>))
+			Subprotocols: $.varRef(init?.Subprotocols ?? (null as $.Slice<string>))
 		}
 	}
 
@@ -735,11 +735,11 @@ export class writer {
 
 	constructor(init?: Partial<{closed?: boolean, c?: Conn | $.VarRef<Conn> | null, ctx?: context.Context | null, typ?: MessageType, b?: bytes.Buffer | $.VarRef<bytes.Buffer> | null}>) {
 		this._fields = {
-			closed: $.varRef(init?.closed ?? (false as unknown as boolean)),
-			c: $.varRef(init?.c ?? (null as unknown as Conn | $.VarRef<Conn> | null)),
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			typ: $.varRef(init?.typ ?? (0 as unknown as MessageType)),
-			b: $.varRef(init?.b ?? (null as unknown as bytes.Buffer | $.VarRef<bytes.Buffer> | null))
+			closed: $.varRef(init?.closed ?? (false as boolean)),
+			c: $.varRef(init?.c ?? (null as Conn | $.VarRef<Conn> | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			typ: $.varRef(init?.typ ?? (0 as MessageType)),
+			b: $.varRef(init?.b ?? (null as bytes.Buffer | $.VarRef<bytes.Buffer> | null))
 		}
 	}
 
@@ -838,11 +838,11 @@ export class AcceptOptions {
 
 	constructor(init?: Partial<{Subprotocols?: $.Slice<string>, InsecureSkipVerify?: boolean, OriginPatterns?: $.Slice<string>, CompressionMode?: CompressionMode, CompressionThreshold?: number}>) {
 		this._fields = {
-			Subprotocols: $.varRef(init?.Subprotocols ?? (null as unknown as $.Slice<string>)),
-			InsecureSkipVerify: $.varRef(init?.InsecureSkipVerify ?? (false as unknown as boolean)),
-			OriginPatterns: $.varRef(init?.OriginPatterns ?? (null as unknown as $.Slice<string>)),
-			CompressionMode: $.varRef(init?.CompressionMode ?? (0 as unknown as CompressionMode)),
-			CompressionThreshold: $.varRef(init?.CompressionThreshold ?? (0 as unknown as number))
+			Subprotocols: $.varRef(init?.Subprotocols ?? (null as $.Slice<string>)),
+			InsecureSkipVerify: $.varRef(init?.InsecureSkipVerify ?? (false as boolean)),
+			OriginPatterns: $.varRef(init?.OriginPatterns ?? (null as $.Slice<string>)),
+			CompressionMode: $.varRef(init?.CompressionMode ?? (0 as CompressionMode)),
+			CompressionThreshold: $.varRef(init?.CompressionThreshold ?? (0 as number))
 		}
 	}
 
@@ -889,8 +889,8 @@ export class CloseError {
 
 	constructor(init?: Partial<{Code?: StatusCode, Reason?: string}>) {
 		this._fields = {
-			Code: $.varRef(init?.Code ?? (0 as unknown as StatusCode)),
-			Reason: $.varRef(init?.Reason ?? ("" as unknown as string))
+			Code: $.varRef(init?.Code ?? (0 as StatusCode)),
+			Reason: $.varRef(init?.Reason ?? ("" as string))
 		}
 	}
 
@@ -939,8 +939,8 @@ export class mu {
 
 	constructor(init?: Partial<{c?: Conn | $.VarRef<Conn> | null, ch?: $.Channel<{}> | null}>) {
 		this._fields = {
-			c: $.varRef(init?.c ?? (null as unknown as Conn | $.VarRef<Conn> | null)),
-			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<{}> | null))
+			c: $.varRef(init?.c ?? (null as Conn | $.VarRef<Conn> | null)),
+			ch: $.varRef(init?.ch ?? (null as $.Channel<{}> | null))
 		}
 	}
 

@@ -46,8 +46,8 @@ export class bufPool {
 
 	constructor(init?: Partial<{ch?: $.Channel<$.Slice<number>> | null, size?: number}>) {
 		this._fields = {
-			ch: $.varRef(init?.ch ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
-			size: $.varRef(init?.size ?? (0 as unknown as number))
+			ch: $.varRef(init?.ch ?? (null as $.Channel<$.Slice<number>> | null)),
+			size: $.varRef(init?.size ?? (0 as number))
 		}
 	}
 
@@ -231,19 +231,19 @@ export class RwcConn {
 
 	constructor(init?: Partial<{ctx?: context.Context | null, ctxCancel?: (() => void) | null, rwc?: io.ReadWriteCloser | null, laddr?: net.Addr | null, raddr?: net.Addr | null, pool?: bufPool | $.VarRef<bufPool> | null, packetCh?: $.Channel<$.Slice<number>> | null, mu?: sync.Mutex, rd?: time.Time, wd?: time.Time, closeErr?: $.GoError, pendingMu?: sync.Mutex, pending?: $.Slice<number>}>) {
 		this._fields = {
-			ctx: $.varRef(init?.ctx ?? (null as unknown as context.Context | null)),
-			ctxCancel: $.varRef(init?.ctxCancel ?? (null as unknown as (() => void) | null)),
-			rwc: $.varRef(init?.rwc ?? (null as unknown as io.ReadWriteCloser | null)),
-			laddr: $.varRef(init?.laddr ?? (null as unknown as net.Addr | null)),
-			raddr: $.varRef(init?.raddr ?? (null as unknown as net.Addr | null)),
-			pool: $.varRef(init?.pool ?? (null as unknown as bufPool | $.VarRef<bufPool> | null)),
-			packetCh: $.varRef(init?.packetCh ?? (null as unknown as $.Channel<$.Slice<number>> | null)),
+			ctx: $.varRef(init?.ctx ?? (null as context.Context | null)),
+			ctxCancel: $.varRef(init?.ctxCancel ?? (null as (() => void) | null)),
+			rwc: $.varRef(init?.rwc ?? (null as io.ReadWriteCloser | null)),
+			laddr: $.varRef(init?.laddr ?? (null as net.Addr | null)),
+			raddr: $.varRef(init?.raddr ?? (null as net.Addr | null)),
+			pool: $.varRef(init?.pool ?? (null as bufPool | $.VarRef<bufPool> | null)),
+			packetCh: $.varRef(init?.packetCh ?? (null as $.Channel<$.Slice<number>> | null)),
 			mu: $.varRef(init?.mu ? $.markAsStructValue($.cloneStructValue(init.mu)) : $.markAsStructValue(new sync.Mutex())),
 			rd: $.varRef(init?.rd ? $.markAsStructValue($.cloneStructValue(init.rd)) : $.markAsStructValue(new time.Time())),
 			wd: $.varRef(init?.wd ? $.markAsStructValue($.cloneStructValue(init.wd)) : $.markAsStructValue(new time.Time())),
-			closeErr: $.varRef(init?.closeErr ?? (null as unknown as $.GoError)),
+			closeErr: $.varRef(init?.closeErr ?? (null as $.GoError)),
 			pendingMu: $.varRef(init?.pendingMu ? $.markAsStructValue($.cloneStructValue(init.pendingMu)) : $.markAsStructValue(new sync.Mutex())),
-			pending: $.varRef(init?.pending ?? (null as unknown as $.Slice<number>))
+			pending: $.varRef(init?.pending ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -299,7 +299,7 @@ export class RwcConn {
 		let ctx = $.pointerValue<RwcConn>(p).ctx
 		let deadline = $.markAsStructValue($.cloneStructValue(await RwcConn.prototype.readDeadline.call(p)))
 		if (!$.markAsStructValue($.cloneStructValue(deadline)).IsZero()) {
-			let cancel: context.CancelFunc | null = null as unknown as context.CancelFunc | null
+			let cancel: context.CancelFunc | null = null as context.CancelFunc | null
 			let __goscriptTuple0: any = context.WithDeadline($.pointerValueOrNil(ctx)!, $.markAsStructValue($.cloneStructValue(deadline)))
 			ctx = __goscriptTuple0[0]
 			cancel = __goscriptTuple0[1]

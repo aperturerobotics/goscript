@@ -17,7 +17,7 @@ export class queue {
 
 	constructor(init?: Partial<{buf?: $.Slice<any>}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<any>))
+			buf: $.varRef(init?.buf ?? (null as $.Slice<any>))
 		}
 	}
 

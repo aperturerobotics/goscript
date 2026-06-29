@@ -56,9 +56,9 @@ export class VMux {
 
 	constructor(init?: Partial<{mx?: __goscript_mux.Mux | null, le?: logrus.Entry | $.VarRef<logrus.Entry> | null, veryVerbose?: boolean}>) {
 		this._fields = {
-			mx: $.varRef(init?.mx ?? (null as unknown as __goscript_mux.Mux | null)),
-			le: $.varRef(init?.le ?? (null as unknown as logrus.Entry | $.VarRef<logrus.Entry> | null)),
-			veryVerbose: $.varRef(init?.veryVerbose ?? (false as unknown as boolean))
+			mx: $.varRef(init?.mx ?? (null as __goscript_mux.Mux | null)),
+			le: $.varRef(init?.le ?? (null as logrus.Entry | $.VarRef<logrus.Entry> | null)),
+			veryVerbose: $.varRef(init?.veryVerbose ?? (false as boolean))
 		}
 	}
 

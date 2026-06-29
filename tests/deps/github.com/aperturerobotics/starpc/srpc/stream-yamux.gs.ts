@@ -148,21 +148,21 @@ export class yamuxStream {
 
 	constructor(init?: Partial<{sendWindow?: number, memorySpan?: yamux2.MemoryManager | null, id?: number, session?: yamux2.Session | $.VarRef<yamux2.Session> | null, recvWindow?: number, epochStart?: time.Time, state?: any, writeState?: any, readState?: any, stateLock?: sync.Mutex, recvBuf?: any, recvNotifyCh?: $.Channel<{}> | null, sendNotifyCh?: $.Channel<{}> | null, readDeadline?: any, writeDeadline?: any}>) {
 		this._fields = {
-			sendWindow: $.varRef(init?.sendWindow ?? (0 as unknown as number)),
-			memorySpan: $.varRef(init?.memorySpan ?? (null as unknown as yamux2.MemoryManager | null)),
-			id: $.varRef(init?.id ?? (0 as unknown as number)),
-			session: $.varRef(init?.session ?? (null as unknown as yamux2.Session | $.VarRef<yamux2.Session> | null)),
-			recvWindow: $.varRef(init?.recvWindow ?? (0 as unknown as number)),
+			sendWindow: $.varRef(init?.sendWindow ?? (0 as number)),
+			memorySpan: $.varRef(init?.memorySpan ?? (null as yamux2.MemoryManager | null)),
+			id: $.varRef(init?.id ?? (0 as number)),
+			session: $.varRef(init?.session ?? (null as yamux2.Session | $.VarRef<yamux2.Session> | null)),
+			recvWindow: $.varRef(init?.recvWindow ?? (0 as number)),
 			epochStart: $.varRef(init?.epochStart ? $.markAsStructValue($.cloneStructValue(init.epochStart)) : $.markAsStructValue(new time.Time())),
-			state: $.varRef(init?.state ?? (0 as unknown as any)),
-			writeState: $.varRef(init?.writeState ?? (0 as unknown as any)),
-			readState: $.varRef(init?.readState ?? (0 as unknown as any)),
+			state: $.varRef(init?.state ?? (0 as any)),
+			writeState: $.varRef(init?.writeState ?? (0 as any)),
+			readState: $.varRef(init?.readState ?? (0 as any)),
 			stateLock: $.varRef(init?.stateLock ? $.markAsStructValue($.cloneStructValue(init.stateLock)) : $.markAsStructValue(new sync.Mutex())),
-			recvBuf: $.varRef(init?.recvBuf ?? (undefined as any as unknown as any)),
-			recvNotifyCh: $.varRef(init?.recvNotifyCh ?? (null as unknown as $.Channel<{}> | null)),
-			sendNotifyCh: $.varRef(init?.sendNotifyCh ?? (null as unknown as $.Channel<{}> | null)),
-			readDeadline: $.varRef(init?.readDeadline ?? (undefined as any as unknown as any)),
-			writeDeadline: $.varRef(init?.writeDeadline ?? (undefined as any as unknown as any))
+			recvBuf: $.varRef(init?.recvBuf ?? (undefined as any as any)),
+			recvNotifyCh: $.varRef(init?.recvNotifyCh ?? (null as $.Channel<{}> | null)),
+			sendNotifyCh: $.varRef(init?.sendNotifyCh ?? (null as $.Channel<{}> | null)),
+			readDeadline: $.varRef(init?.readDeadline ?? (undefined as any as any)),
+			writeDeadline: $.varRef(init?.writeDeadline ?? (undefined as any as any))
 		}
 	}
 
@@ -243,7 +243,7 @@ export class yamuxStream {
 
 	public yamux(): yamux2.Stream | $.VarRef<yamux2.Stream> | null {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return (s as unknown as yamux2.Stream | $.VarRef<yamux2.Stream> | null)
+		return $.unsafePointerCast<yamux2.Stream | $.VarRef<yamux2.Stream> | null>(s)
 	}
 
 	static __typeInfo = $.registerStructType(

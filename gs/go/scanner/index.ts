@@ -209,7 +209,7 @@ export function ErrorList_Err(list: ErrorList): $.GoError {
   }
   const err = list as errorListWithError
   err.Error = () => ErrorList_Error(list)
-  return err as unknown as $.GoError
+  return err as $.GoError
 }
 
 export function PrintError(w: io.Writer, err: $.GoError): void {

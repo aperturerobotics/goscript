@@ -20,7 +20,7 @@ export class chunker {
 
 	constructor(init?: Partial<{pos?: bigint}>) {
 		this._fields = {
-			pos: $.varRef(init?.pos ?? (0n as unknown as bigint))
+			pos: $.varRef(init?.pos ?? (0n as bigint))
 		}
 	}
 
@@ -60,7 +60,7 @@ export class repeatReader {
 
 	constructor(init?: Partial<{remaining?: number}>) {
 		this._fields = {
-			remaining: $.varRef(init?.remaining ?? (0 as unknown as number))
+			remaining: $.varRef(init?.remaining ?? (0 as number))
 		}
 	}
 

@@ -54,7 +54,7 @@ export class holder {
 
 	constructor(init?: Partial<{Database?: string, embedded?: embedded}>) {
 		this._fields = {
-			Database: $.varRef(init?.Database ?? ("" as unknown as string)),
+			Database: $.varRef(init?.Database ?? ("" as string)),
 			embedded: $.varRef(init?.embedded ? $.markAsStructValue($.cloneStructValue(init.embedded)) : $.markAsStructValue(new embedded()))
 		}
 	}

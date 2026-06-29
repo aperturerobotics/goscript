@@ -25,7 +25,7 @@ export class byteFormatter {
 
 	constructor(init?: Partial<{prefix?: $.Slice<number>}>) {
 		this._fields = {
-			prefix: $.varRef(init?.prefix ?? (null as unknown as $.Slice<number>))
+			prefix: $.varRef(init?.prefix ?? (null as $.Slice<number>))
 		}
 	}
 

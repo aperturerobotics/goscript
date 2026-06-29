@@ -82,9 +82,9 @@ export class ipAttr {
 
 	constructor(init?: Partial<{Scope?: scope, Precedence?: number, Label?: number}>) {
 		this._fields = {
-			Scope: $.varRef(init?.Scope ?? (0 as unknown as scope)),
-			Precedence: $.varRef(init?.Precedence ?? (0 as unknown as number)),
-			Label: $.varRef(init?.Label ?? (0 as unknown as number))
+			Scope: $.varRef(init?.Scope ?? (0 as scope)),
+			Precedence: $.varRef(init?.Precedence ?? (0 as number)),
+			Label: $.varRef(init?.Label ?? (0 as number))
 		}
 	}
 
@@ -203,8 +203,8 @@ export class policyTableEntry {
 	constructor(init?: Partial<{Prefix?: netip.Prefix, Precedence?: number, Label?: number}>) {
 		this._fields = {
 			Prefix: $.varRef(init?.Prefix ? $.markAsStructValue($.cloneStructValue(init.Prefix)) : $.markAsStructValue(new netip.Prefix())),
-			Precedence: $.varRef(init?.Precedence ?? (0 as unknown as number)),
-			Label: $.varRef(init?.Label ?? (0 as unknown as number))
+			Precedence: $.varRef(init?.Precedence ?? (0 as number)),
+			Label: $.varRef(init?.Label ?? (0 as number))
 		}
 	}
 

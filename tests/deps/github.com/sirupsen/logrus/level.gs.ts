@@ -42,9 +42,9 @@ export class lvlPrefix {
 
 	constructor(init?: Partial<{full?: string, truncated?: string, padded?: string}>) {
 		this._fields = {
-			full: $.varRef(init?.full ?? ("" as unknown as string)),
-			truncated: $.varRef(init?.truncated ?? ("" as unknown as string)),
-			padded: $.varRef(init?.padded ?? ("" as unknown as string))
+			full: $.varRef(init?.full ?? ("" as string)),
+			truncated: $.varRef(init?.truncated ?? ("" as string)),
+			padded: $.varRef(init?.padded ?? ("" as string))
 		}
 	}
 

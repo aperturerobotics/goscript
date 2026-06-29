@@ -1,4 +1,6 @@
 // Common types used throughout the reflect module
+import type { StringHeaderData } from '@goscript/builtin/index.js'
+
 
 // Basic Go types that need TypeScript equivalents
 export type uintptr = number
@@ -155,7 +157,7 @@ export const SelectRecv: SelectDir = 2
 export const SelectDefault: SelectDir = 3
 
 export class SliceHeader {
-  public Data: uintptr = 0
+  public Data: uintptr | StringHeaderData | null = 0
   public Len = 0
   public Cap = 0
 
@@ -167,7 +169,7 @@ export class SliceHeader {
 }
 
 export class StringHeader {
-  public Data: uintptr = 0
+  public Data: uintptr | StringHeaderData = 0
   public Len = 0
 
   constructor(init?: Partial<StringHeader>) {

@@ -11,27 +11,27 @@ import { max, min } from './builtin.js'
 //   max(acceptedSeqno /* uint64 -> number */, innerSeqno+1 /* bigint */)
 describe('builtin min/max mixed number/bigint operands', () => {
   it('max does not throw with number first, bigint second', () => {
-    expect(() => max(5 as unknown as bigint, 10n)).not.toThrow()
-    expect(max(5 as unknown as bigint, 10n)).toBe(10n)
-    expect(max(50 as unknown as bigint, 10n)).toBe(50)
+    expect(() => max(5 as bigint, 10n)).not.toThrow()
+    expect(max(5 as bigint, 10n)).toBe(10n)
+    expect(max(50 as bigint, 10n)).toBe(50)
   })
 
   it('max does not throw with bigint first, number second', () => {
-    expect(() => max(10n, 5 as unknown as bigint)).not.toThrow()
-    expect(max(10n, 5 as unknown as bigint)).toBe(10n)
-    expect(max(3n, 9 as unknown as bigint)).toBe(9)
+    expect(() => max(10n, 5 as bigint)).not.toThrow()
+    expect(max(10n, 5 as bigint)).toBe(10n)
+    expect(max(3n, 9 as bigint)).toBe(9)
   })
 
   it('min does not throw with number first, bigint second', () => {
-    expect(() => min(5 as unknown as bigint, 10n)).not.toThrow()
-    expect(min(5 as unknown as bigint, 10n)).toBe(5)
-    expect(min(50 as unknown as bigint, 10n)).toBe(10n)
+    expect(() => min(5 as bigint, 10n)).not.toThrow()
+    expect(min(5 as bigint, 10n)).toBe(5)
+    expect(min(50 as bigint, 10n)).toBe(10n)
   })
 
   it('min does not throw with bigint first, number second', () => {
-    expect(() => min(10n, 5 as unknown as bigint)).not.toThrow()
-    expect(min(10n, 5 as unknown as bigint)).toBe(5)
-    expect(min(3n, 9 as unknown as bigint)).toBe(3n)
+    expect(() => min(10n, 5 as bigint)).not.toThrow()
+    expect(min(10n, 5 as bigint)).toBe(5)
+    expect(min(3n, 9 as bigint)).toBe(3n)
   })
 
   it('preserves pure-bigint comparison', () => {

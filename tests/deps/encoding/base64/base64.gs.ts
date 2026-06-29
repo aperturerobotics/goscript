@@ -57,8 +57,8 @@ export class Encoding {
 		this._fields = {
 			encode: $.varRef(init?.encode !== undefined ? $.cloneArrayValue(init.encode) : new Uint8Array(64)),
 			decodeMap: $.varRef(init?.decodeMap !== undefined ? $.cloneArrayValue(init.decodeMap) : new Uint8Array(256)),
-			padChar: $.varRef(init?.padChar ?? (0 as unknown as number)),
-			strict: $.varRef(init?.strict ?? (false as unknown as boolean))
+			padChar: $.varRef(init?.padChar ?? (0 as number)),
+			strict: $.varRef(init?.strict ?? (false as boolean))
 		}
 	}
 
@@ -466,11 +466,11 @@ export class encoder {
 
 	constructor(init?: Partial<{err?: $.GoError, enc?: Encoding | $.VarRef<Encoding> | null, w?: io.Writer | null, buf?: Uint8Array, nbuf?: number, out?: Uint8Array}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			enc: $.varRef(init?.enc ?? (null as unknown as Encoding | $.VarRef<Encoding> | null)),
-			w: $.varRef(init?.w ?? (null as unknown as io.Writer | null)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			enc: $.varRef(init?.enc ?? (null as Encoding | $.VarRef<Encoding> | null)),
+			w: $.varRef(init?.w ?? (null as io.Writer | null)),
 			buf: $.varRef(init?.buf !== undefined ? $.cloneArrayValue(init.buf) : new Uint8Array(3)),
-			nbuf: $.varRef(init?.nbuf ?? (0 as unknown as number)),
+			nbuf: $.varRef(init?.nbuf ?? (0 as number)),
 			out: $.varRef(init?.out !== undefined ? $.cloneArrayValue(init.out) : new Uint8Array(1024))
 		}
 	}
@@ -636,13 +636,13 @@ export class decoder {
 
 	constructor(init?: Partial<{err?: $.GoError, readErr?: $.GoError, enc?: Encoding | $.VarRef<Encoding> | null, r?: io.Reader | null, buf?: Uint8Array, nbuf?: number, out?: $.Slice<number>, outbuf?: Uint8Array}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError)),
-			readErr: $.varRef(init?.readErr ?? (null as unknown as $.GoError)),
-			enc: $.varRef(init?.enc ?? (null as unknown as Encoding | $.VarRef<Encoding> | null)),
-			r: $.varRef(init?.r ?? (null as unknown as io.Reader | null)),
+			err: $.varRef(init?.err ?? (null as $.GoError)),
+			readErr: $.varRef(init?.readErr ?? (null as $.GoError)),
+			enc: $.varRef(init?.enc ?? (null as Encoding | $.VarRef<Encoding> | null)),
+			r: $.varRef(init?.r ?? (null as io.Reader | null)),
 			buf: $.varRef(init?.buf !== undefined ? $.cloneArrayValue(init.buf) : new Uint8Array(1024)),
-			nbuf: $.varRef(init?.nbuf ?? (0 as unknown as number)),
-			out: $.varRef(init?.out ?? (null as unknown as $.Slice<number>)),
+			nbuf: $.varRef(init?.nbuf ?? (0 as number)),
+			out: $.varRef(init?.out ?? (null as $.Slice<number>)),
 			outbuf: $.varRef(init?.outbuf !== undefined ? $.cloneArrayValue(init.outbuf) : new Uint8Array(768))
 		}
 	}
@@ -762,7 +762,7 @@ export class newlineFilteringReader {
 
 	constructor(init?: Partial<{wrapped?: io.Reader | null}>) {
 		this._fields = {
-			wrapped: $.varRef(init?.wrapped ?? (null as unknown as io.Reader | null))
+			wrapped: $.varRef(init?.wrapped ?? (null as io.Reader | null))
 		}
 	}
 

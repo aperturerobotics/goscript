@@ -115,7 +115,7 @@ export class bufp {
 
 	constructor(init?: Partial<{buf?: $.Slice<number>}>) {
 		this._fields = {
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>))
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>))
 		}
 	}
 

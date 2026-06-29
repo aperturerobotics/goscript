@@ -46,7 +46,7 @@ export class Holder {
 
 	constructor(init?: Partial<{Hidden?: hidden | null}>) {
 		this._fields = {
-			Hidden: $.varRef(init?.Hidden ?? (null as unknown as hidden | null))
+			Hidden: $.varRef(init?.Hidden ?? (null as hidden | null))
 		}
 	}
 

@@ -995,6 +995,14 @@ export function cloneStructValue<T>(value: T): T {
   throw new Error('runtime error: value is not cloneable')
 }
 
+export function namedStructConversion<T>(value: unknown): T {
+  return markAsStructValue(cloneStructValue(value)) as T
+}
+
+export function unsafePointerCast<T>(value: unknown): T {
+  return value as T
+}
+
 export function cloneArrayValue<T>(value: T): T {
   if (value instanceof Uint8Array) {
     const out = new Uint8Array(value.length)
@@ -1404,15 +1412,15 @@ export function typeAssert<T>(
       // Parse the stored type string and compare with expected type
       const storedTypeStr = value.__goType as string
       if (compareTypeStringWithTypeInfo(storedTypeStr, normalizedType)) {
-        return { value: null as unknown as T, ok: true }
+        return { value: null as T, ok: true }
       }
-      return { value: null as unknown as T, ok: false }
+      return { value: null as T, ok: false }
     }
-    return { value: null as unknown as T, ok: false }
+    return { value: null as T, ok: false }
   }
 
   if (isPointerTypeInfo(normalizedType) && value === null) {
-    return { value: null as unknown as T, ok: false }
+    return { value: null as T, ok: false }
   }
   if (
     typeof value === 'object' &&
@@ -1455,7 +1463,7 @@ export function typeAssert<T>(
               normalizeTypeInfo(normalizedType.keyType as string | TypeInfo),
             )
           ) {
-            return { value: null as unknown as T, ok: false }
+            return { value: null as T, ok: false }
           }
         }
 
@@ -1464,7 +1472,7 @@ export function typeAssert<T>(
             normalizedType.elemType as string | TypeInfo,
           )
           if (!matchesType(v, elemTypeInfo)) {
-            return { value: null as unknown as T, ok: false }
+            return { value: null as T, ok: false }
           }
         }
       }
@@ -1498,7 +1506,7 @@ export function typeAssert<T>(
     return { value: resolveZeroValue<T>(normalizedType.zeroValue), ok: false }
   }
 
-  return { value: null as unknown as T, ok: false }
+  return { value: null as T, ok: false }
 }
 
 export function typeAssertTuple<T>(

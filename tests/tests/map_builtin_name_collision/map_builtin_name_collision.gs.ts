@@ -17,7 +17,7 @@ export class Map {
 
 	constructor(init?: Partial<{values?: globalThis.Map<string, number> | null}>) {
 		this._fields = {
-			values: $.varRef(init?.values ?? (null as unknown as globalThis.Map<string, number> | null))
+			values: $.varRef(init?.values ?? (null as globalThis.Map<string, number> | null))
 		}
 	}
 

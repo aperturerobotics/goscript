@@ -3,7 +3,7 @@
 
 import * as $ from "@goscript/builtin/index.js"
 
-export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null as unknown as ((_p0: number) => boolean | globalThis.Promise<boolean>) | null
+export let fn: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: number) => boolean | globalThis.Promise<boolean>) | null
 
 export function __goscript_set_fn(__goscriptValue: ((_p0: number) => boolean | globalThis.Promise<boolean>) | null): void {
 	fn = __goscriptValue

@@ -29,7 +29,7 @@ export class embeddedMutex {
 	constructor(init?: Partial<{Mutex?: sync.Mutex, value?: number}>) {
 		this._fields = {
 			Mutex: $.varRef(init?.Mutex ? $.markAsStructValue($.cloneStructValue(init.Mutex)) : $.markAsStructValue(new sync.Mutex())),
-			value: $.varRef(init?.value ?? (0 as unknown as number))
+			value: $.varRef(init?.value ?? (0 as number))
 		}
 	}
 
@@ -86,7 +86,7 @@ export class embeddedRWMutex {
 	constructor(init?: Partial<{RWMutex?: sync.RWMutex, value?: number}>) {
 		this._fields = {
 			RWMutex: $.varRef(init?.RWMutex ? $.markAsStructValue($.cloneStructValue(init.RWMutex)) : $.markAsStructValue(new sync.RWMutex())),
-			value: $.varRef(init?.value ?? (0 as unknown as number))
+			value: $.varRef(init?.value ?? (0 as number))
 		}
 	}
 

@@ -40,8 +40,8 @@ export class Action {
 
 	constructor(init?: Partial<{Result?: number, Filter?: globalThis.Map<number, dep.Ref | null> | null}>) {
 		this._fields = {
-			Result: $.varRef(init?.Result ?? (0 as unknown as number)),
-			Filter: $.varRef(init?.Filter ?? (null as unknown as globalThis.Map<number, dep.Ref | null> | null))
+			Result: $.varRef(init?.Result ?? (0 as number)),
+			Filter: $.varRef(init?.Filter ?? (null as globalThis.Map<number, dep.Ref | null> | null))
 		}
 	}
 

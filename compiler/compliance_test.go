@@ -4,9 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/s4wave/goscript/tests"
 )
 
@@ -25,7 +27,7 @@ func TestCompliance(t *testing.T) {
 		t.Fatalf("failed to read tests dir: %v", err)
 	}
 
-	categories := make(map[string][]string)
+	fixtures := make([]complianceFixture, 0, len(entries))
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
@@ -35,48 +37,213 @@ func TestCompliance(t *testing.T) {
 		if err != nil || len(goFiles) == 0 {
 			continue
 		}
-		category := complianceCategory(entry.Name())
-		categories[category] = append(categories[category], testPath)
+		name := entry.Name()
+		fixtures = append(fixtures, complianceFixture{
+			name:     name,
+			category: complianceCategory(name),
+			path:     testPath,
+		})
 	}
 
-	categoryNames := make([]string, 0, len(categories))
-	for category := range categories {
-		categoryNames = append(categoryNames, category)
-		slices.Sort(categories[category])
+	failures, err := loadComplianceFailureState(workspaceDir)
+	if err != nil {
+		t.Fatalf("failed to load compliance failure state: %v", err)
 	}
-	slices.Sort(categoryNames)
 
 	ranTests := 0
-	for _, category := range categoryNames {
-		paths := categories[category]
-		t.Run(category, func(t *testing.T) {
-			for _, testPath := range paths {
-				t.Run(filepath.Base(testPath), func(t *testing.T) {
-					name := filepath.Base(testPath)
-					if hasComplianceMarker(t, testPath, "expect-fail") {
-						t.Skip("expected compliance failure marker")
-					}
-					if expectedV2ComplianceGaps[name] {
-						t.Skip("expected v2 compliance gap")
-					}
-					if complianceHarnessExcluded[name] {
-						t.Skip("validated by a dedicated oracle test, not stdout comparison")
-					}
+	for _, fixture := range failures.order(fixtures) {
+		name := fixture.name
+		wasFailing := failures.wasFailing(name)
+		attempted := false
+		passed := t.Run(fixture.category+"/"+name, func(t *testing.T) {
+			attempted = true
+			if hasComplianceMarker(t, fixture.path, "expect-fail") {
+				t.Skip("expected compliance failure marker")
+			}
+			if expectedV2ComplianceGaps[name] {
+				t.Skip("expected v2 compliance gap")
+			}
+			if complianceHarnessExcluded[name] {
+				t.Skip("validated by a dedicated oracle test, not stdout comparison")
+			}
 
-					ranTests++
-					tests.RunGoScriptTestDir(t, workspaceDir, testPath)
-					if !t.Failed() {
-						if err := os.RemoveAll(filepath.Join(testPath, "run")); err != nil {
-							t.Logf("failed to remove run directory for %s: %v", name, err)
-						}
-					}
-				})
+			ranTests++
+			tests.RunGoScriptTestDir(t, workspaceDir, fixture.path)
+			if !t.Failed() {
+				if err := os.RemoveAll(filepath.Join(fixture.path, "run")); err != nil {
+					t.Logf("failed to remove run directory for %s: %v", name, err)
+				}
 			}
 		})
+
+		if !attempted {
+			continue
+		}
+		if passed {
+			failures.recordPass(name)
+		} else {
+			failures.recordFailure(name)
+		}
+		if err := failures.save(); err != nil {
+			t.Fatalf("failed to save compliance failure state: %v", err)
+		}
+		if !passed && wasFailing {
+			t.Fatalf("compliance fixture %s failed again; cached failure state saved to %s", name, failures.path)
+		}
 	}
 
 	if ranTests == 0 {
 		t.Fatal("compliance harness did not run any fixture directories")
+	}
+}
+
+type complianceFixture struct {
+	name     string
+	category string
+	path     string
+}
+
+// complianceFailureState remembers active fixture failures between local runs.
+// A passing run removes the fixture so the next full run only fail-fasts on
+// failures that are still reproducing.
+type complianceFailureState struct {
+	path     string
+	failures map[string]int
+}
+
+func loadComplianceFailureState(workspaceDir string) (*complianceFailureState, error) {
+	state := &complianceFailureState{
+		path:     filepath.Join(workspaceDir, ".tmp", "compliance-failures.tsv"),
+		failures: make(map[string]int),
+	}
+	data, err := os.ReadFile(state.path)
+	if os.IsNotExist(err) {
+		return state, nil
+	}
+	if err != nil {
+		return nil, errors.Wrapf(err, "read %s", state.path)
+	}
+	for lineNum, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		name, countText, ok := strings.Cut(line, "\t")
+		if !ok {
+			return nil, errors.Errorf("parse %s line %d: expected fixture and count", state.path, lineNum+1)
+		}
+		count, err := strconv.Atoi(countText)
+		if err != nil || count < 0 {
+			return nil, errors.Errorf("parse %s line %d: invalid count %q", state.path, lineNum+1, countText)
+		}
+		if count > 0 {
+			state.failures[name] = count
+		}
+	}
+	return state, nil
+}
+
+func (s *complianceFailureState) order(fixtures []complianceFixture) []complianceFixture {
+	ordered := slices.Clone(fixtures)
+	slices.SortFunc(ordered, func(a, b complianceFixture) int {
+		aFailures, bFailures := s.failures[a.name], s.failures[b.name]
+		if aFailures > 0 && bFailures == 0 {
+			return -1
+		}
+		if aFailures == 0 && bFailures > 0 {
+			return 1
+		}
+		if aFailures != bFailures {
+			return bFailures - aFailures
+		}
+		if a.category != b.category {
+			return strings.Compare(a.category, b.category)
+		}
+		return strings.Compare(a.name, b.name)
+	})
+	return ordered
+}
+
+func (s *complianceFailureState) wasFailing(name string) bool {
+	return s.failures[name] > 0
+}
+
+func (s *complianceFailureState) recordFailure(name string) {
+	s.failures[name]++
+}
+
+func (s *complianceFailureState) recordPass(name string) {
+	delete(s.failures, name)
+}
+
+func (s *complianceFailureState) save() error {
+	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
+		return errors.Wrapf(err, "create %s", filepath.Dir(s.path))
+	}
+	names := make([]string, 0, len(s.failures))
+	for name := range s.failures {
+		names = append(names, name)
+	}
+	slices.SortFunc(names, func(a, b string) int {
+		aFailures, bFailures := s.failures[a], s.failures[b]
+		if aFailures != bFailures {
+			return bFailures - aFailures
+		}
+		return strings.Compare(a, b)
+	})
+
+	var out strings.Builder
+	out.WriteString("# fixture\tconsecutive_failures\n")
+	for _, name := range names {
+		out.WriteString(name)
+		out.WriteByte('\t')
+		out.WriteString(strconv.Itoa(s.failures[name]))
+		out.WriteByte('\n')
+	}
+	if err := os.WriteFile(s.path, []byte(out.String()), 0o644); err != nil {
+		return errors.Wrapf(err, "write %s", s.path)
+	}
+	return nil
+}
+
+func TestComplianceFailureState(t *testing.T) {
+	state := &complianceFailureState{
+		path: filepath.Join(t.TempDir(), ".tmp", "compliance-failures.tsv"),
+		failures: map[string]int{
+			"recent": 1,
+			"stale":  3,
+		},
+	}
+
+	ordered := state.order([]complianceFixture{
+		{name: "clean-b", category: "core"},
+		{name: "recent", category: "core"},
+		{name: "stale", category: "core"},
+		{name: "clean-a", category: "core"},
+	})
+	got := []string{ordered[0].name, ordered[1].name, ordered[2].name, ordered[3].name}
+	want := []string{"stale", "recent", "clean-a", "clean-b"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("ordered fixtures = %v, want %v", got, want)
+	}
+
+	state.recordPass("stale")
+	state.recordFailure("recent")
+	state.recordFailure("new")
+	if err := state.save(); err != nil {
+		t.Fatalf("failed to save state: %v", err)
+	}
+	loaded, err := loadComplianceFailureState(filepath.Dir(filepath.Dir(state.path)))
+	if err != nil {
+		t.Fatalf("failed to load state: %v", err)
+	}
+	if loaded.wasFailing("stale") {
+		t.Fatal("passing fixture stayed in fail set")
+	}
+	if got := loaded.failures["recent"]; got != 2 {
+		t.Fatalf("recent failure count = %d, want 2", got)
+	}
+	if got := loaded.failures["new"]; got != 1 {
+		t.Fatalf("new failure count = %d, want 1", got)
 	}
 }
 

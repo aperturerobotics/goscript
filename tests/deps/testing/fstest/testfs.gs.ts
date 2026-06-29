@@ -73,10 +73,10 @@ export class fsTester {
 
 	constructor(init?: Partial<{fsys?: fs.FS | null, errors?: $.Slice<$.GoError>, dirs?: $.Slice<string>, files?: $.Slice<string>}>) {
 		this._fields = {
-			fsys: $.varRef(init?.fsys ?? (null as unknown as fs.FS | null)),
-			errors: $.varRef(init?.errors ?? (null as unknown as $.Slice<$.GoError>)),
-			dirs: $.varRef(init?.dirs ?? (null as unknown as $.Slice<string>)),
-			files: $.varRef(init?.files ?? (null as unknown as $.Slice<string>))
+			fsys: $.varRef(init?.fsys ?? (null as fs.FS | null)),
+			errors: $.varRef(init?.errors ?? (null as $.Slice<$.GoError>)),
+			dirs: $.varRef(init?.dirs ?? (null as $.Slice<string>)),
+			files: $.varRef(init?.files ?? (null as $.Slice<string>))
 		}
 	}
 

@@ -48,9 +48,9 @@ export class file {
 
 	constructor(init?: Partial<{file?: os.File | $.VarRef<os.File> | null, data?: $.Slice<number>, atEOF?: boolean}>) {
 		this._fields = {
-			file: $.varRef(init?.file ?? (null as unknown as os.File | $.VarRef<os.File> | null)),
-			data: $.varRef(init?.data ?? (null as unknown as $.Slice<number>)),
-			atEOF: $.varRef(init?.atEOF ?? (false as unknown as boolean))
+			file: $.varRef(init?.file ?? (null as os.File | $.VarRef<os.File> | null)),
+			data: $.varRef(init?.data ?? (null as $.Slice<number>)),
+			atEOF: $.varRef(init?.atEOF ?? (false as boolean))
 		}
 	}
 

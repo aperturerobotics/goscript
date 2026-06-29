@@ -44,7 +44,7 @@ This means generated TypeScript text should not re-query package loader state, r
 
 *   **Basic Types:** Go basic types (`int`, `string`, `bool`, `float64`, etc.) are mapped to corresponding TypeScript types.
     *   `int`, `uint`, `int8`, `int16`, `int32`, `uint8`, `uint16`, `uint32` -> `number`
-    *   `int64`, `uint64` -> `number` (currently; BigInt support is planned)
+    *   `int64`, `uint64` -> `bigint` (64-bit values must not be hidden behind `number` casts)
     *   `float64`, `float32` -> `number`
     *   `string` -> `string`
     *   `bool` -> `boolean`
@@ -169,7 +169,7 @@ The runtime provides:
 
 ## Known Divergences
 
-*   **Integer Overflow:** Standard TypeScript numbers do not overflow like Go's fixed-size integers. Using `BigInt` or custom classes via `$.int` can mitigate this but adds complexity. Current implementation may use standard numbers with potential divergence on overflow.
+*   **Integer Overflow:** Standard TypeScript numbers do not overflow like Go's fixed-size integers. GoScript uses `bigint` for `int64` and `uint64` values and helper functions for fixed-width normalization; smaller integer widths still use `number` and may diverge on overflow when a helper does not explicitly truncate.
 *   **Floating Point Precision:** Differences may exist between Go's `float64`/`float32` and TypeScript's `number` (IEEE 754 64-bit float).
 *   **`for range` Variable Scoping:** Go reuses loop variables, while GoScript's translation to `for...of` with `let` creates new bindings per iteration to avoid common closure capture bugs (see [Control Flow](#control-flow)).
 *   **Concurrency Model:** `async/await` provides cooperative multitasking, differing from Go's preemptive goroutine scheduling. Subtle timing and fairness differences may exist.
@@ -178,7 +178,7 @@ The runtime provides:
 
 ## Future Considerations / TODO
 
-*   Refine integer type handling (`BigInt` vs. custom class vs. number).
+*   Continue refining integer helper coverage so every fixed-width operation either normalizes explicitly or exposes the actual `bigint` result type.
 *   Detailed design docs for Structs, Interfaces, Concurrency, Defer, Panic/Recover.
 *   Build System/Package Management integration.
 *   Source Maps for debugging.

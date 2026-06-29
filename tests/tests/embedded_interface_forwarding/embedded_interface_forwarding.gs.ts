@@ -27,7 +27,7 @@ export class Box {
 
 	constructor(init?: Partial<{Adder?: Adder | null}>) {
 		this._fields = {
-			Adder: $.varRef(init?.Adder ?? (null as unknown as Adder | null))
+			Adder: $.varRef(init?.Adder ?? (null as Adder | null))
 		}
 	}
 
@@ -66,7 +66,7 @@ export class Counter {
 
 	constructor(init?: Partial<{base?: number}>) {
 		this._fields = {
-			base: $.varRef(init?.base ?? (0 as unknown as number))
+			base: $.varRef(init?.base ?? (0 as number))
 		}
 	}
 

@@ -208,9 +208,9 @@ export class Resolver {
 
 	constructor(init?: Partial<{PreferGo?: boolean, StrictErrors?: boolean, Dial?: ((ctx: context.Context | null, network: string, address: string) => [__goscript_net.Conn | null, $.GoError] | globalThis.Promise<[__goscript_net.Conn | null, $.GoError]>) | null, lookupGroup?: singleflight.Group}>) {
 		this._fields = {
-			PreferGo: $.varRef(init?.PreferGo ?? (false as unknown as boolean)),
-			StrictErrors: $.varRef(init?.StrictErrors ?? (false as unknown as boolean)),
-			Dial: $.varRef(init?.Dial ?? (null as unknown as ((ctx: context.Context | null, network: string, address: string) => [__goscript_net.Conn | null, $.GoError] | globalThis.Promise<[__goscript_net.Conn | null, $.GoError]>) | null)),
+			PreferGo: $.varRef(init?.PreferGo ?? (false as boolean)),
+			StrictErrors: $.varRef(init?.StrictErrors ?? (false as boolean)),
+			Dial: $.varRef(init?.Dial ?? (null as ((ctx: context.Context | null, network: string, address: string) => [__goscript_net.Conn | null, $.GoError] | globalThis.Promise<[__goscript_net.Conn | null, $.GoError]>) | null)),
 			lookupGroup: $.varRef(init?.lookupGroup ? $.markAsStructValue($.cloneStructValue(init.lookupGroup)) : $.markAsStructValue(new singleflight.Group()))
 		}
 	}
@@ -688,8 +688,8 @@ export class Resolver {
 			constructor(init?: Partial<{p?: dnsmessage.Parser, server?: string, error?: $.GoError}>) {
 				this._fields = {
 					p: $.varRef(init?.p ? $.markAsStructValue($.cloneStructValue(init.p)) : $.markAsStructValue(new dnsmessage.Parser())),
-					server: $.varRef(init?.server ?? ("" as unknown as string)),
-					error: $.varRef(init?.error ?? (null as unknown as $.GoError))
+					server: $.varRef(init?.server ?? ("" as string)),
+					error: $.varRef(init?.error ?? (null as $.GoError))
 				}
 			}
 
@@ -737,8 +737,8 @@ export class Resolver {
 				break
 			}
 		}
-		let queryFn: ((fqdn: string, qtype: dnsmessage.Type) => void) | null = null as unknown as ((fqdn: string, qtype: dnsmessage.Type) => void) | null
-		let responseFn: ((fqdn: string, qtype: dnsmessage.Type) => result | globalThis.Promise<result>) | null = null as unknown as ((fqdn: string, qtype: dnsmessage.Type) => result | globalThis.Promise<result>) | null
+		let queryFn: ((fqdn: string, qtype: dnsmessage.Type) => void) | null = null as ((fqdn: string, qtype: dnsmessage.Type) => void) | null
+		let responseFn: ((fqdn: string, qtype: dnsmessage.Type) => result | globalThis.Promise<result>) | null = null as ((fqdn: string, qtype: dnsmessage.Type) => result | globalThis.Promise<result>) | null
 		if ($.pointerValue<__goscript_dnsconfig.dnsConfig>(conf).singleRequest) {
 			queryFn = $.functionValue((fqdn: string, qtype: dnsmessage.Type): void => {
 			}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "uint16", typeName: "dnsmessage.Type" }], results: [] } as $.FunctionTypeInfo))
@@ -1237,7 +1237,7 @@ export class Resolver {
 			ips = $.append(ips, $.markAsStructValue(new __goscript_iprawsock.IPAddr({IP: (__goscript_ip.IPv4zero as __goscript_ip.IP)})))
 		}
 
-		let filter: ((_p0: __goscript_iprawsock.IPAddr) => boolean | globalThis.Promise<boolean>) | null = null as unknown as ((_p0: __goscript_iprawsock.IPAddr) => boolean | globalThis.Promise<boolean>) | null
+		let filter: ((_p0: __goscript_iprawsock.IPAddr) => boolean | globalThis.Promise<boolean>) | null = null as ((_p0: __goscript_iprawsock.IPAddr) => boolean | globalThis.Promise<boolean>) | null
 		if ((!$.stringEqual(net, "")) && ($.uint($.indexStringOrBytes(net, $.len(net) - 1), 8) == $.uint(52, 8))) {
 			filter = __goscript_ipsock.ipv4only
 		}
@@ -1704,8 +1704,8 @@ export class onlyValuesCtx {
 
 	constructor(init?: Partial<{Context?: context.Context | null, lookupValues?: context.Context | null}>) {
 		this._fields = {
-			Context: $.varRef(init?.Context ?? (null as unknown as context.Context | null)),
-			lookupValues: $.varRef(init?.lookupValues ?? (null as unknown as context.Context | null))
+			Context: $.varRef(init?.Context ?? (null as context.Context | null)),
+			lookupValues: $.varRef(init?.lookupValues ?? (null as context.Context | null))
 		}
 	}
 

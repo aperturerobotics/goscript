@@ -198,23 +198,23 @@ export class FileHeader {
 
 	constructor(init?: Partial<{Name?: string, Comment?: string, NonUTF8?: boolean, CreatorVersion?: number, ReaderVersion?: number, Flags?: number, Method?: number, Modified?: time.Time, ModifiedTime?: number, ModifiedDate?: number, CRC32?: number, CompressedSize?: number, UncompressedSize?: number, CompressedSize64?: bigint, UncompressedSize64?: bigint, Extra?: $.Slice<number>, ExternalAttrs?: number}>) {
 		this._fields = {
-			Name: $.varRef(init?.Name ?? ("" as unknown as string)),
-			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
-			NonUTF8: $.varRef(init?.NonUTF8 ?? (false as unknown as boolean)),
-			CreatorVersion: $.varRef(init?.CreatorVersion ?? (0 as unknown as number)),
-			ReaderVersion: $.varRef(init?.ReaderVersion ?? (0 as unknown as number)),
-			Flags: $.varRef(init?.Flags ?? (0 as unknown as number)),
-			Method: $.varRef(init?.Method ?? (0 as unknown as number)),
+			Name: $.varRef(init?.Name ?? ("" as string)),
+			Comment: $.varRef(init?.Comment ?? ("" as string)),
+			NonUTF8: $.varRef(init?.NonUTF8 ?? (false as boolean)),
+			CreatorVersion: $.varRef(init?.CreatorVersion ?? (0 as number)),
+			ReaderVersion: $.varRef(init?.ReaderVersion ?? (0 as number)),
+			Flags: $.varRef(init?.Flags ?? (0 as number)),
+			Method: $.varRef(init?.Method ?? (0 as number)),
 			Modified: $.varRef(init?.Modified ? $.markAsStructValue($.cloneStructValue(init.Modified)) : $.markAsStructValue(new time.Time())),
-			ModifiedTime: $.varRef(init?.ModifiedTime ?? (0 as unknown as number)),
-			ModifiedDate: $.varRef(init?.ModifiedDate ?? (0 as unknown as number)),
-			CRC32: $.varRef(init?.CRC32 ?? (0 as unknown as number)),
-			CompressedSize: $.varRef(init?.CompressedSize ?? (0 as unknown as number)),
-			UncompressedSize: $.varRef(init?.UncompressedSize ?? (0 as unknown as number)),
-			CompressedSize64: $.varRef(init?.CompressedSize64 ?? (0n as unknown as bigint)),
-			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? (0n as unknown as bigint)),
-			Extra: $.varRef(init?.Extra ?? (null as unknown as $.Slice<number>)),
-			ExternalAttrs: $.varRef(init?.ExternalAttrs ?? (0 as unknown as number))
+			ModifiedTime: $.varRef(init?.ModifiedTime ?? (0 as number)),
+			ModifiedDate: $.varRef(init?.ModifiedDate ?? (0 as number)),
+			CRC32: $.varRef(init?.CRC32 ?? (0 as number)),
+			CompressedSize: $.varRef(init?.CompressedSize ?? (0 as number)),
+			UncompressedSize: $.varRef(init?.UncompressedSize ?? (0 as number)),
+			CompressedSize64: $.varRef(init?.CompressedSize64 ?? (0n as bigint)),
+			UncompressedSize64: $.varRef(init?.UncompressedSize64 ?? (0n as bigint)),
+			Extra: $.varRef(init?.Extra ?? (null as $.Slice<number>)),
+			ExternalAttrs: $.varRef(init?.ExternalAttrs ?? (0 as number))
 		}
 	}
 
@@ -332,7 +332,7 @@ export class headerFileInfo {
 
 	constructor(init?: Partial<{fh?: FileHeader | $.VarRef<FileHeader> | null}>) {
 		this._fields = {
-			fh: $.varRef(init?.fh ?? (null as unknown as FileHeader | $.VarRef<FileHeader> | null))
+			fh: $.varRef(init?.fh ?? (null as FileHeader | $.VarRef<FileHeader> | null))
 		}
 	}
 
@@ -474,14 +474,14 @@ export class directoryEnd {
 
 	constructor(init?: Partial<{diskNbr?: number, dirDiskNbr?: number, dirRecordsThisDisk?: bigint, directoryRecords?: bigint, directorySize?: bigint, directoryOffset?: bigint, commentLen?: number, comment?: string}>) {
 		this._fields = {
-			diskNbr: $.varRef(init?.diskNbr ?? (0 as unknown as number)),
-			dirDiskNbr: $.varRef(init?.dirDiskNbr ?? (0 as unknown as number)),
-			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? (0n as unknown as bigint)),
-			directoryRecords: $.varRef(init?.directoryRecords ?? (0n as unknown as bigint)),
-			directorySize: $.varRef(init?.directorySize ?? (0n as unknown as bigint)),
-			directoryOffset: $.varRef(init?.directoryOffset ?? (0n as unknown as bigint)),
-			commentLen: $.varRef(init?.commentLen ?? (0 as unknown as number)),
-			comment: $.varRef(init?.comment ?? ("" as unknown as string))
+			diskNbr: $.varRef(init?.diskNbr ?? (0 as number)),
+			dirDiskNbr: $.varRef(init?.dirDiskNbr ?? (0 as number)),
+			dirRecordsThisDisk: $.varRef(init?.dirRecordsThisDisk ?? (0n as bigint)),
+			directoryRecords: $.varRef(init?.directoryRecords ?? (0n as bigint)),
+			directorySize: $.varRef(init?.directorySize ?? (0n as bigint)),
+			directoryOffset: $.varRef(init?.directoryOffset ?? (0n as bigint)),
+			commentLen: $.varRef(init?.commentLen ?? (0 as number)),
+			comment: $.varRef(init?.comment ?? ("" as string))
 		}
 	}
 

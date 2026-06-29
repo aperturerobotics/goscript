@@ -17,7 +17,7 @@ export class cache {
 
 	constructor(init?: Partial<{stored?: any}>) {
 		this._fields = {
-			stored: $.varRef(init?.stored ?? (null as unknown as any))
+			stored: $.varRef(init?.stored ?? (null as any))
 		}
 	}
 
@@ -65,7 +65,7 @@ export class key {
 
 	constructor(init?: Partial<{N?: number}>) {
 		this._fields = {
-			N: $.varRef(init?.N ?? (0 as unknown as number))
+			N: $.varRef(init?.N ?? (0 as number))
 		}
 	}
 
@@ -100,7 +100,7 @@ export class privateKey {
 
 	constructor(init?: Partial<{D?: number}>) {
 		this._fields = {
-			D: $.varRef(init?.D ?? (0 as unknown as number))
+			D: $.varRef(init?.D ?? (0 as number))
 		}
 	}
 

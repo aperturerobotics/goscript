@@ -1,4 +1,4 @@
-import type { Slice, SliceProxy } from './slice.js'
+import type { Slice, SliceProxy, StringHeaderData } from './slice.js'
 import { writeHostStdoutText } from './hostio.js'
 import { runtimePanic } from './panic.js'
 import { formatPrintedArgs } from './print.js'
@@ -374,17 +374,23 @@ export function int(value: number | bigint | string, bits = 0): number {
 }
 
 // uint converts a value to an unsigned Go integer width.
-export function uint(value: number | bigint | string, bits = 64): number {
+export function uint(value: number | bigint | string, bits?: number): number
+export function uint(value: number | StringHeaderData, bits?: number): number | StringHeaderData
+export function uint(value: number | bigint | string | StringHeaderData, bits?: number): number | bigint | StringHeaderData
+export function uint(value: number | bigint | string | StringHeaderData, bits = 64): number | bigint | StringHeaderData {
+  if (typeof value === 'object') {
+    return value
+  }
   if (typeof value === 'string') {
     value = BigInt(value)
   }
   if (typeof value === 'bigint') {
     const normalized = BigInt.asUintN(Math.min(bits, 64), value)
     // Above 2^53 the value cannot round-trip through number, so keep the bigint
-    // (typed number) to preserve full 64-bit width; uint arithmetic routes
-    // through the int64*/uint64* helpers, which accept number | bigint.
+    // to preserve full 64-bit width; uint arithmetic routes through the
+    // int64*/uint64* helpers, which accept number | bigint.
     if (bits >= 64 && normalized > maxSafeUintBigInt) {
-      return normalized as unknown as number
+      return normalized
     }
     return Number(normalized)
   }
@@ -477,7 +483,7 @@ export function uintShr(
   if (amount >= width) {
     return 0
   }
-  return uint(value, width) >>> amount
+  return Number(uint(value, width)) >>> amount
 }
 
 export function uint64Mul(

@@ -81,8 +81,8 @@ export async function main(): globalThis.Promise<void> {
 
 		constructor(init?: Partial<{group?: number, label?: string}>) {
 			this._fields = {
-				group: $.varRef(init?.group ?? (0 as unknown as number)),
-				label: $.varRef(init?.label ?? ("" as unknown as string))
+				group: $.varRef(init?.group ?? (0 as number)),
+				label: $.varRef(init?.label ?? ("" as string))
 			}
 		}
 

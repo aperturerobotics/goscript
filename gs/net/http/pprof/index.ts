@@ -80,7 +80,7 @@ export function Handler(name: string): http.Handler {
         return
       }
       await writeString(w, `${name} profile\n`)
-      profile.WriteTo(w as unknown as any, 1)
+      profile.WriteTo(w as any, 1)
     },
   }
 }

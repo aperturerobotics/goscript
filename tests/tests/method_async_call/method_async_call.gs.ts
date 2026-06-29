@@ -29,7 +29,7 @@ export class FileTracker {
 	constructor(init?: Partial<{mutex?: sync.Mutex, lines?: $.Slice<number>}>) {
 		this._fields = {
 			mutex: $.varRef(init?.mutex ? $.markAsStructValue($.cloneStructValue(init.mutex)) : $.markAsStructValue(new sync.Mutex())),
-			lines: $.varRef(init?.lines ?? (null as unknown as $.Slice<number>))
+			lines: $.varRef(init?.lines ?? (null as $.Slice<number>))
 		}
 	}
 
@@ -72,7 +72,7 @@ export class Scanner {
 
 	constructor(init?: Partial<{file?: FileTracker | $.VarRef<FileTracker> | null}>) {
 		this._fields = {
-			file: $.varRef(init?.file ?? (null as unknown as FileTracker | $.VarRef<FileTracker> | null))
+			file: $.varRef(init?.file ?? (null as FileTracker | $.VarRef<FileTracker> | null))
 		}
 	}
 

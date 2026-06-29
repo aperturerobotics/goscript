@@ -25,8 +25,8 @@ export class MyStruct {
 
 	constructor(init?: Partial<{MyInt?: number, MyString?: string}>) {
 		this._fields = {
-			MyInt: $.varRef(init?.MyInt ?? (0 as unknown as number)),
-			MyString: $.varRef(init?.MyString ?? ("" as unknown as string))
+			MyInt: $.varRef(init?.MyInt ?? (0 as number)),
+			MyString: $.varRef(init?.MyString ?? ("" as string))
 		}
 	}
 
@@ -70,7 +70,7 @@ export class NestedStruct {
 
 	constructor(init?: Partial<{Value?: number, InnerStruct?: MyStruct}>) {
 		this._fields = {
-			Value: $.varRef(init?.Value ?? (0 as unknown as number)),
+			Value: $.varRef(init?.Value ?? (0 as number)),
 			InnerStruct: $.varRef(init?.InnerStruct ? $.markAsStructValue($.cloneStructValue(init.InnerStruct)) : $.markAsStructValue(new MyStruct()))
 		}
 	}

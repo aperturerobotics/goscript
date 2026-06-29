@@ -46,7 +46,7 @@ export class AESBlock implements cipher.Block {
   async webCryptoKey(): Promise<CryptoKey> {
     this.keyPromise ??= subtleCrypto().importKey(
       'raw',
-      this.key as unknown as BufferSource,
+      this.key as BufferSource,
       'AES-GCM',
       false,
       ['encrypt', 'decrypt'],

@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import { uint, uint64, uint64Add, uint64Shr } from './builtin.js'
 
-// Go represents uint/uintptr as a TypeScript number, but values above 2^53
-// cannot round-trip through a JS number. uint() keeps those as a runtime bigint
-// (typed number) so full 64-bit width survives, matching Go semantics such as
-// ^uint(0) == 2^64-1. int64/uint64 stay bigint unconditionally.
+// Go represents uint/uintptr as a TypeScript number until full-width values no
+// longer round-trip through JS number. uint() returns bigint in that overflow
+// range so Go semantics such as ^uint(0) == 2^64-1 survive. int64/uint64 stay
+// bigint unconditionally.
 describe('uint full 64-bit width (Go uint semantics)', () => {
   const maxUint = 18446744073709551615n // ^uint(0)
 
   it('preserves ^uint(0) without precision loss', () => {
     const v = uint(maxUint, 64)
-    expect(v).toBe(maxUint as unknown as number)
+    expect(v).toBe(maxUint)
   })
 
   it('keeps small uint values as plain numbers', () => {

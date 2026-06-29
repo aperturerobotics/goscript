@@ -254,9 +254,9 @@ export class coder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			order: $.varRef(init?.order ?? (null as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 
@@ -309,9 +309,9 @@ export class decoder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			order: $.varRef(init?.order ?? (null as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 
@@ -533,9 +533,9 @@ export class encoder {
 
 	constructor(init?: Partial<{order?: ByteOrder | null, buf?: $.Slice<number>, offset?: number}>) {
 		this._fields = {
-			order: $.varRef(init?.order ?? (null as unknown as ByteOrder | null)),
-			buf: $.varRef(init?.buf ?? (null as unknown as $.Slice<number>)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			order: $.varRef(init?.order ?? (null as ByteOrder | null)),
+			buf: $.varRef(init?.buf ?? (null as $.Slice<number>)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 

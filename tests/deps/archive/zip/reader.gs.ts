@@ -126,13 +126,13 @@ export class Reader {
 
 	constructor(init?: Partial<{r?: io.ReaderAt | null, File?: $.Slice<File | $.VarRef<File> | null>, Comment?: string, decompressors?: globalThis.Map<number, __goscript_register.Decompressor | null> | null, baseOffset?: bigint, fileListOnce?: sync.Once, fileList?: $.Slice<fileListEntry>}>) {
 		this._fields = {
-			r: $.varRef(init?.r ?? (null as unknown as io.ReaderAt | null)),
-			File: $.varRef(init?.File ?? (null as unknown as $.Slice<File | $.VarRef<File> | null>)),
-			Comment: $.varRef(init?.Comment ?? ("" as unknown as string)),
-			decompressors: $.varRef(init?.decompressors ?? (null as unknown as globalThis.Map<number, __goscript_register.Decompressor | null> | null)),
-			baseOffset: $.varRef(init?.baseOffset ?? (0n as unknown as bigint)),
+			r: $.varRef(init?.r ?? (null as io.ReaderAt | null)),
+			File: $.varRef(init?.File ?? (null as $.Slice<File | $.VarRef<File> | null>)),
+			Comment: $.varRef(init?.Comment ?? ("" as string)),
+			decompressors: $.varRef(init?.decompressors ?? (null as globalThis.Map<number, __goscript_register.Decompressor | null> | null)),
+			baseOffset: $.varRef(init?.baseOffset ?? (0n as bigint)),
 			fileListOnce: $.varRef(init?.fileListOnce ? $.markAsStructValue($.cloneStructValue(init.fileListOnce)) : $.markAsStructValue(new sync.Once())),
-			fileList: $.varRef(init?.fileList ?? (null as unknown as $.Slice<fileListEntry>))
+			fileList: $.varRef(init?.fileList ?? (null as $.Slice<fileListEntry>))
 		}
 	}
 
@@ -423,7 +423,7 @@ export class ReadCloser {
 
 	constructor(init?: Partial<{f?: os.File | $.VarRef<os.File> | null, Reader?: Reader}>) {
 		this._fields = {
-			f: $.varRef(init?.f ?? (null as unknown as os.File | $.VarRef<os.File> | null)),
+			f: $.varRef(init?.f ?? (null as os.File | $.VarRef<os.File> | null)),
 			Reader: $.varRef(init?.Reader ? $.markAsStructValue($.cloneStructValue(init.Reader)) : $.markAsStructValue(new Reader()))
 		}
 	}
@@ -526,10 +526,10 @@ export class File {
 	constructor(init?: Partial<{FileHeader?: __goscript_struct.FileHeader, zip?: Reader | $.VarRef<Reader> | null, zipr?: io.ReaderAt | null, headerOffset?: bigint, zip64?: boolean}>) {
 		this._fields = {
 			FileHeader: $.varRef(init?.FileHeader ? $.markAsStructValue($.cloneStructValue(init.FileHeader)) : $.markAsStructValue(new __goscript_struct.FileHeader())),
-			zip: $.varRef(init?.zip ?? (null as unknown as Reader | $.VarRef<Reader> | null)),
-			zipr: $.varRef(init?.zipr ?? (null as unknown as io.ReaderAt | null)),
-			headerOffset: $.varRef(init?.headerOffset ?? (0n as unknown as bigint)),
-			zip64: $.varRef(init?.zip64 ?? (false as unknown as boolean))
+			zip: $.varRef(init?.zip ?? (null as Reader | $.VarRef<Reader> | null)),
+			zipr: $.varRef(init?.zipr ?? (null as io.ReaderAt | null)),
+			headerOffset: $.varRef(init?.headerOffset ?? (0n as bigint)),
+			zip64: $.varRef(init?.zip64 ?? (false as boolean))
 		}
 	}
 
@@ -678,7 +678,7 @@ export class dirReader {
 
 	constructor(init?: Partial<{err?: $.GoError}>) {
 		this._fields = {
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 
@@ -763,12 +763,12 @@ export class checksumReader {
 
 	constructor(init?: Partial<{rc?: io.ReadCloser | null, hash?: hash2.Hash32 | null, nread?: bigint, f?: File | $.VarRef<File> | null, desr?: io.Reader | null, err?: $.GoError}>) {
 		this._fields = {
-			rc: $.varRef(init?.rc ?? (null as unknown as io.ReadCloser | null)),
-			hash: $.varRef(init?.hash ?? (null as unknown as hash2.Hash32 | null)),
-			nread: $.varRef(init?.nread ?? (0n as unknown as bigint)),
-			f: $.varRef(init?.f ?? (null as unknown as File | $.VarRef<File> | null)),
-			desr: $.varRef(init?.desr ?? (null as unknown as io.Reader | null)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			rc: $.varRef(init?.rc ?? (null as io.ReadCloser | null)),
+			hash: $.varRef(init?.hash ?? (null as hash2.Hash32 | null)),
+			nread: $.varRef(init?.nread ?? (0n as bigint)),
+			f: $.varRef(init?.f ?? (null as File | $.VarRef<File> | null)),
+			desr: $.varRef(init?.desr ?? (null as io.Reader | null)),
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 
@@ -892,10 +892,10 @@ export class fileListEntry {
 
 	constructor(init?: Partial<{name?: string, file?: File | $.VarRef<File> | null, isDir?: boolean, isDup?: boolean}>) {
 		this._fields = {
-			name: $.varRef(init?.name ?? ("" as unknown as string)),
-			file: $.varRef(init?.file ?? (null as unknown as File | $.VarRef<File> | null)),
-			isDir: $.varRef(init?.isDir ?? (false as unknown as boolean)),
-			isDup: $.varRef(init?.isDup ?? (false as unknown as boolean))
+			name: $.varRef(init?.name ?? ("" as string)),
+			file: $.varRef(init?.file ?? (null as File | $.VarRef<File> | null)),
+			isDir: $.varRef(init?.isDir ?? (false as boolean)),
+			isDup: $.varRef(init?.isDup ?? (false as boolean))
 		}
 	}
 
@@ -1009,9 +1009,9 @@ export class openDir {
 
 	constructor(init?: Partial<{e?: fileListEntry | $.VarRef<fileListEntry> | null, files?: $.Slice<fileListEntry>, offset?: number}>) {
 		this._fields = {
-			e: $.varRef(init?.e ?? (null as unknown as fileListEntry | $.VarRef<fileListEntry> | null)),
-			files: $.varRef(init?.files ?? (null as unknown as $.Slice<fileListEntry>)),
-			offset: $.varRef(init?.offset ?? (0 as unknown as number))
+			e: $.varRef(init?.e ?? (null as fileListEntry | $.VarRef<fileListEntry> | null)),
+			files: $.varRef(init?.files ?? (null as $.Slice<fileListEntry>)),
+			offset: $.varRef(init?.offset ?? (0 as number))
 		}
 	}
 

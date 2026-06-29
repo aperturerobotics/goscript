@@ -20,7 +20,7 @@ export class pointerNode {
 
 	constructor(init?: Partial<{value?: string}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? ("" as unknown as string))
+			value: $.varRef(init?.value ?? ("" as string))
 		}
 	}
 

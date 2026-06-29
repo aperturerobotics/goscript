@@ -20,7 +20,7 @@ export class Holder {
 
 	constructor(init?: Partial<{Box?: _unique.Box | $.VarRef<_unique.Box> | null}>) {
 		this._fields = {
-			Box: $.varRef(init?.Box ?? (null as unknown as _unique.Box | $.VarRef<_unique.Box> | null))
+			Box: $.varRef(init?.Box ?? (null as _unique.Box | $.VarRef<_unique.Box> | null))
 		}
 	}
 

@@ -28,7 +28,7 @@ export async function main(): globalThis.Promise<void> {
 
 		constructor(init?: Partial<{Count?: number}>) {
 			this._fields = {
-				Count: $.varRef(init?.Count ?? (0 as unknown as number))
+				Count: $.varRef(init?.Count ?? (0 as number))
 			}
 		}
 

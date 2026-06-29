@@ -87,13 +87,33 @@ function zeroReflectValue(typ: Type): ReflectValue {
 }
 
 function newStructValue(typ: Type): ReflectValue {
+  type StructValueInstance = {
+    _fields: Record<string, $.VarRef<ReflectValue>>
+  }
+
+  const initFields = (value: StructValueInstance): void => {
+    for (let i = 0; i < typ.NumField(); i++) {
+      const field = typ.Field(i)
+      const key = structFieldStorageKey(typ, i)
+      const ref = $.varRef<ReflectValue>(zeroReflectValue(field.Type))
+      value._fields[key] = ref
+      Object.defineProperty(value, key, {
+        enumerable: true,
+        configurable: true,
+        get: () => ref.value,
+        set: (next: unknown) => {
+          ref.value = next as ReflectValue
+        },
+      })
+    }
+  }
+
   const StructValue = class {
-    public _fields: Record<string, $.VarRef<unknown>> = {}
+    public _fields: Record<string, $.VarRef<ReflectValue>> = {}
 
     public clone(): unknown {
-      const cloned = newStructValue(typ) as {
-        _fields: Record<string, $.VarRef<unknown>>
-      }
+      const cloned = new StructValue()
+      initFields(cloned)
       for (const key of Object.keys(this._fields)) {
         cloned._fields[key].value = this._fields[key].value
       }
@@ -105,23 +125,8 @@ function newStructValue(typ: Type): ReflectValue {
     value: typeInfoFromReflectType(typ),
   })
 
-  const value = new StructValue() as unknown as {
-    _fields: Record<string, $.VarRef<ReflectValue>>
-  } & Record<string, unknown>
-  for (let i = 0; i < typ.NumField(); i++) {
-    const field = typ.Field(i)
-    const key = structFieldStorageKey(typ, i)
-    const ref = $.varRef<ReflectValue>(zeroReflectValue(field.Type))
-    value._fields[key] = ref
-    Object.defineProperty(value, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => ref.value,
-      set: (next: unknown) => {
-        ref.value = next as ReflectValue
-      },
-    })
-  }
+  const value = new StructValue()
+  initFields(value)
   return value
 }
 
@@ -145,7 +150,7 @@ export function Copy(dst: Value, src: Value): number {
 
 // Helper function to extract the underlying array from a Value
 function getArrayFromValue(value: Value): unknown[] | null {
-  const val = (value as unknown as { value: ReflectValue }).value
+  const val = (value as { value: ReflectValue }).value
 
   // Check for GoScript slice objects created by $.arrayToSlice
   if (val && typeof val === 'object' && '__meta__' in val) {
@@ -248,7 +253,7 @@ export function MakeSlice(typ: Type | null, len: number, _cap: number): Value {
   }
 
   const zeroValue = Zero(elemType)
-  const zeroVal = (zeroValue as unknown as { value: ReflectValue }).value
+  const zeroVal = (zeroValue as { value: ReflectValue }).value
   const array = new globalThis.Array(len).fill(zeroVal)
 
   return new Value(array, typ)
@@ -279,7 +284,7 @@ export function Append(s: Value, x: Value): Value {
     throw new Error('cannot get array from slice value')
   }
 
-  const newValue = (x as unknown as { value: ReflectValue }).value
+  const newValue = (x as { value: ReflectValue }).value
   const newArray = [...array, newValue]
 
   return new Value(newArray, s.Type())
@@ -310,7 +315,7 @@ export function MakeChan(typ: Type, buffer: number): Value {
 
   // Get the zero value for the channel element type
   const zeroValue = Zero(elemType)
-  const zeroVal = (zeroValue as unknown as { value: ReflectValue }).value
+  const zeroVal = (zeroValue as { value: ReflectValue }).value
 
   // Create a channel using the builtin makeChannel function
   const channel = $.makeChannel(buffer, zeroVal)
@@ -351,7 +356,7 @@ export function Select(cases: $.Slice<SelectCase>): [number, Value, boolean] {
     const selectCase = selectCases[i]
     if (selectCase.Dir.valueOf() === SelectRecv.valueOf() && selectCase.Chan) {
       const channelValue = selectCase.Chan
-      const channelObj = (channelValue as unknown as { value: unknown })
+      const channelObj = (channelValue as { value: unknown })
         .value as ChannelObject
 
       // Check if there are queued values to receive

@@ -485,7 +485,7 @@ function dstRawBytes(dst: Value): Uint8Array | Uint8ClampedArray {
 }
 
 function srcRaw(value: Value): unknown {
-  return (value as unknown as { _raw: unknown })._raw
+  return (value as { _raw: unknown })._raw
 }
 
 function isRawInit(value: unknown): value is { raw: unknown } {

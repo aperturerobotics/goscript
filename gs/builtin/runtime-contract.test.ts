@@ -495,7 +495,7 @@ describe('builtin runtime contract helpers', () => {
   })
 
   it('resolves unsafe byte addresses within numeric slice elements', () => {
-    const words = makeSlice<number>(2, undefined, 'number')
+    const words = makeSlice<number | bigint>(2, undefined, 'number')
     const first = indexByteAddress(words, 0, 8)
     const second = indexByteAddress(words, 1, 8)
 
@@ -504,7 +504,7 @@ describe('builtin runtime contract helpers', () => {
     unsafePointerRef<number>(first + 7).value = 0x80
     expect(unsafePointerRef<number>(first + 1).value).toBe(0x12)
     expect(unsafePointerRef<number>(first + 7).value).toBe(0x80)
-    expect(words![0]).toBe(0x8000000000001200n as unknown as number)
+    expect(words![0]).toBe(0x8000000000001200n)
 
     unsafePointerRef<number>(second).value = 0x34
     expect(words![1]).toBe(0x34)

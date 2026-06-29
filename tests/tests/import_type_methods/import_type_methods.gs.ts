@@ -20,7 +20,7 @@ export class parser {
 
 	constructor(init?: Partial<{errors?: errlist.ErrorList}>) {
 		this._fields = {
-			errors: $.varRef(init?.errors ?? (null as unknown as errlist.ErrorList))
+			errors: $.varRef(init?.errors ?? (null as errlist.ErrorList))
 		}
 	}
 

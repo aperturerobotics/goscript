@@ -69,7 +69,7 @@ export async function Sub(fsys: FS, dir: string): Promise<[FS, $.GoError]> {
       return await fsysTyped!.Sub(dir)
     }
   }
-  return [new subFS({ fsys, dir }) as unknown as FS, null]
+  return [new subFS({ fsys, dir }) as FS, null]
 }
 
 class subFS {
@@ -153,15 +153,20 @@ class subFS {
     return err
   }
 
-  public async Open(name: string): Promise<[File, $.GoError]> {
+  public Open(name: string): [File, $.GoError]
+  public Open(name: string): Promise<[File, $.GoError]>
+  public Open(name: string): [File, $.GoError] | Promise<[File, $.GoError]> {
     const f = this
     let [full, err] = f!.fullName('open', name)
     if (err != null) {
       return [null, err]
     }
-    let file: File
-    ;[file, err] = await (f!.fsys as any)!.Open(full)
-    return [file, f!.fixErr(err)]
+    const opened = f!.fsys!.Open(full)
+    if (opened instanceof Promise) {
+      return opened.then(([file, openErr]) => [file, f!.fixErr(openErr)])
+    }
+    const [file, openErr] = opened
+    return [file, f!.fixErr(openErr)]
   }
 
   public async ReadDir(name: string): Promise<[$.Slice<DirEntry>, $.GoError]> {
@@ -225,13 +230,13 @@ class subFS {
   public Sub(dir: string): [FS, $.GoError] {
     const f = this
     if (dir == '.') {
-      return [f as unknown as FS, null]
+      return [f as FS, null]
     }
     let [full, err] = f!.fullName('sub', dir)
     if (err != null) {
       return [null, err]
     }
-    return [new subFS({ fsys: f.fsys, dir: full }) as unknown as FS, null]
+    return [new subFS({ fsys: f.fsys, dir: full }) as FS, null]
   }
 
   // Register this type with the runtime type system

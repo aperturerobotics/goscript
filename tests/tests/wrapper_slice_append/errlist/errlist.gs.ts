@@ -19,7 +19,7 @@ export class AStruct {
 
 	constructor(init?: Partial<{Msg?: string}>) {
 		this._fields = {
-			Msg: $.varRef(init?.Msg ?? ("" as unknown as string))
+			Msg: $.varRef(init?.Msg ?? ("" as string))
 		}
 	}
 

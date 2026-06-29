@@ -17,7 +17,7 @@ export class node {
 
 	constructor(init?: Partial<{next?: number}>) {
 		this._fields = {
-			next: $.varRef(init?.next ?? (0 as unknown as number))
+			next: $.varRef(init?.next ?? (0 as number))
 		}
 	}
 
@@ -52,7 +52,7 @@ export class queue {
 
 	constructor(init?: Partial<{value?: number}>) {
 		this._fields = {
-			value: $.varRef(init?.value ?? (0 as unknown as number))
+			value: $.varRef(init?.value ?? (0 as number))
 		}
 	}
 

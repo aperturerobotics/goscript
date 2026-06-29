@@ -134,19 +134,19 @@ export class huffmanBitWriter {
 
 	constructor(init?: Partial<{writer?: io.Writer | null, bits?: bigint, nbits?: number, bytes?: Uint8Array, codegenFreq?: number[], nbytes?: number, literalFreq?: $.Slice<number>, offsetFreq?: $.Slice<number>, codegen?: $.Slice<number>, literalEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, offsetEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, codegenEncoding?: __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null, err?: $.GoError}>) {
 		this._fields = {
-			writer: $.varRef(init?.writer ?? (null as unknown as io.Writer | null)),
-			bits: $.varRef(init?.bits ?? (0n as unknown as bigint)),
-			nbits: $.varRef(init?.nbits ?? (0 as unknown as number)),
+			writer: $.varRef(init?.writer ?? (null as io.Writer | null)),
+			bits: $.varRef(init?.bits ?? (0n as bigint)),
+			nbits: $.varRef(init?.nbits ?? (0 as number)),
 			bytes: $.varRef(init?.bytes !== undefined ? $.cloneArrayValue(init.bytes) : new Uint8Array(248)),
 			codegenFreq: $.varRef(init?.codegenFreq !== undefined ? $.cloneArrayValue(init.codegenFreq) : Array.from({ length: 19 }, () => 0)),
-			nbytes: $.varRef(init?.nbytes ?? (0 as unknown as number)),
-			literalFreq: $.varRef(init?.literalFreq ?? (null as unknown as $.Slice<number>)),
-			offsetFreq: $.varRef(init?.offsetFreq ?? (null as unknown as $.Slice<number>)),
-			codegen: $.varRef(init?.codegen ?? (null as unknown as $.Slice<number>)),
-			literalEncoding: $.varRef(init?.literalEncoding ?? (null as unknown as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
-			offsetEncoding: $.varRef(init?.offsetEncoding ?? (null as unknown as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
-			codegenEncoding: $.varRef(init?.codegenEncoding ?? (null as unknown as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
-			err: $.varRef(init?.err ?? (null as unknown as $.GoError))
+			nbytes: $.varRef(init?.nbytes ?? (0 as number)),
+			literalFreq: $.varRef(init?.literalFreq ?? (null as $.Slice<number>)),
+			offsetFreq: $.varRef(init?.offsetFreq ?? (null as $.Slice<number>)),
+			codegen: $.varRef(init?.codegen ?? (null as $.Slice<number>)),
+			literalEncoding: $.varRef(init?.literalEncoding ?? (null as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
+			offsetEncoding: $.varRef(init?.offsetEncoding ?? (null as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
+			codegenEncoding: $.varRef(init?.codegenEncoding ?? (null as __goscript_huffman_code.huffmanEncoder | $.VarRef<__goscript_huffman_code.huffmanEncoder> | null)),
+			err: $.varRef(init?.err ?? (null as $.GoError))
 		}
 	}
 

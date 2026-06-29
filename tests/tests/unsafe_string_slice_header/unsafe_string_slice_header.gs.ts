@@ -31,8 +31,8 @@ export class localSliceHeader {
 
 	constructor(init?: Partial<{s?: string, cap?: number}>) {
 		this._fields = {
-			s: $.varRef(init?.s ?? ("" as unknown as string)),
-			cap: $.varRef(init?.cap ?? (0 as unknown as number))
+			s: $.varRef(init?.s ?? ("" as string)),
+			cap: $.varRef(init?.cap ?? (0 as number))
 		}
 	}
 
@@ -57,8 +57,8 @@ export class localSliceHeader {
 export function stringBytes(__goscriptParam0: string): $.Slice<number> {
 	let s: $.VarRef<string> = $.varRef(__goscriptParam0)
 	let b: $.VarRef<$.Slice<number>> = $.varRef(null as $.Slice<number>)
-	let strh: reflect.StringHeader | $.VarRef<reflect.StringHeader> | null = ($.stringHeaderRef(s) as unknown as reflect.StringHeader | $.VarRef<reflect.StringHeader> | null)
-	let sh: reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null = ($.sliceHeaderRef(b) as unknown as reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null)
+	let strh: reflect.StringHeader | $.VarRef<reflect.StringHeader> | null = $.unsafePointerCast<reflect.StringHeader | $.VarRef<reflect.StringHeader> | null>($.stringHeaderRef(s))
+	let sh: reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null = $.unsafePointerCast<reflect.SliceHeader | $.VarRef<reflect.SliceHeader> | null>($.sliceHeaderRef(b))
 	$.pointerValue<reflect.SliceHeader>(sh).Data = $.uint($.pointerValue<reflect.StringHeader>(strh).Data, 64)
 	$.pointerValue<reflect.SliceHeader>(sh).Len = $.pointerValue<reflect.StringHeader>(strh).Len
 	$.pointerValue<reflect.SliceHeader>(sh).Cap = $.pointerValue<reflect.StringHeader>(strh).Len

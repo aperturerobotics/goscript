@@ -42,7 +42,7 @@ describe('encoding/binary override', () => {
     ])
     expect(LittleEndian.Uint32(buf)).toBe(0x12345678)
 
-    BigEndian.PutUint64(buf, 0x0102030405060708n as unknown as number)
+    BigEndian.PutUint64(buf, 0x0102030405060708n)
     expect(Array.from($.bytesToUint8Array(buf))).toEqual([
       1, 2, 3, 4, 5, 6, 7, 8,
     ])
@@ -57,9 +57,9 @@ describe('encoding/binary override', () => {
     // operator mixing it with a wide bigint uint64 throws "Cannot mix BigInt
     // and other types" (the chunk-index upload crash on staging).
     const small = $.makeSlice<number>(8, undefined, 'byte')
-    LittleEndian.PutUint64(small, 5n as unknown as number)
+    LittleEndian.PutUint64(small, 5n)
     const wide = $.makeSlice<number>(8, undefined, 'byte')
-    LittleEndian.PutUint64(wide, (1n << 60n) as unknown as number)
+    LittleEndian.PutUint64(wide, 1n << 60n)
 
     const a = LittleEndian.Uint64(small)
     const b = LittleEndian.Uint64(wide)
@@ -67,13 +67,13 @@ describe('encoding/binary override', () => {
     expect(typeof b).toBe('bigint')
     expect(a).toBe(5n)
     // The raw relational operator GoScript emits for uint64 must not throw.
-    expect((a as unknown as bigint) < (b as unknown as bigint)).toBe(true)
+    expect(a < b).toBe(true)
   })
 
   it('appends endian integers', () => {
     let out = BigEndian.AppendUint16(null, 0x1234)
     out = LittleEndian.AppendUint32(out, 0x01020304)
-    out = BigEndian.AppendUint64(out, 0x05060708090a0b0cn as unknown as number)
+    out = BigEndian.AppendUint64(out, 0x05060708090a0b0cn)
 
     expect(Array.from($.bytesToUint8Array(out))).toEqual([
       0x12, 0x34, 0x04, 0x03, 0x02, 0x01, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
