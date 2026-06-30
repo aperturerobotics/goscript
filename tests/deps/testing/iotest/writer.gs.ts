@@ -46,7 +46,7 @@ export class truncateWriter {
 		let t: truncateWriter | $.VarRef<truncateWriter> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		if ($.pointerValue<truncateWriter>(t).n <= 0) {
+		if ($.pointerValue<truncateWriter>(t).n <= 0n) {
 			return [$.len(p), null]
 		}
 		// real write

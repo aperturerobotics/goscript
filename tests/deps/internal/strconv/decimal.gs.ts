@@ -83,7 +83,7 @@ export class decimal {
 
 		// Write reversed decimal in buf.
 		let n = 0
-		while (v > 0) {
+		while (v > 0n) {
 			let v1 = $.uint64Div(v, 10)
 			v = $.uint64Sub(v, $.uint64Mul(10, v1))
 			buf[n] = $.uint($.uint($.uint64Add(v, 48), 8), 8)
@@ -131,7 +131,7 @@ export class decimal {
 		// round up
 		for (let i = nd - 1; i >= 0; i--) {
 			let c = $.uint($.arrayIndex($.pointerValue<decimal>(a).d, i), 8)
-			if (c < 57) {
+			if ($.uint(c, 8) < $.uint(57, 8)) {
 				$.pointerValue<decimal>(a).d[i]++
 				$.pointerValue<decimal>(a).nd = i + 1
 				return
@@ -278,7 +278,7 @@ export class decimal {
 					decimal.prototype.Shift.call(d, -n)
 					exp = exp + (n)
 				}
-				while (($.pointerValue<decimal>(d).dp < 0) || (($.pointerValue<decimal>(d).dp == 0) && ($.arrayIndex($.pointerValue<decimal>(d).d, 0) < 53))) {
+				while (($.pointerValue<decimal>(d).dp < 0) || (($.pointerValue<decimal>(d).dp == 0) && ($.uint($.arrayIndex($.pointerValue<decimal>(d).d, 0), 8) < $.uint(53, 8)))) {
 					let n: number = 0
 					if (-$.pointerValue<decimal>(d).dp >= $.len(__goscript_atof.powtab)) {
 						n = 27
@@ -374,7 +374,7 @@ export class decimal {
 					continue
 					break
 				}
-				case (48 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 57):
+				case ($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8)):
 				{
 					sawdigits = true
 					if (($.uint($.indexStringOrBytes(s, i), 8) == $.uint(48, 8)) && ($.pointerValue<decimal>(b).nd == 0)) {
@@ -421,11 +421,11 @@ export class decimal {
 					break
 				}
 			}
-			if (((i >= $.len(s)) || ($.indexStringOrBytes(s, i) < 48)) || ($.indexStringOrBytes(s, i) > 57)) {
+			if (((i >= $.len(s)) || ($.uint($.indexStringOrBytes(s, i), 8) < $.uint(48, 8))) || ($.uint($.indexStringOrBytes(s, i), 8) > $.uint(57, 8))) {
 				return ok
 			}
 			let e = 0
-			for (; (i < $.len(s)) && (((48 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 57)) || ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8))); i++) {
+			for (; (i < $.len(s)) && ((($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8))) || ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8))); i++) {
 				if ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8)) {
 
 					continue
@@ -586,7 +586,7 @@ export function prefixIsLessThan(b: $.Slice<number>, s: string): boolean {
 			return true
 		}
 		if ($.uint($.arrayIndex(b!, i), 8) != $.uint($.indexStringOrBytes(s, i), 8)) {
-			return $.arrayIndex(b!, i) < $.indexStringOrBytes(s, i)
+			return $.uint($.arrayIndex(b!, i), 8) < $.uint($.indexStringOrBytes(s, i), 8)
 		}
 	}
 	return false
@@ -653,5 +653,5 @@ export function shouldRoundUp(a: decimal | $.VarRef<decimal> | null, nd: number)
 		return (nd > 0) && ($.uint((($.arrayIndex($.pointerValue<decimal>(a).d, nd - 1) - 48) % 2), 8) != $.uint(0, 8))
 	}
 	// not halfway - digit tells all
-	return $.arrayIndex($.pointerValue<decimal>(a).d, nd) >= 53
+	return $.uint($.arrayIndex($.pointerValue<decimal>(a).d, nd), 8) >= $.uint(53, 8)
 }

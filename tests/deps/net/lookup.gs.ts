@@ -832,7 +832,7 @@ export class Resolver {
 								lastErr = $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField3 = $.pointerValue<Exclude<$.GoError, null>>(__goscript_dnsclient_unix.errCannotUnmarshalDNSMessage).Error(); return new __goscript_net.DNSError({Err: __goscriptLiteralField3, Name: name, Server: __goscriptShadow11.server}) })(), "*net.DNSError")
 								break loop
 							}
-							if (($.uint(cname.Length, 8) == $.uint(0, 8)) && (c.CNAME.Length > 0)) {
+							if (($.uint(cname.Length, 8) == $.uint(0, 8)) && ($.uint(c.CNAME.Length, 8) > $.uint(0, 8))) {
 								cname = $.markAsStructValue($.cloneStructValue(c.CNAME))
 							}
 							break
@@ -857,7 +857,7 @@ export class Resolver {
 				addrs = null
 				break
 			}
-			if (($.len(addrs) > 0) || (($.stringEqual(network, "CNAME")) && (cname.Length > 0))) {
+			if (($.len(addrs) > 0) || (($.stringEqual(network, "CNAME")) && ($.uint(cname.Length, 8) > $.uint(0, 8)))) {
 				break
 			}
 		}
@@ -872,7 +872,7 @@ export class Resolver {
 			}
 		}
 		await __goscript_addrselect.sortByRFC6724(addrs)
-		if (($.len(addrs) == 0) && !(($.stringEqual(network, "CNAME")) && (cname.Length > 0))) {
+		if (($.len(addrs) == 0) && !(($.stringEqual(network, "CNAME")) && ($.uint(cname.Length, 8) > $.uint(0, 8)))) {
 			if (order == 2) {
 				let canonical: string = ""
 				let __goscriptTuple21: any = await __goscript_dnsclient_unix.goLookupIPFiles(name)
@@ -1623,7 +1623,7 @@ export class Resolver {
 		let q = $.markAsStructValue(new dnsmessage.Question({Name: $.markAsStructValue($.cloneStructValue(n)), Type: $.uint(qtype, 16), Class: $.uint(dnsmessage.ClassINET, 16)}))
 
 		for (let i = 0; i < $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).attempts; i++) {
-			for (let j = $.uint($.uint(0, 32), 32); j < sLen; j++) {
+			for (let j = $.uint($.uint(0, 32), 32); $.uint(j, 32) < $.uint(sLen, 32); j++) {
 				let server = $.arrayIndex($.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).servers!, (serverOffset + j) % sLen)
 
 				let __goscriptTuple48: any = await Resolver.prototype.exchange.call(r, ctx, server, $.markAsStructValue($.cloneStructValue(q)), $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).timeout, $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).useTCP, $.pointerValue<__goscript_dnsconfig.dnsConfig>(cfg).trustAD)

@@ -363,7 +363,7 @@ export class machine {
 
 			{
 				var j = $.uint($.arrayIndex($.pointerValue<queue>(q).sparse!, pc), 32)
-				if ((j < $.uint($.len($.pointerValue<queue>(q).dense), 32)) && ($.uint($.arrayIndex($.pointerValue<queue>(q).dense!, j).pc, 32) == $.uint(pc, 32))) {
+				if (($.uint(j, 32) < $.uint($.uint($.len($.pointerValue<queue>(q).dense), 32), 32)) && ($.uint($.arrayIndex($.pointerValue<queue>(q).dense!, j).pc, 32) == $.uint(pc, 32))) {
 					return t
 				}
 			}
@@ -710,13 +710,13 @@ export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
 	}
 	let r1 = $.int($.int($.uint64Shr(f, 32), 32), 32)
 	if ($.uint((op & syntax.EmptyBeginLine), 8) != $.uint(0, 8)) {
-		if (($.int(r1, 32) != $.int(10, 32)) && (r1 >= 0)) {
+		if (($.int(r1, 32) != $.int(10, 32)) && ($.int(r1, 32) >= $.int(0, 32))) {
 			return false
 		}
 		op = op & ~(($.uint(syntax.EmptyBeginLine, 8)))
 	}
 	if ($.uint((op & syntax.EmptyBeginText), 8) != $.uint(0, 8)) {
-		if (r1 >= 0) {
+		if ($.int(r1, 32) >= $.int(0, 32)) {
 			return false
 		}
 		op = op & ~(($.uint(syntax.EmptyBeginText, 8)))
@@ -726,13 +726,13 @@ export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {
 	}
 	let r2 = $.int($.int(f, 32), 32)
 	if ($.uint((op & syntax.EmptyEndLine), 8) != $.uint(0, 8)) {
-		if (($.int(r2, 32) != $.int(10, 32)) && (r2 >= 0)) {
+		if (($.int(r2, 32) != $.int(10, 32)) && ($.int(r2, 32) >= $.int(0, 32))) {
 			return false
 		}
 		op = op & ~(($.uint(syntax.EmptyEndLine, 8)))
 	}
 	if ($.uint((op & syntax.EmptyEndText), 8) != $.uint(0, 8)) {
-		if (r2 >= 0) {
+		if ($.int(r2, 32) >= $.int(0, 32)) {
 			return false
 		}
 		op = op & ~(($.uint(syntax.EmptyEndText, 8)))

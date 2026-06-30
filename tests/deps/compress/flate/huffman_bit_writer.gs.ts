@@ -306,7 +306,7 @@ export class huffmanBitWriter {
 
 		for (let __goscriptRangeTarget2 = tokens, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget2); __rangeIndex++) {
 			let t = __goscriptRangeTarget2![__rangeIndex]
-			if (t < 1073741824) {
+			if ($.uint(t, 32) < $.uint(1073741824, 32)) {
 				$.pointerValue<huffmanBitWriter>(w).literalFreq![__goscript_token.token_literal(t)]++
 				continue
 			}
@@ -716,7 +716,7 @@ export class huffmanBitWriter {
 		}
 		for (let __goscriptRangeTarget4 = tokens, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget4); __rangeIndex++) {
 			let t = __goscriptRangeTarget4![__rangeIndex]
-			if (t < 1073741824) {
+			if ($.uint(t, 32) < $.uint(1073741824, 32)) {
 				await huffmanBitWriter.prototype.writeCode.call(w, $.markAsStructValue($.cloneStructValue($.arrayIndex(leCodes!, __goscript_token.token_literal(t)))))
 				continue
 			}

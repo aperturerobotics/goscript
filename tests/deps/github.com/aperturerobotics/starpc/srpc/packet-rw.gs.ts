@@ -173,7 +173,7 @@ export class PacketReadWriter {
 					if ($.uint(currLen, 32) == $.uint(0, 32)) {
 						return errors.New("unexpected zero len prefix")
 					}
-					if (currLen > $.uint(10000000, 32)) {
+					if ($.uint(currLen, 32) > $.uint($.uint(10000000, 32), 32)) {
 						return errors.Errorf("message size %v greater than maximum %v", $.namedValueInterfaceValue<any>(currLen, "uint32", {}, { kind: $.TypeKind.Basic, name: "uint32" }), $.namedValueInterfaceValue<any>(10000000, "int", {}, { kind: $.TypeKind.Basic, name: "int" }))
 					}
 				}

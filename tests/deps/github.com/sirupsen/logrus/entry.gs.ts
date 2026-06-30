@@ -564,7 +564,7 @@ export class Entry {
 		// To avoid Entry#log() returning a value that only would make sense for
 		// panic() to use in Entry#Panic(), we avoid the allocation by checking
 		// directly here.
-		if (level <= 0) {
+		if ($.uint(level, 32) <= $.uint(0, 32)) {
 			$.panic($.interfaceValue<any>(newEntry, "*logrus.Entry"))
 		}
 	}

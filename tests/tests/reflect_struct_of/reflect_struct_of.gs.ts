@@ -16,7 +16,7 @@ export async function main(): globalThis.Promise<void> {
 
 	let fields: $.Slice<reflect.StructField> = $.arrayToSlice<reflect.StructField>([$.markAsStructValue(new reflect.StructField({Name: "Name", Type: stringType, Tag: "json:\"name\""})), $.markAsStructValue(new reflect.StructField({Name: "Count", Type: intType, Tag: "json:\"count\""}))])
 	let typ = reflect.StructOf(fields)
-	$.println("type:", await $.pointerValue<Exclude<reflect.Type, null>>(typ).String(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).Name(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).PkgPath(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).NumField(), (await $.pointerValue<Exclude<reflect.Type, null>>(typ).Field(1)).Offset > 0, await $.pointerValue<Exclude<reflect.Type, null>>(typ).Comparable())
+	$.println("type:", await $.pointerValue<Exclude<reflect.Type, null>>(typ).String(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).Name(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).PkgPath(), await $.pointerValue<Exclude<reflect.Type, null>>(typ).NumField(), $.uint((await $.pointerValue<Exclude<reflect.Type, null>>(typ).Field(1)).Offset, 64) > $.uint(0, 64), await $.pointerValue<Exclude<reflect.Type, null>>(typ).Comparable())
 
 	let value = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(reflect.New($.pointerValueOrNil(typ)!))).Elem()))
 	$.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(value)).FieldByName("Name"))).SetString("Ada")

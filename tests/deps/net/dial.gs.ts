@@ -517,12 +517,12 @@ export class Dialer {
 
 	public dualStack(): boolean {
 		const d: Dialer | $.VarRef<Dialer> | null = this
-		return $.pointerValue<Dialer>(d).FallbackDelay >= 0
+		return $.pointerValue<Dialer>(d).FallbackDelay >= 0n
 	}
 
 	public fallbackDelay(): time.Duration {
 		const d: Dialer | $.VarRef<Dialer> | null = this
-		if ($.pointerValue<Dialer>(d).FallbackDelay > 0) {
+		if ($.pointerValue<Dialer>(d).FallbackDelay > 0n) {
 			return $.pointerValue<Dialer>(d).FallbackDelay
 		} else {
 			return 300000000n
@@ -1701,7 +1701,7 @@ export function partialDeadline(now: time.Time, deadline: time.Time, addrsRemain
 		return [$.markAsStructValue($.cloneStructValue(deadline)), null]
 	}
 	let timeRemaining = $.markAsStructValue($.cloneStructValue(deadline)).Sub($.markAsStructValue($.cloneStructValue(now)))
-	if (timeRemaining <= 0) {
+	if (timeRemaining <= 0n) {
 		return [$.markAsStructValue(new time.Time()), __goscript_net.errTimeout]
 	}
 	// Tentatively allocate equal time to each remaining address.

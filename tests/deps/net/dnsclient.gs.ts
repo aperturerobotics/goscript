@@ -213,10 +213,10 @@ export function equalASCIIName(x: dnsmessage.Name, y: dnsmessage.Name): boolean 
 	for (let i = 0; i < $.int(x.Length); i++) {
 		let a = $.uint($.arrayIndex(x.Data, i), 8)
 		let b = $.uint($.arrayIndex(y.Data, i), 8)
-		if ((65 <= a) && (a <= 90)) {
+		if (($.uint(65, 8) <= $.uint(a, 8)) && ($.uint(a, 8) <= $.uint(90, 8))) {
 			a = a + ($.uint(0x20, 8))
 		}
-		if ((65 <= b) && (b <= 90)) {
+		if (($.uint(65, 8) <= $.uint(b, 8)) && ($.uint(b, 8) <= $.uint(90, 8))) {
 			b = b + ($.uint(0x20, 8))
 		}
 		if ($.uint(a, 8) != $.uint(b, 8)) {
@@ -256,13 +256,13 @@ export function isDomainName(s: string): boolean {
 				return false
 				break
 			}
-			case (((97 <= c) && (c <= 122)) || ((65 <= c) && (c <= 90))) || ($.uint(c, 8) == $.uint(95, 8)):
+			case ((($.uint(97, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(122, 8))) || (($.uint(65, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(90, 8)))) || ($.uint(c, 8) == $.uint(95, 8)):
 			{
 				nonNumeric = true
 				partlen++
 				break
 			}
-			case (48 <= c) && (c <= 57):
+			case ($.uint(48, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(57, 8)):
 			{
 				partlen++
 				break

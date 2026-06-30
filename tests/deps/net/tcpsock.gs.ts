@@ -781,7 +781,7 @@ export function TCPAddrFromAddrPort(addr: netip.AddrPort): TCPAddr | $.VarRef<TC
 
 export async function newTCPConn(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, keepAliveIdle: time.Duration, keepAliveCfg: KeepAliveConfig, preKeepAliveHook: ((_p0: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null) => void) | null, keepAliveHook: ((_p0: KeepAliveConfig) => void) | null): globalThis.Promise<TCPConn | $.VarRef<TCPConn> | null> {
 	__goscript_tcpsockopt_stub.setNoDelay(fd, true)
-	if (!keepAliveCfg.Enable && (keepAliveIdle >= 0)) {
+	if (!keepAliveCfg.Enable && (keepAliveIdle >= 0n)) {
 		keepAliveCfg = $.markAsStructValue(new KeepAliveConfig({Enable: true, Idle: keepAliveIdle}))
 	}
 	let c: TCPConn | $.VarRef<TCPConn> | null = new TCPConn({conn: $.markAsStructValue(new __goscript_net.conn({fd: fd}))})

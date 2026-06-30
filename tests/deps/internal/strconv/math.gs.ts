@@ -135,27 +135,27 @@ export function trimZeros(x: bigint): [bigint, number] {
 
 	// Cut 8 zeros, then 4, then 2, then 1.
 	let p = 0
-	for (let d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8); d <= 184467440737; d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8)) {
+	for (let d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8); d <= 184467440737n; d = bits.RotateLeft64($.uint64Mul(x, 14368461155438497313), -8)) {
 		x = d
 		p = p + (8)
 	}
 	{
 		let d = bits.RotateLeft64($.uint64Mul(x, 15170602326218735249), -4)
-		if (d <= 1844674407370955) {
+		if (d <= 1844674407370955n) {
 			x = d
 			p = p + (4)
 		}
 	}
 	{
 		let d = bits.RotateLeft64($.uint64Mul(x, 10330176681277348905), -2)
-		if (d <= 184467440737095516) {
+		if (d <= 184467440737095516n) {
 			x = d
 			p = p + (2)
 		}
 	}
 	{
 		let d = bits.RotateLeft64($.uint64Mul(x, 14757395258967641293), -1)
-		if (d <= 1844674407370955161) {
+		if (d <= 1844674407370955161n) {
 			x = d
 			p = p + (1)
 		}

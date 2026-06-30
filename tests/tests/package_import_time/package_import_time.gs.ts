@@ -12,7 +12,7 @@ import "@goscript/time/index.js"
 export async function main(): globalThis.Promise<void> {
 	let now = $.markAsStructValue($.cloneStructValue(time.Now()))
 	let setTime = $.markAsStructValue($.cloneStructValue(time.Date(2025, time.May, 15, 1, 10, 42, 0, time.UTC)))
-	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < ($.int64Mul(time.Hour, 24))) {
+	if ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue(setTime))) < 86400000000000n) {
 		$.println("expected we are > 24 hrs past may 15, incorrect")
 	}
 
@@ -56,7 +56,7 @@ export async function main(): globalThis.Promise<void> {
 	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
 	$.println("max duration timer stopped", time.Timer.prototype.Stop.call($.pointerValue<time.Timer>(timer)))
 	let maxDuration = 9223372036854775807n
-	$.println("max duration converted", maxDuration > 0)
+	$.println("max duration converted", maxDuration > 0n)
 
 	let [parsed, parseErr] = time.Parse(time.RFC3339, "2025-05-15T01:10:42Z")
 	$.println("parsed time", $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(parsed)).UTC())).Format(time.RFC3339), parseErr == null)

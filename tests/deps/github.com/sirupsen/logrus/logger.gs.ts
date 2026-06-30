@@ -361,7 +361,7 @@ export class Logger {
 
 	public IsLevelEnabled(level: __goscript_logrus.Level): boolean {
 		const logger: Logger | $.VarRef<Logger> | null = this
-		return Logger.prototype.level.call(logger) >= level
+		return $.uint(Logger.prototype.level.call(logger), 32) >= $.uint(level, 32)
 	}
 
 	public async Log(level: __goscript_logrus.Level, args: $.Slice<any>): globalThis.Promise<void> {

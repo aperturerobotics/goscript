@@ -106,7 +106,7 @@ export class deflateFast {
 	public encode(dst: $.Slice<__goscript_token.token>, src: $.Slice<number>): $.Slice<__goscript_token.token> {
 		let e: deflateFast | $.VarRef<deflateFast> | null = this
 		// Ensure that e.cur doesn't wrap.
-		if ($.pointerValue<deflateFast>(e).cur >= 2147352577) {
+		if ($.int($.pointerValue<deflateFast>(e).cur, 32) >= $.int(2147352577, 32)) {
 			deflateFast.prototype.shiftOffsets.call(e)
 		}
 
@@ -156,7 +156,7 @@ export class deflateFast {
 					let bytesBetweenHashLookups = $.int(skip >> 5, 32)
 					nextS = $.int(s + bytesBetweenHashLookups, 32)
 					skip = skip + ($.int(bytesBetweenHashLookups, 32))
-					if (nextS > sLimit) {
+					if ($.int(nextS, 32) > $.int(sLimit, 32)) {
 						break emitRemainder
 					}
 					candidate = $.markAsStructValue($.cloneStructValue($.arrayIndex($.pointerValue<deflateFast>(e).table, nextHash & 16383)))
@@ -165,7 +165,7 @@ export class deflateFast {
 					nextHash = $.uint(hash($.uint(now, 32)), 32)
 
 					let offset = $.int(s - (candidate.offset - $.pointerValue<deflateFast>(e).cur), 32)
-					if ((offset > 32768) || ($.uint(cv, 32) != $.uint(candidate.val, 32))) {
+					if (($.int(offset, 32) > $.int(32768, 32)) || ($.uint(cv, 32) != $.uint(candidate.val, 32))) {
 						// Out of range or not matched.
 						cv = $.uint(now, 32)
 						continue
@@ -200,7 +200,7 @@ export class deflateFast {
 					dst = $.append(dst, $.uint(__goscript_token.matchToken($.uint($.uint((l + 4) - 3, 32), 32), $.uint($.uint((s - t) - 1, 32), 32)), 32))
 					s = s + ($.int(l, 32))
 					nextEmit = $.int(s, 32)
-					if (s >= sLimit) {
+					if ($.int(s, 32) >= $.int(sLimit, 32)) {
 						break emitRemainder
 					}
 
@@ -219,7 +219,7 @@ export class deflateFast {
 					$.pointerValue<deflateFast>(e).table[currHash & 16383] = $.markAsStructValue(new tableEntry({offset: $.int($.pointerValue<deflateFast>(e).cur + s, 32), val: $.uint($.uint(x, 32), 32)}))
 
 					let offset = $.int(s - (candidate.offset - $.pointerValue<deflateFast>(e).cur), 32)
-					if ((offset > 32768) || ($.uint($.uint(x, 32), 32) != $.uint(candidate.val, 32))) {
+					if (($.int(offset, 32) > $.int(32768, 32)) || ($.uint($.uint(x, 32), 32) != $.uint(candidate.val, 32))) {
 						cv = $.uint($.uint($.uint64Shr(x, 8), 32), 32)
 						nextHash = $.uint(hash($.uint(cv, 32)), 32)
 						s++
@@ -245,7 +245,7 @@ export class deflateFast {
 		}
 
 		// If we are inside the current block
-		if (t >= 0) {
+		if ($.int(t, 32) >= $.int(0, 32)) {
 			let b: $.Slice<number> = $.goSlice(src, t, undefined)
 			let a: $.Slice<number> = $.goSlice(src, s, s1)
 			b = $.goSlice(b, undefined, $.len(a))
@@ -260,7 +260,7 @@ export class deflateFast {
 
 		// We found a match in the previous block.
 		let tp = $.int($.int($.len($.pointerValue<deflateFast>(e).prev), 32) + t, 32)
-		if (tp < 0) {
+		if ($.int(tp, 32) < $.int(0, 32)) {
 			return $.int(0, 32)
 		}
 
@@ -303,7 +303,7 @@ export class deflateFast {
 		$.pointerValue<deflateFast>(e).cur = $.pointerValue<deflateFast>(e).cur + ($.int(32768, 32))
 
 		// Protect against e.cur wraparound.
-		if ($.pointerValue<deflateFast>(e).cur >= 2147352577) {
+		if ($.int($.pointerValue<deflateFast>(e).cur, 32) >= $.int(2147352577, 32)) {
 			deflateFast.prototype.shiftOffsets.call(e)
 		}
 	}
@@ -320,7 +320,7 @@ export class deflateFast {
 		// Shift down everything in the table that isn't already too far away.
 		for (let __goscriptRangeTarget3 = $.goSlice($.pointerValue<deflateFast>(e).table, undefined, undefined), i = 0; i < $.len(__goscriptRangeTarget3); i++) {
 			let v = $.int((($.arrayIndex($.pointerValue<deflateFast>(e).table, i).offset - $.pointerValue<deflateFast>(e).cur) + 32768) + 1, 32)
-			if (v < 0) {
+			if ($.int(v, 32) < $.int(0, 32)) {
 				// We want to reset e.cur to maxMatchOffset + 1, so we need to shift
 				// all table entries down by (e.cur - (maxMatchOffset + 1)).
 				// Because we ignore matches > maxMatchOffset, we can cap

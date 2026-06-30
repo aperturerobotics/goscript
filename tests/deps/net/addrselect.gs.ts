@@ -362,10 +362,10 @@ export function compareByRFC6724(a: byRFC6724Info, b: byRFC6724Info): number {
 	// Rule 6: Prefer higher precedence.
 	// If Precedence(DA) > Precedence(DB), then prefer DA.  Similarly, if
 	// Precedence(DA) < Precedence(DB), then prefer DB.
-	if ($.pointerValue<ipAttr>(attrDA).Precedence > $.pointerValue<ipAttr>(attrDB).Precedence) {
+	if ($.uint($.pointerValue<ipAttr>(attrDA).Precedence, 8) > $.uint($.pointerValue<ipAttr>(attrDB).Precedence, 8)) {
 		return -1
 	}
-	if ($.pointerValue<ipAttr>(attrDA).Precedence < $.pointerValue<ipAttr>(attrDB).Precedence) {
+	if ($.uint($.pointerValue<ipAttr>(attrDA).Precedence, 8) < $.uint($.pointerValue<ipAttr>(attrDB).Precedence, 8)) {
 		return 1
 	}
 
@@ -379,10 +379,10 @@ export function compareByRFC6724(a: byRFC6724Info, b: byRFC6724Info): number {
 	// Rule 8: Prefer smaller scope.
 	// If Scope(DA) < Scope(DB), then prefer DA.  Similarly, if Scope(DA) >
 	// Scope(DB), then prefer DB.
-	if ($.pointerValue<ipAttr>(attrDA).Scope < $.pointerValue<ipAttr>(attrDB).Scope) {
+	if ($.uint($.pointerValue<ipAttr>(attrDA).Scope, 8) < $.uint($.pointerValue<ipAttr>(attrDB).Scope, 8)) {
 		return -1
 	}
-	if ($.pointerValue<ipAttr>(attrDA).Scope > $.pointerValue<ipAttr>(attrDB).Scope) {
+	if ($.uint($.pointerValue<ipAttr>(attrDA).Scope, 8) > $.uint($.pointerValue<ipAttr>(attrDB).Scope, 8)) {
 		return 1
 	}
 

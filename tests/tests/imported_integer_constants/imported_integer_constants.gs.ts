@@ -7,7 +7,7 @@ import * as math from "@goscript/math/index.js"
 import "@goscript/math/index.js"
 
 export function aboveSignedLimit(v: bigint): boolean {
-	return v > (9223372036854775808)
+	return v > 9223372036854775808n
 }
 
 export function isMinInt64(v: bigint): boolean {

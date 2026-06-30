@@ -30,7 +30,7 @@ export function commonPrefixLenIgnoreCase(s: string, prefix: string): number {
 	let n = $.min($.len(prefix), $.len(s))
 	for (let i = 0; i < n; i++) {
 		let c = $.uint($.indexStringOrBytes(s, i), 8)
-		if ((65 <= c) && (c <= 90)) {
+		if (($.uint(65, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(90, 8))) {
 			c = c + ($.uint(97 - 65, 8))
 		}
 		if ($.uint(c, 8) != $.uint($.indexStringOrBytes(prefix, i), 8)) {
@@ -149,7 +149,7 @@ export function readFloat(s: string): [bigint, number, boolean, boolean, boolean
 					continue
 					break
 				}
-				case (48 <= c) && (c <= 57):
+				case ($.uint(48, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(57, 8)):
 				{
 					sawdigits = true
 					if (($.uint(c, 8) == $.uint(48, 8)) && (nd == 0)) {
@@ -169,7 +169,7 @@ export function readFloat(s: string): [bigint, number, boolean, boolean, boolean
 					continue
 					break
 				}
-				case ((base == 16n) && (97 <= __goscript_atoi.lower($.uint(c, 8)))) && (__goscript_atoi.lower($.uint(c, 8)) <= 102):
+				case ((base == 16n) && ($.uint(97, 8) <= $.uint(__goscript_atoi.lower($.uint(c, 8)), 8))) && ($.uint(__goscript_atoi.lower($.uint(c, 8)), 8) <= $.uint(102, 8)):
 				{
 					sawdigits = true
 					nd++
@@ -223,11 +223,11 @@ export function readFloat(s: string): [bigint, number, boolean, boolean, boolean
 				break
 			}
 		}
-		if (((i >= $.len(s)) || ($.indexStringOrBytes(s, i) < 48)) || ($.indexStringOrBytes(s, i) > 57)) {
+		if (((i >= $.len(s)) || ($.uint($.indexStringOrBytes(s, i), 8) < $.uint(48, 8))) || ($.uint($.indexStringOrBytes(s, i), 8) > $.uint(57, 8))) {
 			return [mantissa, exp, neg, trunc, hex, i, ok]
 		}
 		let e = 0
-		for (; (i < $.len(s)) && (((48 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 57)) || ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8))); i++) {
+		for (; (i < $.len(s)) && ((($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8))) || ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8))); i++) {
 			if ($.uint($.indexStringOrBytes(s, i), 8) == $.uint(95, 8)) {
 				underscores = true
 				continue
@@ -376,7 +376,7 @@ export function atofHex(s: string, flt: __goscript_ftoa.floatInfo | $.VarRef<__g
 	// If exponent is too negative,
 	// denormalize in hopes of making it representable.
 	// (The -2 is for the rounding bits.)
-	while ((mantissa > 1) && (exp < (minExp - 2))) {
+	while ((mantissa > 1n) && (exp < (minExp - 2))) {
 		mantissa = $.uint64Or(($.uint64Shr(mantissa, 1)), ($.uint64And(mantissa, 1)))
 		exp++
 	}

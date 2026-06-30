@@ -553,7 +553,7 @@ export class fakeNetFD {
 				let nextPort: (() => [number, boolean] | globalThis.Promise<[number, boolean]>) | null = $.functionValue((): [number, boolean] => {
 					while (true) {
 						let __goscriptShadow6 = $.int(nextPortCounter.value.Add($.int(1, 32)), 32)
-						if ((__goscriptShadow6 <= 0) || (__goscriptShadow6 >= (65536))) {
+						if (($.int(__goscriptShadow6, 32) <= $.int(0, 32)) || ($.int(__goscriptShadow6, 32) >= $.int((65536), 32))) {
 							// nextPortCounter ran off the end of the port space.
 							// Bump it back into range.
 							while (true) {
@@ -562,7 +562,7 @@ export class fakeNetFD {
 								}
 								{
 									__goscriptShadow6 = $.int(nextPortCounter.value.Load(), 32)
-									if ((__goscriptShadow6 >= 0) && (__goscriptShadow6 < (65536))) {
+									if (($.int(__goscriptShadow6, 32) >= $.int(0, 32)) && ($.int(__goscriptShadow6, 32) < $.int((65536), 32))) {
 										break
 									}
 								}
@@ -577,7 +577,7 @@ export class fakeNetFD {
 							continue
 						}
 
-						if (__goscriptShadow6 <= prevPort) {
+						if ($.int(__goscriptShadow6, 32) <= $.int(prevPort, 32)) {
 							// nextPortCounter has wrapped around since the last time we read it.
 							if (portWrapped) {
 								// This is the second wraparound, so we've scanned the whole port space
@@ -1632,7 +1632,7 @@ export class deadlineTimer {
 		}
 
 		let d = time.Until($.markAsStructValue($.cloneStructValue(deadline)))
-		if (d < 0) {
+		if (d < 0n) {
 			// Ensure that a deadline in the past takes effect immediately.
 			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				await $.chanRecv($.pointerValue<deadlineTimer>(dt).expired)

@@ -306,7 +306,7 @@ export class FileHeader {
 
 	public isZip64(): boolean {
 		const h: FileHeader | $.VarRef<FileHeader> | null = this
-		return ($.pointerValue<FileHeader>(h).CompressedSize64 >= 4294967295) || ($.pointerValue<FileHeader>(h).UncompressedSize64 >= 4294967295)
+		return ($.pointerValue<FileHeader>(h).CompressedSize64 >= 4294967295n) || ($.pointerValue<FileHeader>(h).UncompressedSize64 >= 4294967295n)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -374,7 +374,7 @@ export class headerFileInfo {
 
 	public Size(): bigint {
 		const fi = this
-		if ($.pointerValue<FileHeader>(fi.fh).UncompressedSize64 > 0) {
+		if ($.pointerValue<FileHeader>(fi.fh).UncompressedSize64 > 0n) {
 			return $.int64($.pointerValue<FileHeader>(fi.fh).UncompressedSize64)
 		}
 		return $.int64($.pointerValue<FileHeader>(fi.fh).UncompressedSize)
@@ -598,7 +598,7 @@ export async function FileInfoHeader(fi: fs.FileInfo | null): globalThis.Promise
 	let fh: FileHeader | $.VarRef<FileHeader> | null = (await (async () => { const __goscriptLiteralField0 = await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Name(); return new FileHeader({Name: __goscriptLiteralField0, UncompressedSize64: $.uint64(size)}) })())
 	FileHeader.prototype.SetModTime.call(fh, $.markAsStructValue($.cloneStructValue(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).ModTime())))
 	FileHeader.prototype.SetMode.call(fh, $.uint(await $.pointerValue<Exclude<fs.FileInfo, null>>(fi).Mode(), 32))
-	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > 4294967295) {
+	if ($.pointerValue<FileHeader>(fh).UncompressedSize64 > 4294967295n) {
 		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint(4294967295, 32)
 	} else {
 		$.pointerValue<FileHeader>(fh).UncompressedSize = $.uint($.uint($.pointerValue<FileHeader>(fh).UncompressedSize64, 32), 32)

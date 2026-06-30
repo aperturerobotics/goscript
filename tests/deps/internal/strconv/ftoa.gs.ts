@@ -536,7 +536,7 @@ export function roundShortest(d: __goscript_decimal.decimal | $.VarRef<__goscrip
 		let okdown = ($.uint(l, 8) != $.uint(m, 8)) || (inclusive && ((li + 1) == $.pointerValue<__goscript_decimal.decimal>(lower).nd))
 
 		switch (true) {
-			case ($.uint(upperdelta, 8) == $.uint(0, 8)) && ((m + 1) < u):
+			case ($.uint(upperdelta, 8) == $.uint(0, 8)) && ($.uint((m + 1), 8) < $.uint(u, 8)):
 			{
 				upperdelta = $.uint(2, 8)
 				break
@@ -554,7 +554,7 @@ export function roundShortest(d: __goscript_decimal.decimal | $.VarRef<__goscrip
 		}
 		// Okay to round up if upper has a different digit and either upper
 		// is inclusive or upper is bigger than the result of rounding up.
-		let okup = (upperdelta > 0) && ((inclusive || (upperdelta > 1)) || ((ui + 1) < $.pointerValue<__goscript_decimal.decimal>(upper).nd))
+		let okup = ($.uint(upperdelta, 8) > $.uint(0, 8)) && ((inclusive || ($.uint(upperdelta, 8) > $.uint(1, 8))) || ((ui + 1) < $.pointerValue<__goscript_decimal.decimal>(upper).nd))
 
 		// If it's okay to do either, then round to the nearest one.
 		// If it's okay to do only one, do it.
@@ -718,7 +718,7 @@ export function fmtX(dst: $.Slice<number>, prec: number, fmt: number, neg: boole
 		let shift = $.uint(prec * 4, 64)
 		let extra = $.uint64And(($.uint64Shl(mant, shift)), (1152921504606846975))
 		mant = $.uint64Shr(mant, $.uint64($.uint($.uint64Sub(60, shift), 64)))
-		if (($.uint64Or(extra, ($.uint64And(mant, 1)))) > (576460752303423488)) {
+		if (($.uint64Or(extra, ($.uint64And(mant, 1)))) > 576460752303423488n) {
 			mant++
 		}
 		mant = $.uint64Shl(mant, $.uint64($.uint($.uint64Sub(60, shift), 64)))

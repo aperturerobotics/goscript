@@ -67,7 +67,7 @@ export function dboxFtoa64(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript
 	let r = $.uint($.uint($.uint64Mod(zi, 1000), 32), 32)
 	let _u3b4i = $.uint(dboxDelta64($.markAsStructValue($.cloneStructValue(_u3c6)), _u3b2), 32)
 
-	if (r < _u3b4i) {
+	if ($.uint(r, 32) < $.uint(_u3b4i, 32)) {
 		if ((($.uint(r, 32) != $.uint(0, 32)) || !exact) || (($.uint64Mod(mant, 2)) == 0n)) {
 			let __goscriptShadow2 = s
 			let __goscriptTuple1: any = __goscript_math.trimZeros(__goscriptShadow2)
@@ -118,7 +118,7 @@ export function dboxFtoa32(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript
 			xi++
 		}
 		let q = $.uint(Math.trunc(zi / 10), 32)
-		if (xi <= (q * 10)) {
+		if ($.uint(xi, 32) <= $.uint((q * 10), 32)) {
 			let __goscriptShadow8 = q
 			let __goscriptTuple4: any = __goscript_math.trimZeros($.uint64(__goscriptShadow8))
 			let __goscriptShadow9 = __goscriptTuple4[0]
@@ -130,7 +130,7 @@ export function dboxFtoa32(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript
 		if ((exp == -77) && ($.uint((yru % 2), 32) != $.uint(0, 32))) {
 			yru--
 		} else {
-			if (yru < xi) {
+			if ($.uint(yru, 32) < $.uint(xi, 32)) {
 				yru++
 			}
 		}
@@ -153,7 +153,7 @@ export function dboxFtoa32(d: __goscript_ftoa.decimalSlice | $.VarRef<__goscript
 	let r = $.uint($.uint(zi % 100, 32), 32)
 	let _u3b4i = $.uint(dboxDelta32(_u3c6, _u3b2), 32)
 
-	if (r < _u3b4i) {
+	if ($.uint(r, 32) < $.uint(_u3b4i, 32)) {
 		if ((($.uint(r, 32) != $.uint(0, 32)) || !exact) || ($.uint((mant % 2), 32) == $.uint(0, 32))) {
 			let __goscriptShadow10 = s
 			let __goscriptTuple6: any = __goscript_math.trimZeros($.uint64(__goscriptShadow10))

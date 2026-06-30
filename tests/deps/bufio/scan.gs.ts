@@ -233,7 +233,7 @@ export class Scanner {
 			if ($.pointerValue<Scanner>(s).end == $.len($.pointerValue<Scanner>(s).buf)) {
 				// Guarantee no overflow in the multiplication below.
 				const maxInt: number = 9223372036854775807
-				if (($.len($.pointerValue<Scanner>(s).buf) >= $.pointerValue<Scanner>(s).maxTokenSize) || ($.len($.pointerValue<Scanner>(s).buf) > (4611686018427387903))) {
+				if (($.len($.pointerValue<Scanner>(s).buf) >= $.pointerValue<Scanner>(s).maxTokenSize) || ($.len($.pointerValue<Scanner>(s).buf) > $.int("4611686018427387903", 64))) {
 					Scanner.prototype.setErr.call(s, ErrTooLong)
 					return false
 				}
@@ -382,7 +382,7 @@ export function ScanRunes(data: $.Slice<number>, atEOF: boolean): [number, $.Sli
 	}
 
 	// Fast path 1: ASCII.
-	if ($.arrayIndex(data!, 0) < utf8.RuneSelf) {
+	if ($.uint($.arrayIndex(data!, 0), 8) < $.uint(utf8.RuneSelf, 8)) {
 		return [1, $.goSlice(data, 0, 1), null]
 	}
 
@@ -438,7 +438,7 @@ export function ScanLines(data: $.Slice<number>, atEOF: boolean): [number, $.Sli
 }
 
 export function isSpace(r: number): boolean {
-	if (r <= 255) {
+	if ($.int(r, 32) <= $.int(255, 32)) {
 		// Obvious ASCII ones: \t through \r plus space. Plus two Latin-1 oddballs.
 		switch (r) {
 			case 32:
@@ -461,7 +461,7 @@ export function isSpace(r: number): boolean {
 		return false
 	}
 	// High-valued ones.
-	if ((8192 <= r) && (r <= 8202)) {
+	if (($.int(8192, 32) <= $.int(r, 32)) && ($.int(r, 32) <= $.int(8202, 32))) {
 		return true
 	}
 	switch (r) {

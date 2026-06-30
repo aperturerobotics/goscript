@@ -1262,7 +1262,7 @@ export class Regexp {
 									$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow2
 									continue __goscriptLoop0
 								} else {
-									if ($.pointerValue<syntax.Inst>(inst).Arg < $.uint($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap), 32)) {
+									if ($.uint($.pointerValue<syntax.Inst>(inst).Arg, 32) < $.uint($.uint($.len($.pointerValue<__goscript_backtrack.bitState>(b).cap), 32), 32)) {
 										// large pool
 										__goscript_backtrack.bitState.prototype.push.call(b, re, $.uint(__goscriptShadow1, 32), $.arrayIndex($.pointerValue<__goscript_backtrack.bitState>(b).cap!, $.pointerValue<syntax.Inst>(inst).Arg), true)
 										$.pointerValue<__goscript_backtrack.bitState>(b).cap![$.pointerValue<syntax.Inst>(inst).Arg] = __goscriptShadow2
@@ -1809,7 +1809,7 @@ export function __goscript_set_specialBytes(__goscriptValue: Uint8Array): void {
 }
 
 export function special(b: number): boolean {
-	return (b < utf8.RuneSelf) && ($.uint(($.arrayIndex(specialBytes, b % 16) & (1 << (Math.trunc(b / 16)))), 8) != $.uint(0, 8))
+	return ($.uint(b, 8) < $.uint(utf8.RuneSelf, 8)) && ($.uint(($.arrayIndex(specialBytes, b % 16) & (1 << (Math.trunc(b / 16)))), 8) != $.uint(0, 8))
 }
 
 function __goscriptInit0(): void {
@@ -1885,7 +1885,7 @@ export function extract(str: string): [string, number, string, boolean] {
 	// Parse number.
 	num = 0
 	for (let __goscriptShadow3 = 0; __goscriptShadow3 < $.len(name); __goscriptShadow3++) {
-		if ((($.indexStringOrBytes(name, __goscriptShadow3) < 48) || (57 < $.indexStringOrBytes(name, __goscriptShadow3))) || (num >= 1e8)) {
+		if ((($.uint($.indexStringOrBytes(name, __goscriptShadow3), 8) < $.uint(48, 8)) || ($.uint(57, 8) < $.uint($.indexStringOrBytes(name, __goscriptShadow3), 8))) || (num >= 1e8)) {
 			num = -1
 			break
 		}

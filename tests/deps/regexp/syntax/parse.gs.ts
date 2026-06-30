@@ -215,7 +215,7 @@ export class parser {
 		// Scan down to find pseudo-operator (.
 		// There are no | above (.
 		let i = $.len($.pointerValue<parser>(p).stack)
-		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op < 128)) {
+		while ((i > 0) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op, 8) < $.uint(128, 8))) {
 			i--
 		}
 		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
@@ -418,7 +418,7 @@ export class parser {
 			}
 		}
 
-		if (parser.prototype.calcSize.call(p, re, true) > 3355443) {
+		if (parser.prototype.calcSize.call(p, re, true) > 3355443n) {
 			$.panic($.namedValueInterfaceValue<any>("expression too large", "syntax.ErrorCode", {String: (receiver: any, ...args: any[]) => (ErrorCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "string", typeName: "syntax.ErrorCode" }))
 		}
 	}
@@ -456,7 +456,7 @@ export class parser {
 
 		// Scan down to find pseudo-operator | or (.
 		let i = $.len($.pointerValue<parser>(p).stack)
-		while ((i > 0) && ($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op < 128)) {
+		while ((i > 0) && ($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex($.pointerValue<parser>(p).stack!, i - 1)).Op, 8) < $.uint(128, 8))) {
 			i--
 		}
 		let subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> = $.goSlice($.pointerValue<parser>(p).stack, i, undefined)
@@ -624,7 +624,7 @@ export class parser {
 					// Start with most complex regexp in sub[start].
 					let max = start
 					for (let j = start + 1; j < i; j++) {
-						if (($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op < $.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op) || (($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op, 8) == $.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Rune) < $.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Rune)))) {
+						if (($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op, 8) < $.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op, 8)) || (($.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Op, 8) == $.uint($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Op, 8)) && ($.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, max)).Rune) < $.len($.pointerValue<__goscript_regexp.Regexp>($.arrayIndex(sub!, j)).Rune)))) {
 							max = j
 						}
 					}
@@ -719,7 +719,7 @@ export class parser {
 		$.pointerValue<__goscript_regexp.Regexp>(re2).Rune = $.appendSlice($.pointerValue<__goscript_regexp.Regexp>(re2).Rune, $.pointerValue<__goscript_regexp.Regexp>(re1).Rune)
 
 		// Reuse re1 if possible.
-		if (r >= 0) {
+		if ($.int(r, 32) >= $.int(0, 32)) {
 			$.pointerValue<__goscript_regexp.Regexp>(re1).Rune = $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re1).Rune0, undefined, 1)
 			$.pointerValue<__goscript_regexp.Regexp>(re1).Rune![0] = $.int(r, 32)
 			$.pointerValue<__goscript_regexp.Regexp>(re1).Flags = $.uint(flags, 16)
@@ -858,7 +858,7 @@ export class parser {
 						return ["", __goscriptShadow1]
 					}
 				}
-				if (hi < lo) {
+				if ($.int(hi, 32) < $.int(lo, 32)) {
 					rng = $.sliceStringOrBytes(rng, undefined, $.len(rng) - $.len(t))
 					return ["", $.interfaceValue<$.GoError>(new Error({Code: "invalid character class range", Expr: rng}), "*syntax.Error")]
 				}
@@ -924,7 +924,7 @@ export class parser {
 			switch (c) {
 				default:
 				{
-					if ((c < utf8.RuneSelf) && !isalnum($.int(c, 32))) {
+					if (($.int(c, 32) < $.int(utf8.RuneSelf, 32)) && !isalnum($.int(c, 32))) {
 						// Escaped non-word characters are always themselves.
 						// PCRE is not quite so rigorous: it accepts things like
 						// \q, but we don't. We once rejected \_, but too many
@@ -941,7 +941,7 @@ export class parser {
 				case 54:
 				case 55:
 				{
-					if ((($.stringEqual(t, "")) || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
+					if ((($.stringEqual(t, "")) || ($.uint($.indexStringOrBytes(t, 0), 8) < $.uint(48, 8))) || ($.uint($.indexStringOrBytes(t, 0), 8) > $.uint(55, 8))) {
 						break
 					}
 				}
@@ -949,7 +949,7 @@ export class parser {
 				{
 					r = $.int(c - 48, 32)
 					for (let i = 1; i < 3; i++) {
-						if ((($.stringEqual(t, "")) || ($.indexStringOrBytes(t, 0) < 48)) || ($.indexStringOrBytes(t, 0) > 55)) {
+						if ((($.stringEqual(t, "")) || ($.uint($.indexStringOrBytes(t, 0), 8) < $.uint(48, 8))) || ($.uint($.indexStringOrBytes(t, 0), 8) > $.uint(55, 8))) {
 							break
 						}
 						r = $.int(((r * 8) + $.int($.indexStringOrBytes(t, 0), 32)) - 48, 32)
@@ -996,11 +996,11 @@ export class parser {
 								break
 							}
 							let v = $.int(unhex($.int(c, 32)), 32)
-							if (v < 0) {
+							if ($.int(v, 32) < $.int(0, 32)) {
 								break Switch
 							}
 							r = $.int((r * 16) + v, 32)
-							if (r > unicode.MaxRune) {
+							if ($.int(r, 32) > $.int(unicode.MaxRune, 32)) {
 								break Switch
 							}
 							nhex++
@@ -1023,7 +1023,7 @@ export class parser {
 						}
 					}
 					let y = $.int(unhex($.int(c, 32)), 32)
-					if ((x < 0) || (y < 0)) {
+					if (($.int(x, 32) < $.int(0, 32)) || ($.int(y, 32) < $.int(0, 32))) {
 						break
 					}
 					return [$.int((x * 16) + y, 32), t, null]
@@ -1069,15 +1069,15 @@ export class parser {
 		let n: number = 0
 		let rest: string = ""
 		let ok: boolean = false
-		if ((($.stringEqual(s, "")) || ($.indexStringOrBytes(s, 0) < 48)) || (57 < $.indexStringOrBytes(s, 0))) {
+		if ((($.stringEqual(s, "")) || ($.uint($.indexStringOrBytes(s, 0), 8) < $.uint(48, 8))) || ($.uint(57, 8) < $.uint($.indexStringOrBytes(s, 0), 8))) {
 			return [n, rest, ok]
 		}
 		// Disallow leading zeros.
-		if (((($.len(s) >= 2) && ($.uint($.indexStringOrBytes(s, 0), 8) == $.uint(48, 8))) && (48 <= $.indexStringOrBytes(s, 1))) && ($.indexStringOrBytes(s, 1) <= 57)) {
+		if (((($.len(s) >= 2) && ($.uint($.indexStringOrBytes(s, 0), 8) == $.uint(48, 8))) && ($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, 1), 8))) && ($.uint($.indexStringOrBytes(s, 1), 8) <= $.uint(57, 8))) {
 			return [n, rest, ok]
 		}
 		let t = s
-		while (((!$.stringEqual(s, "")) && (48 <= $.indexStringOrBytes(s, 0))) && ($.indexStringOrBytes(s, 0) <= 57)) {
+		while (((!$.stringEqual(s, "")) && ($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, 0), 8))) && ($.uint($.indexStringOrBytes(s, 0), 8) <= $.uint(57, 8))) {
 			s = $.sliceStringOrBytes(s, 1, undefined)
 		}
 		rest = s
@@ -1601,7 +1601,7 @@ export class parser {
 			return ["", $.interfaceValue<$.GoError>(new Error({Code: "missing argument to repetition operator", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 		}
 		let sub: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
-		if ($.pointerValue<__goscript_regexp.Regexp>(sub).Op >= 128) {
+		if ($.uint($.pointerValue<__goscript_regexp.Regexp>(sub).Op, 8) >= $.uint(128, 8)) {
 			return ["", $.interfaceValue<$.GoError>(new Error({Code: "missing argument to repetition operator", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 		}
 
@@ -1639,7 +1639,7 @@ export class parser {
 			let re1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 1)
 			let re3: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = $.arrayIndex($.pointerValue<parser>(p).stack!, n - 3)
 			// Make re3 the more complex of the two.
-			if ($.pointerValue<__goscript_regexp.Regexp>(re1).Op > $.pointerValue<__goscript_regexp.Regexp>(re3).Op) {
+			if ($.uint($.pointerValue<__goscript_regexp.Regexp>(re1).Op, 8) > $.uint($.pointerValue<__goscript_regexp.Regexp>(re3).Op, 8)) {
 				let __goscriptAssign5_0: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re3
 				let __goscriptAssign5_1: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re1
 				re1 = __goscriptAssign5_0
@@ -1759,7 +1759,7 @@ export class ranges {
 		let p: $.Slice<number> = $.pointerValue<$.Slice<number>>(ra.p)
 		i = i * (2)
 		j = j * (2)
-		return ($.arrayIndex(p!, i) < $.arrayIndex(p!, j)) || (($.int($.arrayIndex(p!, i), 32) == $.int($.arrayIndex(p!, j), 32)) && ($.arrayIndex(p!, i + 1) > $.arrayIndex(p!, j + 1)))
+		return ($.int($.arrayIndex(p!, i), 32) < $.int($.arrayIndex(p!, j), 32)) || (($.int($.arrayIndex(p!, i), 32) == $.int($.arrayIndex(p!, j), 32)) && ($.int($.arrayIndex(p!, i + 1), 32) > $.int($.arrayIndex(p!, j + 1), 32)))
 	}
 
 	public Swap(i: number, j: number): void {
@@ -1867,7 +1867,7 @@ export function ErrorCode_String(e: ErrorCode): string {
 }
 
 export function minFoldRune(r: number): number {
-	if ((r < 65) || (r > 125251)) {
+	if (($.int(r, 32) < $.int(65, 32)) || ($.int(r, 32) > $.int(125251, 32))) {
 		return $.int(r, 32)
 	}
 	let m = $.int(r, 32)
@@ -2359,7 +2359,7 @@ export function matchRune(re: __goscript_regexp.Regexp | $.VarRef<__goscript_reg
 		case 4:
 		{
 			for (let i = 0; i < $.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune); i = i + (2)) {
-				if (($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i) <= r) && (r <= $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i + 1))) {
+				if (($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i), 32) <= $.int(r, 32)) && ($.int(r, 32) <= $.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, i + 1), 32))) {
 					return true
 				}
 			}
@@ -2459,7 +2459,7 @@ export function canonicalName(name: string): string {
 			}
 			case first:
 			{
-				if ((97 <= c) && (c <= 122)) {
+				if (($.uint(97, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(122, 8))) {
 					c = c - ($.uint(97 - 65, 8))
 				}
 				first = false
@@ -2467,7 +2467,7 @@ export function canonicalName(name: string): string {
 			}
 			default:
 			{
-				if ((65 <= c) && (c <= 90)) {
+				if (($.uint(65, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(90, 8))) {
 					c = c + ($.uint(97 - 65, 8))
 				}
 				break
@@ -2564,9 +2564,9 @@ export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number
 	for (let i = 2; i < $.len(r); i = i + (2)) {
 		let lo = $.int($.arrayIndex(r!, i), 32)
 		let hi = $.int($.arrayIndex(r!, i + 1), 32)
-		if (lo <= ($.arrayIndex(r!, w - 1) + 1)) {
+		if ($.int(lo, 32) <= $.int(($.arrayIndex(r!, w - 1) + 1), 32)) {
 			// merge with previous range
-			if (hi > $.arrayIndex(r!, w - 1)) {
+			if ($.int(hi, 32) > $.int($.arrayIndex(r!, w - 1), 32)) {
 				r![w - 1] = $.int(hi, 32)
 			}
 			continue
@@ -2584,10 +2584,10 @@ export function inCharClass(r: number, _class: $.Slice<number>): boolean {
 	let [, ok] = sort.Find(Math.trunc($.len(_class) / 2), $.functionValue((i: number): number => {
 		let lo = $.int($.arrayIndex(_class!, 2 * i), 32)
 		let hi = $.int($.arrayIndex(_class!, (2 * i) + 1), 32)
-		if (r > hi) {
+		if ($.int(r, 32) > $.int(hi, 32)) {
 			return +1
 		}
-		if (r < lo) {
+		if ($.int(r, 32) < $.int(lo, 32)) {
 			return -1
 		}
 		return 0
@@ -2612,11 +2612,11 @@ export function appendRange(r: $.Slice<number>, lo: number, hi: number): $.Slice
 		if (n >= i) {
 			let rlo = $.int($.arrayIndex(r!, n - i), 32)
 			let rhi = $.int($.arrayIndex(r!, (n - i) + 1), 32)
-			if ((lo <= (rhi + 1)) && (rlo <= (hi + 1))) {
-				if (lo < rlo) {
+			if (($.int(lo, 32) <= $.int((rhi + 1), 32)) && ($.int(rlo, 32) <= $.int((hi + 1), 32))) {
+				if ($.int(lo, 32) < $.int(rlo, 32)) {
 					r![n - i] = $.int(lo, 32)
 				}
-				if (hi > rhi) {
+				if ($.int(hi, 32) > $.int(rhi, 32)) {
 					r![(n - i) + 1] = $.int(hi, 32)
 				}
 				return r
@@ -2629,27 +2629,27 @@ export function appendRange(r: $.Slice<number>, lo: number, hi: number): $.Slice
 
 export function appendFoldedRange(r: $.Slice<number>, lo: number, hi: number): $.Slice<number> {
 	// Optimizations.
-	if ((lo <= 65) && (hi >= 125251)) {
+	if (($.int(lo, 32) <= $.int(65, 32)) && ($.int(hi, 32) >= $.int(125251, 32))) {
 		// Range is full: folding can't add more.
 		return appendRange(r, $.int(lo, 32), $.int(hi, 32))
 	}
-	if ((hi < 65) || (lo > 125251)) {
+	if (($.int(hi, 32) < $.int(65, 32)) || ($.int(lo, 32) > $.int(125251, 32))) {
 		// Range is outside folding possibilities.
 		return appendRange(r, $.int(lo, 32), $.int(hi, 32))
 	}
-	if (lo < 65) {
+	if ($.int(lo, 32) < $.int(65, 32)) {
 		// [lo, minFold-1] needs no folding.
 		r = appendRange(r, $.int(lo, 32), $.int(65 - 1, 32))
 		lo = $.int(65, 32)
 	}
-	if (hi > 125251) {
+	if ($.int(hi, 32) > $.int(125251, 32)) {
 		// [maxFold+1, hi] needs no folding.
 		r = appendRange(r, $.int(125251 + 1, 32), $.int(hi, 32))
 		hi = $.int(125251, 32)
 	}
 
 	// Brute force. Depend on appendRange to coalesce ranges on the fly.
-	for (let c = $.int(lo, 32); c <= hi; c++) {
+	for (let c = $.int(lo, 32); $.int(c, 32) <= $.int(hi, 32); c++) {
 		r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		let f = $.int(unicode.SimpleFold($.int(c, 32)), 32)
 		while ($.int(f, 32) != $.int(c, 32)) {
@@ -2679,12 +2679,12 @@ export function appendNegatedClass(r: $.Slice<number>, x: $.Slice<number>): $.Sl
 	for (let i = 0; i < $.len(x); i = i + (2)) {
 		let lo = $.int($.arrayIndex(x!, i), 32)
 		let hi = $.int($.arrayIndex(x!, i + 1), 32)
-		if (nextLo <= (lo - 1)) {
+		if ($.int(nextLo, 32) <= $.int((lo - 1), 32)) {
 			r = appendRange(r, $.int(nextLo, 32), $.int(lo - 1, 32))
 		}
 		nextLo = $.int(hi + 1, 32)
 	}
-	if (nextLo <= unicode.MaxRune) {
+	if ($.int(nextLo, 32) <= $.int(unicode.MaxRune, 32)) {
 		r = appendRange(r, $.int(nextLo, 32), $.int(unicode.MaxRune, 32))
 	}
 	return r
@@ -2700,7 +2700,7 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 			r = appendRange(r, $.int(lo, 32), $.int(hi, 32))
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
+		for (let c = $.int(lo, 32); $.int(c, 32) <= $.int(hi, 32); c = c + ($.int(stride, 32))) {
 			r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		}
 	}
@@ -2713,7 +2713,7 @@ export function appendTable(r: $.Slice<number>, x: unicode.RangeTable | $.VarRef
 			r = appendRange(r, $.int(lo, 32), $.int(hi, 32))
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
+		for (let c = $.int(lo, 32); $.int(c, 32) <= $.int(hi, 32); c = c + ($.int(stride, 32))) {
 			r = appendRange(r, $.int(c, 32), $.int(c, 32))
 		}
 	}
@@ -2728,14 +2728,14 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)
 		if ($.int(stride, 32) == $.int(1, 32)) {
-			if (nextLo <= (lo - 1)) {
+			if ($.int(nextLo, 32) <= $.int((lo - 1), 32)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(lo - 1, 32))
 			}
 			nextLo = $.int(hi + 1, 32)
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
-			if (nextLo <= (c - 1)) {
+		for (let c = $.int(lo, 32); $.int(c, 32) <= $.int(hi, 32); c = c + ($.int(stride, 32))) {
+			if ($.int(nextLo, 32) <= $.int((c - 1), 32)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(c - 1, 32))
 			}
 			nextLo = $.int(c + 1, 32)
@@ -2747,20 +2747,20 @@ export function appendNegatedTable(r: $.Slice<number>, x: unicode.RangeTable | $
 		let hi = $.int($.int(xr.Hi, 32), 32)
 		let stride = $.int($.int(xr.Stride, 32), 32)
 		if ($.int(stride, 32) == $.int(1, 32)) {
-			if (nextLo <= (lo - 1)) {
+			if ($.int(nextLo, 32) <= $.int((lo - 1), 32)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(lo - 1, 32))
 			}
 			nextLo = $.int(hi + 1, 32)
 			continue
 		}
-		for (let c = $.int(lo, 32); c <= hi; c = c + ($.int(stride, 32))) {
-			if (nextLo <= (c - 1)) {
+		for (let c = $.int(lo, 32); $.int(c, 32) <= $.int(hi, 32); c = c + ($.int(stride, 32))) {
+			if ($.int(nextLo, 32) <= $.int((c - 1), 32)) {
 				r = appendRange(r, $.int(nextLo, 32), $.int(c - 1, 32))
 			}
 			nextLo = $.int(c + 1, 32)
 		}
 	}
-	if (nextLo <= unicode.MaxRune) {
+	if ($.int(nextLo, 32) <= $.int(unicode.MaxRune, 32)) {
 		r = appendRange(r, $.int(nextLo, 32), $.int(unicode.MaxRune, 32))
 	}
 	return r
@@ -2772,7 +2772,7 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 	for (let i = 0; i < $.len(r); i = i + (2)) {
 		let lo = $.int($.arrayIndex(r!, i), 32)
 		let hi = $.int($.arrayIndex(r!, i + 1), 32)
-		if (nextLo <= (lo - 1)) {
+		if ($.int(nextLo, 32) <= $.int((lo - 1), 32)) {
 			r![w] = $.int(nextLo, 32)
 			r![w + 1] = $.int(lo - 1, 32)
 			w = w + (2)
@@ -2780,7 +2780,7 @@ export function negateClass(r: $.Slice<number>): $.Slice<number> {
 		nextLo = $.int(hi + 1, 32)
 	}
 	r = $.goSlice(r, undefined, w)
-	if (nextLo <= unicode.MaxRune) {
+	if ($.int(nextLo, 32) <= $.int(unicode.MaxRune, 32)) {
 		// It's possible for the negation to have one more
 		// range - this one - than the original class, so use append.
 		r = $.append(r, $.int(nextLo, 32), $.int(unicode.MaxRune, 32))
@@ -2815,17 +2815,17 @@ export function nextRune(s: string): [number, string, $.GoError] {
 }
 
 export function isalnum(c: number): boolean {
-	return (((48 <= c) && (c <= 57)) || ((65 <= c) && (c <= 90))) || ((97 <= c) && (c <= 122))
+	return ((($.int(48, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(57, 32))) || (($.int(65, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(90, 32)))) || (($.int(97, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(122, 32)))
 }
 
 export function unhex(c: number): number {
-	if ((48 <= c) && (c <= 57)) {
+	if (($.int(48, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(57, 32))) {
 		return $.int(c - 48, 32)
 	}
-	if ((97 <= c) && (c <= 102)) {
+	if (($.int(97, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(102, 32))) {
 		return $.int((c - 97) + 10, 32)
 	}
-	if ((65 <= c) && (c <= 70)) {
+	if (($.int(65, 32) <= $.int(c, 32)) && ($.int(c, 32) <= $.int(70, 32))) {
 		return $.int((c - 65) + 10, 32)
 	}
 	return $.int(-1, 32)

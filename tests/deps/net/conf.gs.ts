@@ -680,7 +680,7 @@ export async function goDebugNetDNS(): globalThis.Promise<[string, number]> {
 		if ($.stringEqual(s, "")) {
 			return
 		}
-		if ((48 <= $.indexStringOrBytes(s, 0)) && ($.indexStringOrBytes(s, 0) <= 57)) {
+		if (($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, 0), 8)) && ($.uint($.indexStringOrBytes(s, 0), 8) <= $.uint(57, 8))) {
 			let __goscriptTuple0: any = __goscript_parse.dtoi(s)
 			debugLevel = __goscriptTuple0[0]
 		} else {

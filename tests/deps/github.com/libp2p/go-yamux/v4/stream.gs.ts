@@ -669,14 +669,14 @@ export class Stream {
 		let now = $.markAsStructValue($.cloneStructValue(time.Now()))
 		{
 			let rtt = __goscript_session.Session.prototype.getRTT.call($.pointerValue<Stream>(s).session)
-			if ((($.uint(flags, 16) == $.uint(0, 16)) && (rtt > 0)) && ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue($.pointerValue<Stream>(s).epochStart))) < ($.int64Mul(rtt, 4)))) {
+			if ((($.uint(flags, 16) == $.uint(0, 16)) && (rtt > 0n)) && ($.markAsStructValue($.cloneStructValue(now)).Sub($.markAsStructValue($.cloneStructValue($.pointerValue<Stream>(s).epochStart))) < ($.int64Mul(rtt, 4)))) {
 				let recvWindow: number = 0
-				if ($.pointerValue<Stream>(s).recvWindow > (Math.trunc(math.MaxUint32 / 2))) {
+				if ($.uint($.pointerValue<Stream>(s).recvWindow, 32) > $.uint((Math.trunc(math.MaxUint32 / 2)), 32)) {
 					recvWindow = $.uint(__goscript_util.min($.arrayToSlice<number>([$.uint(math.MaxUint32, 32), $.uint($.pointerValue<__goscript_mux.Config>($.pointerValue<__goscript_session.Session>($.pointerValue<Stream>(s).session).config).MaxStreamWindowSize, 32)])), 32)
 				} else {
 					recvWindow = $.uint(__goscript_util.min($.arrayToSlice<number>([$.uint($.pointerValue<Stream>(s).recvWindow * 2, 32), $.uint($.pointerValue<__goscript_mux.Config>($.pointerValue<__goscript_session.Session>($.pointerValue<Stream>(s).session).config).MaxStreamWindowSize, 32)])), 32)
 				}
-				if (recvWindow > $.pointerValue<Stream>(s).recvWindow) {
+				if ($.uint(recvWindow, 32) > $.uint($.pointerValue<Stream>(s).recvWindow, 32)) {
 					let grow = $.uint(recvWindow - $.pointerValue<Stream>(s).recvWindow, 32)
 					{
 						let err = await $.pointerValue<Exclude<__goscript_session.MemoryManager, null>>($.pointerValue<Stream>(s).memorySpan).ReserveMemory($.int(grow), $.uint(128, 8))

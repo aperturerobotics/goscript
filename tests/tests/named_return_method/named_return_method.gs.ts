@@ -54,7 +54,7 @@ export class content {
 		const c: content | $.VarRef<content> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		if ((off < 0) || (off >= $.int64($.len($.pointerValue<content>(c).bytes)))) {
+		if ((off < 0n) || (off >= $.int64($.len($.pointerValue<content>(c).bytes)))) {
 			err = null
 			return [n, err]
 		}

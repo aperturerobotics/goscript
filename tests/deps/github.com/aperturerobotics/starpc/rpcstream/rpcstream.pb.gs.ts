@@ -425,7 +425,7 @@ export class RpcStreamPacket {
 			if (wireType == 4) {
 				return fmt.Errorf("proto: RpcStreamPacket: wiretype end group for non-group")
 			}
-			if (fieldNum <= 0) {
+			if ($.int(fieldNum, 32) <= $.int(0, 32)) {
 				return fmt.Errorf("proto: RpcStreamPacket: illegal tag %d (wire type %d)", $.namedValueInterfaceValue<any>(fieldNum, "int32", {}, { kind: $.TypeKind.Basic, name: "int32" }), $.namedValueInterfaceValue<any>(wire, "uint64", {}, { kind: $.TypeKind.Basic, name: "uint64" }))
 			}
 			switch (fieldNum) {
@@ -1213,7 +1213,7 @@ export class RpcStreamInit {
 			if (wireType == 4) {
 				return fmt.Errorf("proto: RpcStreamInit: wiretype end group for non-group")
 			}
-			if (fieldNum <= 0) {
+			if ($.int(fieldNum, 32) <= $.int(0, 32)) {
 				return fmt.Errorf("proto: RpcStreamInit: illegal tag %d (wire type %d)", $.namedValueInterfaceValue<any>(fieldNum, "int32", {}, { kind: $.TypeKind.Basic, name: "int32" }), $.namedValueInterfaceValue<any>(wire, "uint64", {}, { kind: $.TypeKind.Basic, name: "uint64" }))
 			}
 			switch (fieldNum) {
@@ -1528,7 +1528,7 @@ export class RpcAck {
 			if (wireType == 4) {
 				return fmt.Errorf("proto: RpcAck: wiretype end group for non-group")
 			}
-			if (fieldNum <= 0) {
+			if ($.int(fieldNum, 32) <= $.int(0, 32)) {
 				return fmt.Errorf("proto: RpcAck: illegal tag %d (wire type %d)", $.namedValueInterfaceValue<any>(fieldNum, "int32", {}, { kind: $.TypeKind.Basic, name: "int32" }), $.namedValueInterfaceValue<any>(wire, "uint64", {}, { kind: $.TypeKind.Basic, name: "uint64" }))
 			}
 			switch (fieldNum) {

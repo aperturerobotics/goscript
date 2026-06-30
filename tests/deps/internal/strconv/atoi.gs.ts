@@ -148,12 +148,12 @@ export function ParseUint(s: string, base: number, bitSize: number): [bigint, $.
 				continue
 				break
 			}
-			case (48 <= c) && (c <= 57):
+			case ($.uint(48, 8) <= $.uint(c, 8)) && ($.uint(c, 8) <= $.uint(57, 8)):
 			{
 				d = $.uint(c - 48, 8)
 				break
 			}
-			case (97 <= lower($.uint(c, 8))) && (lower($.uint(c, 8)) <= 122):
+			case ($.uint(97, 8) <= $.uint(lower($.uint(c, 8)), 8)) && ($.uint(lower($.uint(c, 8)), 8) <= $.uint(122, 8)):
 			{
 				d = $.uint((lower($.uint(c, 8)) - 97) + 10, 8)
 				break
@@ -165,7 +165,7 @@ export function ParseUint(s: string, base: number, bitSize: number): [bigint, $.
 			}
 		}
 
-		if (d >= $.uint(base, 8)) {
+		if ($.uint(d, 8) >= $.uint($.uint(base, 8), 8)) {
 			return [0n, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 		}
 
@@ -260,7 +260,7 @@ export function Atoi(s: string): [number, $.GoError] {
 		for (let __goscriptRangeTarget1 = $.stringToBytes(s), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget1); __rangeIndex++) {
 			let ch = __goscriptRangeTarget1![__rangeIndex]
 			ch = ch - ($.uint(48, 8))
-			if (ch > 9) {
+			if ($.uint(ch, 8) > $.uint(9, 8)) {
 				return [0, $.namedValueInterfaceValue<$.GoError>(2, "strconv.Error", {"Error": Error_Error}, { kind: $.TypeKind.Basic, name: "int", typeName: "strconv.Error" })]
 			}
 			n = (n * 10) + $.int(ch)
@@ -301,7 +301,7 @@ export function underscoreOK(s: string): boolean {
 	// Number proper.
 	for (; i < $.len(s); i++) {
 		// Digits are always okay.
-		if (((48 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 57)) || ((hex && (97 <= lower($.uint($.indexStringOrBytes(s, i), 8)))) && (lower($.uint($.indexStringOrBytes(s, i), 8)) <= 102))) {
+		if ((($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8))) || ((hex && ($.uint(97, 8) <= $.uint(lower($.uint($.indexStringOrBytes(s, i), 8)), 8))) && ($.uint(lower($.uint($.indexStringOrBytes(s, i), 8)), 8) <= $.uint(102, 8)))) {
 			saw = $.int(48, 32)
 			continue
 		}

@@ -816,7 +816,7 @@ export class Writer {
 		let size: number = 0
 		let err: $.GoError = null as $.GoError
 		// Compare as uint32 to correctly handle negative runes.
-		if ($.uint(r, 32) < utf8.RuneSelf) {
+		if ($.uint($.uint(r, 32), 32) < $.uint(utf8.RuneSelf, 32)) {
 			err = await Writer.prototype.WriteByte.call(b, $.uint($.uint(r, 8), 8))
 			if (err != null) {
 				return [0, err]

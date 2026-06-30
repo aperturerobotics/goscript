@@ -355,12 +355,12 @@ export function IP_DefaultMask(ip: IP): IPMask {
 		}
 	}
 	switch (true) {
-		case $.arrayIndex(ip!, 0) < 0x80:
+		case $.uint($.arrayIndex(ip!, 0), 8) < $.uint(0x80, 8):
 		{
 			return (classAMask as IPMask)
 			break
 		}
-		case $.arrayIndex(ip!, 0) < 0xC0:
+		case $.uint($.arrayIndex(ip!, 0), 8) < $.uint(0xC0, 8):
 		{
 			return (classBMask as IPMask)
 			break

@@ -311,7 +311,7 @@ export class openMapFile {
 		if ($.pointerValue<openMapFile>(f).offset >= $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data))) {
 			return [0, io.EOF]
 		}
-		if ($.pointerValue<openMapFile>(f).offset < 0) {
+		if ($.pointerValue<openMapFile>(f).offset < 0n) {
 			return [0, $.interfaceValue<$.GoError>(new fs.PathError({Op: "read", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
 		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, Number($.pointerValue<openMapFile>(f).offset), undefined))
@@ -321,7 +321,7 @@ export class openMapFile {
 
 	public ReadAt(b: $.Slice<number>, offset: bigint): [number, $.GoError] {
 		const f: openMapFile | $.VarRef<openMapFile> | null = this
-		if ((offset < 0) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
+		if ((offset < 0n) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
 			return [0, $.interfaceValue<$.GoError>(new fs.PathError({Op: "read", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
 		let n = $.copy(b, $.goSlice($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data, Number(offset), undefined))
@@ -349,7 +349,7 @@ export class openMapFile {
 				break
 			}
 		}
-		if ((offset < 0) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
+		if ((offset < 0n) || (offset > $.int64($.len($.pointerValue<MapFile>($.pointerValue<openMapFile>(f).mapFileInfo.f).Data)))) {
 			return [0n, $.interfaceValue<$.GoError>(new fs.PathError({Op: "seek", Path: $.pointerValue<openMapFile>(f).path, Err: fs.ErrInvalid}), "*fs.PathError")]
 		}
 		$.pointerValue<openMapFile>(f).offset = offset

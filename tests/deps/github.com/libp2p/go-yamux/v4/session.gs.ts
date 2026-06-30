@@ -687,7 +687,7 @@ export class Session {
 			var id = $.uint(atomic.LoadUint32($.pointerValue<Session>(s)._fields.nextStreamID), 32)
 			// Get an ID, and check for stream exhaustion
 
-			if (id >= (math.MaxUint32 - 1)) {
+			if ($.uint(id, 32) >= $.uint((math.MaxUint32 - 1), 32)) {
 				await $.pointerValue<Exclude<MemoryManager, null>>(span).Done()
 				return [null, $.interfaceValue<$.GoError>(__goscript__const.ErrStreamsExhausted, "*yamux.Error")]
 			}
@@ -1118,7 +1118,7 @@ export class Session {
 		// If we do not have a stream, likely we sent a RST and/or closed the stream for reading.
 		if (stream == null) {
 			// Drain any data on the wire
-			if (($.uint(__goscript__const.header_MsgType(hdr), 8) == $.uint(0, 8)) && (__goscript__const.header_Length(hdr) > 0)) {
+			if (($.uint(__goscript__const.header_MsgType(hdr), 8) == $.uint(0, 8)) && ($.uint(__goscript__const.header_Length(hdr), 32) > $.uint(0, 32))) {
 				{
 					let [, err] = await io.CopyN($.pointerValueOrNil(io.Discard)!, $.pointerValueOrNil($.pointerValue<Session>(s).reader)!, $.int64(__goscript__const.header_Length(hdr)))
 					if (err != null) {
@@ -1196,7 +1196,7 @@ export class Session {
 			}
 		}
 
-		if ($.pointerValue<Session>(s).numIncomingStreams >= $.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).MaxIncomingStreams) {
+		if ($.uint($.pointerValue<Session>(s).numIncomingStreams, 32) >= $.uint($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).MaxIncomingStreams, 32)) {
 			// too many active streams at the same time
 			await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[WARN] yamux: MaxIncomingStreams exceeded, forcing stream reset", null)
 			__defer.defer(async () => { await $.pointerValue<Exclude<MemoryManager, null>>(span).Done() })
@@ -1310,7 +1310,7 @@ export class Session {
 				}
 
 				let mt = $.uint(__goscript__const.header_MsgType(hdr), 8)
-				if ((mt < 0) || (mt > 3)) {
+				if (($.uint(mt, 8) < $.uint(0, 8)) || ($.uint(mt, 8) > $.uint(3, 8))) {
 					const __goscriptReturn8: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidMsgType, "*yamux.Error")
 					err = __goscriptReturn8
 					await __defer[Symbol.asyncDispose]()

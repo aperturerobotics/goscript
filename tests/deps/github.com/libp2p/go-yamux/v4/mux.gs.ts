@@ -247,16 +247,16 @@ export function VerifyConfig(config: Config | $.VarRef<Config> | null): $.GoErro
 		return fmt.Errorf("measure-rtt interval must be positive")
 	}
 
-	if ($.pointerValue<Config>(config).InitialStreamWindowSize < 262144) {
+	if ($.uint($.pointerValue<Config>(config).InitialStreamWindowSize, 32) < $.uint(262144, 32)) {
 		return errors.New("InitialStreamWindowSize must be larger or equal 256 kB")
 	}
-	if ($.pointerValue<Config>(config).MaxStreamWindowSize < $.pointerValue<Config>(config).InitialStreamWindowSize) {
+	if ($.uint($.pointerValue<Config>(config).MaxStreamWindowSize, 32) < $.uint($.pointerValue<Config>(config).InitialStreamWindowSize, 32)) {
 		return errors.New("MaxStreamWindowSize must be larger than the InitialStreamWindowSize")
 	}
-	if ($.pointerValue<Config>(config).MaxMessageSize < 1024) {
+	if ($.uint($.pointerValue<Config>(config).MaxMessageSize, 32) < $.uint(1024, 32)) {
 		return fmt.Errorf("MaxMessageSize must be greater than a kilobyte")
 	}
-	if ($.pointerValue<Config>(config).WriteCoalesceDelay < 0) {
+	if ($.pointerValue<Config>(config).WriteCoalesceDelay < 0n) {
 		return fmt.Errorf("WriteCoalesceDelay must be >= 0")
 	}
 	if ($.pointerValue<Config>(config).PingBacklog < 1) {

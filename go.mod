@@ -5,10 +5,10 @@ go 1.25.3
 toolchain go1.26.4
 
 require (
-	github.com/aperturerobotics/cli v1.1.0
+	github.com/aperturerobotics/cli v1.1.0 // latest
 	github.com/aperturerobotics/json-iterator-lite v1.1.0
-	github.com/aperturerobotics/protobuf-go-lite v0.14.1-0.20260604021409-f936dca845a2
-	github.com/aperturerobotics/util v1.34.10-0.20260610174257-740fe32c1ea1
+	github.com/aperturerobotics/protobuf-go-lite v0.15.0 // master
+	github.com/aperturerobotics/util v1.34.10-0.20260610174257-740fe32c1ea1 // master
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.5-0.20260508084601-d4a50659cfd6
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976

@@ -274,7 +274,7 @@ export class Inst {
 			}
 			case 2:
 			{
-				if ((r >= $.arrayIndex(rune!, 0)) && (r <= $.arrayIndex(rune!, 1))) {
+				if (($.int(r, 32) >= $.int($.arrayIndex(rune!, 0), 32)) && ($.int(r, 32) <= $.int($.arrayIndex(rune!, 1), 32))) {
 					return 0
 				}
 				return -1
@@ -285,10 +285,10 @@ export class Inst {
 			case 8:
 			{
 				for (let j = 0; j < $.len(rune); j = j + (2)) {
-					if (r < $.arrayIndex(rune!, j)) {
+					if ($.int(r, 32) < $.int($.arrayIndex(rune!, j), 32)) {
 						return -1
 					}
-					if (r <= $.arrayIndex(rune!, j + 1)) {
+					if ($.int(r, 32) <= $.int($.arrayIndex(rune!, j + 1), 32)) {
 						return Math.trunc(j / 2)
 					}
 				}
@@ -304,8 +304,8 @@ export class Inst {
 			let m = $.int($.uint($.uint64Shr($.uint(lo + hi, 64), 1), 64))
 			{
 				let c = $.int($.arrayIndex(rune!, 2 * m), 32)
-				if (c <= r) {
-					if (r <= $.arrayIndex(rune!, (2 * m) + 1)) {
+				if ($.int(c, 32) <= $.int(r, 32)) {
+					if ($.int(r, 32) <= $.int($.arrayIndex(rune!, (2 * m) + 1), 32)) {
 						return m
 					}
 					lo = m + 1
@@ -411,7 +411,7 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 			op = op | ($.uint(1, 8))
 			break
 		}
-		case r1 < 0:
+		case $.int(r1, 32) < $.int(0, 32):
 		{
 			op = op | ($.uint(4 | 1, 8))
 			break
@@ -428,7 +428,7 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 			op = op | ($.uint(2, 8))
 			break
 		}
-		case r2 < 0:
+		case $.int(r2, 32) < $.int(0, 32):
 		{
 			op = op | ($.uint(8 | 2, 8))
 			break
@@ -443,7 +443,7 @@ export function EmptyOpContext(r1: number, r2: number): EmptyOp {
 export function IsWordChar(r: number): boolean {
 	// Test for lowercase letters first, as these occur more
 	// frequently than uppercase letters in common cases.
-	return ((((97 <= r) && (r <= 122)) || ((65 <= r) && (r <= 90))) || ((48 <= r) && (r <= 57))) || ($.int(r, 32) == $.int(95, 32))
+	return (((($.int(97, 32) <= $.int(r, 32)) && ($.int(r, 32) <= $.int(122, 32))) || (($.int(65, 32) <= $.int(r, 32)) && ($.int(r, 32) <= $.int(90, 32)))) || (($.int(48, 32) <= $.int(r, 32)) && ($.int(r, 32) <= $.int(57, 32)))) || ($.int(r, 32) == $.int(95, 32))
 }
 
 export function bw(b: strings.Builder | $.VarRef<strings.Builder> | null, args: $.Slice<string>): void {

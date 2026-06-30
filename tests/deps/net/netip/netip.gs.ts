@@ -531,8 +531,8 @@ export class Addr {
 
 		const size: number = 39
 		let ret: $.Slice<number> = $.makeSlice<number>(0, 39, "byte")
-		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
-			if (i > 0) {
+		for (let i = $.uint($.uint(0, 8), 8); $.uint(i, 8) < $.uint(8, 8); i++) {
+			if ($.uint(i, 8) > $.uint(0, 8)) {
 				ret = $.append(ret, $.uint(58, 8))
 			}
 
@@ -649,14 +649,14 @@ export class Addr {
 		const ip = this
 		let zeroStart = $.uint($.uint(255, 8), 8)
 		let zeroEnd = $.uint($.uint(255, 8), 8)
-		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
+		for (let i = $.uint($.uint(0, 8), 8); $.uint(i, 8) < $.uint(8, 8); i++) {
 			let j = $.uint(i, 8)
-			while ((j < 8) && ($.uint($.markAsStructValue($.cloneStructValue(ip)).v6u16($.uint(j, 8)), 16) == $.uint(0, 16))) {
+			while (($.uint(j, 8) < $.uint(8, 8)) && ($.uint($.markAsStructValue($.cloneStructValue(ip)).v6u16($.uint(j, 8)), 16) == $.uint(0, 16))) {
 				j++
 			}
 			{
 				let l = $.uint(j - i, 8)
-				if ((l >= 2) && (l > (zeroEnd - zeroStart))) {
+				if (($.uint(l, 8) >= $.uint(2, 8)) && ($.uint(l, 8) > $.uint((zeroEnd - zeroStart), 8))) {
 					let __goscriptAssign0_0: number = $.uint(i, 8)
 					let __goscriptAssign0_1: number = $.uint(j, 8)
 					zeroStart = __goscriptAssign0_0
@@ -665,15 +665,15 @@ export class Addr {
 			}
 		}
 
-		for (let i = $.uint($.uint(0, 8), 8); i < 8; i++) {
+		for (let i = $.uint($.uint(0, 8), 8); $.uint(i, 8) < $.uint(8, 8); i++) {
 			if ($.uint(i, 8) == $.uint(zeroStart, 8)) {
 				ret = $.append(ret, $.uint(58, 8), $.uint(58, 8))
 				i = $.uint(zeroEnd, 8)
-				if (i >= 8) {
+				if ($.uint(i, 8) >= $.uint(8, 8)) {
 					break
 				}
 			} else {
-				if (i > 0) {
+				if ($.uint(i, 8) > $.uint(0, 8)) {
 					ret = $.append(ret, $.uint(58, 8))
 				}
 			}
@@ -1256,7 +1256,7 @@ export class Prefix {
 
 	public IsValid(): boolean {
 		const p = this
-		return p.bitsPlusOne > 0
+		return $.uint(p.bitsPlusOne, 8) > $.uint(0, 8)
 	}
 
 	public MarshalBinary(): [$.Slice<number>, $.GoError] {
@@ -1527,7 +1527,7 @@ export function parseIPv4Fields(_in: string, off: number, end: number, fields: $
 	let digLen: number = 0
 	let s = $.sliceStringOrBytes(_in, off, end)
 	for (let i = 0; i < $.len(s); i++) {
-		if (($.indexStringOrBytes(s, i) >= 48) && ($.indexStringOrBytes(s, i) <= 57)) {
+		if (($.uint($.indexStringOrBytes(s, i), 8) >= $.uint(48, 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8))) {
 			if ((digLen == 1) && (val == 0)) {
 				return $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv4 field has octet with leading zero"})), "netip.parseAddrError")
 			}
@@ -1617,13 +1617,13 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 		let acc = $.uint($.uint(0, 32), 32)
 		for (; off < $.len(s); off++) {
 			let c = $.uint($.indexStringOrBytes(s, off), 8)
-			if ((c >= 48) && (c <= 57)) {
+			if (($.uint(c, 8) >= $.uint(48, 8)) && ($.uint(c, 8) <= $.uint(57, 8))) {
 				acc = $.uint((acc << 4) + $.uint(c - 48, 32), 32)
 			} else {
-				if ((c >= 97) && (c <= 102)) {
+				if (($.uint(c, 8) >= $.uint(97, 8)) && ($.uint(c, 8) <= $.uint(102, 8))) {
 					acc = $.uint((acc << 4) + $.uint((c - 97) + 10, 32), 32)
 				} else {
-					if ((c >= 65) && (c <= 70)) {
+					if (($.uint(c, 8) >= $.uint(65, 8)) && ($.uint(c, 8) <= $.uint(70, 8))) {
 						acc = $.uint((acc << 4) + $.uint((c - 65) + 10, 32), 32)
 					} else {
 						break
@@ -1634,7 +1634,7 @@ export function parseIPv6(_in: string): [Addr, $.GoError] {
 				//more than 4 digits in group, fail.
 				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "each group must have 4 or less digits", at: s})), "netip.parseAddrError")]
 			}
-			if (acc > math.MaxUint16) {
+			if ($.uint(acc, 32) > $.uint(math.MaxUint16, 32)) {
 				// Overflow, fail.
 				return [$.markAsStructValue(new Addr()), $.interfaceValue<$.GoError>($.markAsStructValue(new parseAddrError({_in: _in, msg: "IPv6 field has value >=2^16", at: s})), "netip.parseAddrError")]
 			}
@@ -1748,10 +1748,10 @@ export function appendDecimal(b: $.Slice<number>, x: number): $.Slice<number> {
 	// Using this function rather than strconv.AppendUint makes IPv4
 	// string building 2x faster.
 
-	if (x >= 100) {
+	if ($.uint(x, 8) >= $.uint(100, 8)) {
 		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", Math.trunc(x / 100)), 8))
 	}
-	if (x >= 10) {
+	if ($.uint(x, 8) >= $.uint(10, 8)) {
 		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", (Math.trunc(x / 10)) % 10), 8))
 	}
 	return $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", x % 10), 8))
@@ -1761,13 +1761,13 @@ export function appendHex(b: $.Slice<number>, x: number): $.Slice<number> {
 	// Using this function rather than strconv.AppendUint makes IPv6
 	// string building 2x faster.
 
-	if (x >= 0x1000) {
+	if ($.uint(x, 16) >= $.uint(0x1000, 16)) {
 		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", $.uintShr(x, 12, 16)), 8))
 	}
-	if (x >= 0x100) {
+	if ($.uint(x, 16) >= $.uint(0x100, 16)) {
 		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 8, 16)) & 0xf), 8))
 	}
-	if (x >= 0x10) {
+	if ($.uint(x, 16) >= $.uint(0x10, 16)) {
 		b = $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", ($.uintShr(x, 4, 16)) & 0xf), 8))
 	}
 	return $.append(b, $.uint($.indexStringOrBytes("0123456789abcdef", x & 0xf), 8))
@@ -1874,7 +1874,7 @@ export function ParsePrefix(s: string): [Prefix, $.GoError] {
 	let bitsStr = $.sliceStringOrBytes(s, i + 1, undefined)
 
 	// strconv.Atoi accepts a leading sign and leading zeroes, but we don't want that.
-	if (($.len(bitsStr) > 1) && (($.indexStringOrBytes(bitsStr, 0) < 49) || ($.indexStringOrBytes(bitsStr, 0) > 57))) {
+	if (($.len(bitsStr) > 1) && (($.uint($.indexStringOrBytes(bitsStr, 0), 8) < $.uint(49, 8)) || ($.uint($.indexStringOrBytes(bitsStr, 0), 8) > $.uint(57, 8)))) {
 		return [$.markAsStructValue(new Prefix()), $.interfaceValue<$.GoError>((() => { const __goscriptLiteralField4 = "bad bits after slash: " + strconv.Quote(bitsStr); return $.markAsStructValue(new parsePrefixError({_in: s, msg: __goscriptLiteralField4})) })(), "netip.parsePrefixError")]
 	}
 

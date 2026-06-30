@@ -247,7 +247,7 @@ export class netConn {
 			time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer))
 		} else {
 			let dur = time.Until($.markAsStructValue($.cloneStructValue(t)))
-			if (dur <= 0) {
+			if (dur <= 0n) {
 				dur = 1n
 			}
 			time.Timer.prototype.Reset.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer), dur)
@@ -262,7 +262,7 @@ export class netConn {
 			time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer))
 		} else {
 			let dur = time.Until($.markAsStructValue($.cloneStructValue(t)))
-			if (dur <= 0) {
+			if (dur <= 0n) {
 				dur = 1n
 			}
 			time.Timer.prototype.Reset.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).writeTimer), dur)

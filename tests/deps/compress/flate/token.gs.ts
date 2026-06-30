@@ -52,10 +52,10 @@ export function lengthCode(len: number): number {
 }
 
 export function offsetCode(off: number): number {
-	if (off < $.uint($.len(offsetCodes), 32)) {
+	if ($.uint(off, 32) < $.uint($.uint($.len(offsetCodes), 32), 32)) {
 		return $.uint($.arrayIndex(offsetCodes, off), 32)
 	}
-	if (($.uintShr(off, 7, 32)) < $.uint($.len(offsetCodes), 32)) {
+	if ($.uint(($.uintShr(off, 7, 32)), 32) < $.uint($.uint($.len(offsetCodes), 32), 32)) {
 		return $.uint($.arrayIndex(offsetCodes, $.uintShr(off, 7, 32)) + 14, 32)
 	}
 	return $.uint($.arrayIndex(offsetCodes, $.uintShr(off, 14, 32)) + 28, 32)

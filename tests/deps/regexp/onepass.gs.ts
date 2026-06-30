@@ -198,15 +198,15 @@ export class queueOnePass {
 
 	public contains(u: number): boolean {
 		const q: queueOnePass | $.VarRef<queueOnePass> | null = this
-		if (u >= $.uint($.len($.pointerValue<queueOnePass>(q).sparse), 32)) {
+		if ($.uint(u, 32) >= $.uint($.uint($.len($.pointerValue<queueOnePass>(q).sparse), 32), 32)) {
 			return false
 		}
-		return ($.arrayIndex($.pointerValue<queueOnePass>(q).sparse!, u) < $.pointerValue<queueOnePass>(q).size) && ($.uint($.arrayIndex($.pointerValue<queueOnePass>(q).dense!, $.arrayIndex($.pointerValue<queueOnePass>(q).sparse!, u)), 32) == $.uint(u, 32))
+		return ($.uint($.arrayIndex($.pointerValue<queueOnePass>(q).sparse!, u), 32) < $.uint($.pointerValue<queueOnePass>(q).size, 32)) && ($.uint($.arrayIndex($.pointerValue<queueOnePass>(q).dense!, $.arrayIndex($.pointerValue<queueOnePass>(q).sparse!, u)), 32) == $.uint(u, 32))
 	}
 
 	public empty(): boolean {
 		const q: queueOnePass | $.VarRef<queueOnePass> | null = this
-		return $.pointerValue<queueOnePass>(q).nextIndex >= $.pointerValue<queueOnePass>(q).size
+		return $.uint($.pointerValue<queueOnePass>(q).nextIndex, 32) >= $.uint($.pointerValue<queueOnePass>(q).size, 32)
 	}
 
 	public insert(u: number): void {
@@ -218,7 +218,7 @@ export class queueOnePass {
 
 	public insertNew(u: number): void {
 		let q: queueOnePass | $.VarRef<queueOnePass> | null = this
-		if (u >= $.uint($.len($.pointerValue<queueOnePass>(q).sparse), 32)) {
+		if ($.uint(u, 32) >= $.uint($.uint($.len($.pointerValue<queueOnePass>(q).sparse), 32), 32)) {
 			return
 		}
 		$.pointerValue<queueOnePass>(q).sparse![u] = $.uint($.pointerValue<queueOnePass>(q).size, 32)
@@ -342,7 +342,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 
 	let ix = -1
 	let extend: ((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number) => boolean | globalThis.Promise<boolean>) | null = $.functionValue((newLow: $.VarRef<number> | null, newArray: $.VarRef<$.Slice<number>> | null, pc: number): boolean => {
-		if ((ix > 0) && ($.arrayIndex(($.pointerValue<$.Slice<number>>(newArray))!, $.pointerValue<number>(newLow)) <= $.arrayIndex(merged!, ix))) {
+		if ((ix > 0) && ($.int($.arrayIndex(($.pointerValue<$.Slice<number>>(newArray))!, $.pointerValue<number>(newLow)), 32) <= $.int($.arrayIndex(merged!, ix), 32))) {
 			return false
 		}
 		merged = $.append(merged, $.int($.arrayIndex(($.pointerValue<$.Slice<number>>(newArray))!, $.pointerValue<number>(newLow)), 32), $.int($.arrayIndex(($.pointerValue<$.Slice<number>>(newArray))!, $.pointerValue<number>(newLow) + 1), 32))
@@ -364,7 +364,7 @@ export async function mergeRuneSets(leftRunes: $.VarRef<$.Slice<number>> | null,
 				ok = await extend!(rx, rightRunes, $.uint(rightPC, 32))
 				break
 			}
-			case $.arrayIndex(($.pointerValue<$.Slice<number>>(rightRunes))!, rx.value) < $.arrayIndex(($.pointerValue<$.Slice<number>>(leftRunes))!, lx.value):
+			case $.int($.arrayIndex(($.pointerValue<$.Slice<number>>(rightRunes))!, rx.value), 32) < $.int($.arrayIndex(($.pointerValue<$.Slice<number>>(leftRunes))!, lx.value), 32):
 			{
 				ok = await extend!(rx, rightRunes, $.uint(rightPC, 32))
 				break

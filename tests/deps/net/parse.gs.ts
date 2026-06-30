@@ -211,7 +211,7 @@ export function dtoi(s: string): [number, number, boolean] {
 	let i: number = 0
 	let ok: boolean = false
 	n = 0
-	for (i = 0; ((i < $.len(s)) && (48 <= $.indexStringOrBytes(s, i))) && ($.indexStringOrBytes(s, i) <= 57); i++) {
+	for (i = 0; ((i < $.len(s)) && ($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8))) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8)); i++) {
 		n = (n * 10) + $.int($.indexStringOrBytes(s, i) - 48)
 		if (n >= 16777215) {
 			return [16777215, i, false]
@@ -229,15 +229,15 @@ export function xtoi(s: string): [number, number, boolean] {
 	let ok: boolean = false
 	n = 0
 	for (i = 0; i < $.len(s); i++) {
-		if ((48 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 57)) {
+		if (($.uint(48, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(57, 8))) {
 			n = n * (16)
 			n = n + ($.int($.indexStringOrBytes(s, i) - 48))
 		} else {
-			if ((97 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 102)) {
+			if (($.uint(97, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(102, 8))) {
 				n = n * (16)
 				n = n + ($.int($.indexStringOrBytes(s, i) - 97) + 10)
 			} else {
-				if ((65 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 70)) {
+				if (($.uint(65, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(70, 8))) {
 					n = n * (16)
 					n = n + ($.int($.indexStringOrBytes(s, i) - 65) + 10)
 				} else {
@@ -265,7 +265,7 @@ export function xtoi2(s: string, e: number): [number, boolean] {
 
 export function hasUpperCase(s: string): boolean {
 	for (const [i, __rangeRune] of $.rangeString(s)) {
-		if ((65 <= $.indexStringOrBytes(s, i)) && ($.indexStringOrBytes(s, i) <= 90)) {
+		if (($.uint(65, 8) <= $.uint($.indexStringOrBytes(s, i), 8)) && ($.uint($.indexStringOrBytes(s, i), 8) <= $.uint(90, 8))) {
 			return true
 		}
 	}
@@ -275,14 +275,14 @@ export function hasUpperCase(s: string): boolean {
 export function lowerASCIIBytes(x: $.Slice<number>): void {
 	for (let __goscriptRangeTarget0 = x, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
 		let b = __goscriptRangeTarget0![i]
-		if ((65 <= b) && (b <= 90)) {
+		if (($.uint(65, 8) <= $.uint(b, 8)) && ($.uint(b, 8) <= $.uint(90, 8))) {
 			x![i] = x![i] + ($.uint(97 - 65, 8))
 		}
 	}
 }
 
 export function lowerASCII(b: number): number {
-	if ((65 <= b) && (b <= 90)) {
+	if (($.uint(65, 8) <= $.uint(b, 8)) && ($.uint(b, 8) <= $.uint(90, 8))) {
 		return $.uint(b + (97 - 65), 8)
 	}
 	return $.uint(b, 8)

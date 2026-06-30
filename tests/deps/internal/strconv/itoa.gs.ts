@@ -16,7 +16,7 @@ export const host64bit: boolean = true
 
 export function FormatUint(i: bigint, base: number): string {
 	if (base == 10) {
-		if (i < 100) {
+		if (i < 100n) {
 			return small($.int(i))
 		}
 		let a: Uint8Array = new Uint8Array(24)
@@ -29,22 +29,22 @@ export function FormatUint(i: bigint, base: number): string {
 
 export function FormatInt(i: bigint, base: number): string {
 	if (base == 10) {
-		if ((0 <= i) && (i < 100)) {
+		if ((0n <= i) && (i < 100n)) {
 			return small($.int(i))
 		}
 		let a: Uint8Array = new Uint8Array(24)
 		let u = $.uint64(i)
-		if (i < 0) {
+		if (i < 0n) {
 			u = -u
 		}
 		let j = formatBase10($.goSlice(a, undefined, undefined), u)
-		if (i < 0) {
+		if (i < 0n) {
 			j--
 			a[j] = $.uint(45, 8)
 		}
 		return $.bytesToString($.goSlice(a, j, undefined))
 	}
-	let [, s] = formatBits(null, $.uint64(i), base, i < 0, false)
+	let [, s] = formatBits(null, $.uint64(i), base, i < 0n, false)
 	return s
 }
 
@@ -54,7 +54,7 @@ export function Itoa(i: number): string {
 
 export function AppendInt(dst: $.Slice<number>, i: bigint, base: number): $.Slice<number> {
 	let u = $.uint64(i)
-	if (i < 0) {
+	if (i < 0n) {
 		dst = $.append(dst, $.uint(45, 8))
 		u = -u
 	}
@@ -63,7 +63,7 @@ export function AppendInt(dst: $.Slice<number>, i: bigint, base: number): $.Slic
 
 export function AppendUint(dst: $.Slice<number>, i: bigint, base: number): $.Slice<number> {
 	if (base == 10) {
-		if (i < 100) {
+		if (i < 100n) {
 			return $.appendSlice(dst, $.stringToBytes(small($.int(i))))
 		}
 		let a: Uint8Array = new Uint8Array(24)
@@ -192,7 +192,7 @@ export function formatBase10(a: $.Slice<number>, u: bigint): number {
 
 	// Convert final chunk, at most 8 digits.
 	let lo = $.uint($.uint(u, 32), 32)
-	while (lo >= 100) {
+	while ($.uint(lo, 32) >= $.uint(100, 32)) {
 		let dd: number = 0
 		let __goscriptAssign3_0: number = $.uint(Math.trunc(lo / 100), 32)
 		let __goscriptAssign3_1: number = $.uint((lo % 100) * 2, 32)
@@ -207,7 +207,7 @@ export function formatBase10(a: $.Slice<number>, u: bigint): number {
 	i--
 	let dd = $.uint(lo * 2, 32)
 	a![i] = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 1), 8)
-	if (lo >= 10) {
+	if ($.uint(lo, 32) >= $.uint(10, 32)) {
 		i--
 		a![i] = $.uint($.indexStringOrBytes("00010203040506070809101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899", dd + 0), 8)
 	}

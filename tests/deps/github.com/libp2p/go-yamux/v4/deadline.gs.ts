@@ -78,7 +78,7 @@ export class pipeDeadline {
 		// Time in the future, setup a timer to cancel in the future.
 		{
 			let dur = time.Until($.markAsStructValue($.cloneStructValue(t)))
-			if (dur > 0) {
+			if (dur > 0n) {
 				if (closed) {
 					$.pointerValue<pipeDeadline>(d).cancel = $.makeChannel<{}>(0, {}, "both")
 				}

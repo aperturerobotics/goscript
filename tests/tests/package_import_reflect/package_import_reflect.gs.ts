@@ -62,7 +62,7 @@ export class Person {
 }
 
 export function reflectOverlap(x: $.Slice<number>, y: $.Slice<number>): boolean {
-	return ((($.len(x) > 0) && ($.len(y) > 0)) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer() <= $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, $.len(y) - 1), "*byte")))).Pointer())) && ($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer() <= $.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, $.len(x) - 1), "*byte")))).Pointer())
+	return ((($.len(x) > 0) && ($.len(y) > 0)) && ($.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, 0), "*byte")))).Pointer(), 64) <= $.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, $.len(y) - 1), "*byte")))).Pointer(), 64))) && ($.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(y!, 0), "*byte")))).Pointer(), 64) <= $.uint($.markAsStructValue($.cloneStructValue(reflect.ValueOf($.interfaceValue<any>($.indexRef(x!, $.len(x) - 1), "*byte")))).Pointer(), 64))
 }
 
 export function reflectSameStart(x: $.Slice<number>, y: $.Slice<number>): boolean {

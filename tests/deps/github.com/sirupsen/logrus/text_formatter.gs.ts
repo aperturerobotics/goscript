@@ -776,7 +776,7 @@ export function needsQuotingBytes(bs: $.Slice<number>): boolean {
 }
 
 export function isSafeByte(ch: number): boolean {
-	let ok = (ch < 0x80) && ((((ch >= 97) && (ch <= 122)) || ((ch >= 65) && (ch <= 90))) || ((ch >= 48) && (ch <= 57)))
+	let ok = ($.uint(ch, 8) < $.uint(0x80, 8)) && (((($.uint(ch, 8) >= $.uint(97, 8)) && ($.uint(ch, 8) <= $.uint(122, 8))) || (($.uint(ch, 8) >= $.uint(65, 8)) && ($.uint(ch, 8) <= $.uint(90, 8)))) || (($.uint(ch, 8) >= $.uint(48, 8)) && ($.uint(ch, 8) <= $.uint(57, 8))))
 	if (ok) {
 		return true
 	}

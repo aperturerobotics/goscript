@@ -130,7 +130,7 @@ export function __goscript_init_levelPrefixOnce(): void {
 	let maxLen = 0
 	for (let __goscriptRangeTarget0 = __goscript_logrus.__goscript_get_AllLevels(), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 		let lvl = __goscriptRangeTarget0![__rangeIndex]
-		if (lvl > maxLevel) {
+		if ($.uint(lvl, 32) > $.uint(maxLevel, 32)) {
 			maxLevel = $.uint(lvl, 32)
 		}
 		{

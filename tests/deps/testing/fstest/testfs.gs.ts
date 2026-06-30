@@ -539,7 +539,7 @@ export class fsTester {
 
 		// Try to find a letter that appears in only some of the final names.
 		let c = $.int($.int(97, 32), 32)
-		for (; c <= 122; c++) {
+		for (; $.int(c, 32) <= $.int(122, 32); c++) {
 			let have = false
 			let haveNot = false
 			for (let __goscriptRangeTarget11 = list, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget11); __rangeIndex++) {
@@ -554,7 +554,7 @@ export class fsTester {
 				break
 			}
 		}
-		if (c > 122) {
+		if ($.int(c, 32) > $.int(122, 32)) {
 			c = $.int(97, 32)
 		}
 		glob = glob + (("*" + String.fromCodePoint(c)) + "*")

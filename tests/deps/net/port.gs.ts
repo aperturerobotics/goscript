@@ -24,27 +24,27 @@ export function parsePort(service: string): [number, boolean] {
 	}
 	let n: number = 0
 	for (let [__rangeIndex, d] of $.rangeString(service)) {
-		if ((48 <= d) && (d <= 57)) {
+		if (($.int(48, 32) <= $.int(d, 32)) && ($.int(d, 32) <= $.int(57, 32))) {
 			d = d - ($.int(48, 32))
 		} else {
 			return [0, true]
 		}
-		if (n >= 1073741824) {
+		if ($.uint(n, 32) >= $.uint(1073741824, 32)) {
 			n = $.uint(4294967295, 32)
 			break
 		}
 		n = n * ($.uint(10, 32))
 		let nn = $.uint(n + $.uint(d, 32), 32)
-		if ((nn < n) || (nn > 4294967295)) {
+		if (($.uint(nn, 32) < $.uint(n, 32)) || ($.uint(nn, 32) > $.uint(4294967295, 32))) {
 			n = $.uint(4294967295, 32)
 			break
 		}
 		n = $.uint(nn, 32)
 	}
-	if (!neg && (n >= 1073741824)) {
+	if (!neg && ($.uint(n, 32) >= $.uint(1073741824, 32))) {
 		port = $.int(1073741824 - 1)
 	} else {
-		if (neg && (n > 1073741824)) {
+		if (neg && ($.uint(n, 32) > $.uint(1073741824, 32))) {
 			port = $.int(1073741824)
 		} else {
 			port = $.int(n)

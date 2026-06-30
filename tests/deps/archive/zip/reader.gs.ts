@@ -1136,7 +1136,7 @@ export async function OpenReader(name: string): globalThis.Promise<[ReadCloser |
 }
 
 export async function NewReader(r: io.ReaderAt | null, size: bigint): globalThis.Promise<[Reader | $.VarRef<Reader> | null, $.GoError]> {
-	if (size < 0) {
+	if (size < 0n) {
 		return [null, errors.New("zip: size cannot be negative")]
 	}
 	let zr: Reader | $.VarRef<Reader> | null = new Reader()
@@ -1435,7 +1435,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: bigint): glo
 	// These values mean that the file can be a zip64 file
 	if ((($.pointerValue<__goscript_struct.directoryEnd>(d).directoryRecords == 65535n) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directorySize == 65535n)) || ($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset == 4294967295n)) {
 		let [p, __goscriptShadow2] = await findDirectory64End(r, directoryEndOffset)
-		if ((__goscriptShadow2 == null) && (p >= 0)) {
+		if ((__goscriptShadow2 == null) && (p >= 0n)) {
 			directoryEndOffset = p
 			__goscriptShadow2 = await readDirectory64End(r, p, d)
 		}
@@ -1454,7 +1454,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: bigint): glo
 	// Make sure directoryOffset points to somewhere in our file.
 	{
 		let o = $.int64Add(baseOffset, $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset))
-		if ((o < 0) || (o >= size)) {
+		if ((o < 0n) || (o >= size)) {
 			return [null, 0n, ErrFormat]
 		}
 	}
@@ -1464,7 +1464,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: bigint): glo
 	// baseOffset is 0, then just use a baseOffset of 0.
 	// We've seen files in which the directory end data gives us
 	// an incorrect baseOffset.
-	if (baseOffset > 0) {
+	if (baseOffset > 0n) {
 		let off = $.int64($.pointerValue<__goscript_struct.directoryEnd>(d).directoryOffset)
 		let rs: io.SectionReader | $.VarRef<io.SectionReader> | null = io.NewSectionReader($.pointerValueOrNil(r)!, off, $.int64Sub(size, off))
 		if (await readDirectoryHeader(new File(), $.interfaceValue<io.Reader | null>(rs, "*io.SectionReader")) == null) {
@@ -1477,7 +1477,7 @@ export async function readDirectoryEnd(r: io.ReaderAt | null, size: bigint): glo
 
 export async function findDirectory64End(r: io.ReaderAt | null, directoryEndOffset: bigint): globalThis.Promise<[bigint, $.GoError]> {
 	let locOffset = $.int64Sub(directoryEndOffset, 20)
-	if (locOffset < 0) {
+	if (locOffset < 0n) {
 		return [-1n, null]
 	}
 	let buf: $.Slice<number> = $.makeSlice<number>(20, undefined, "byte")

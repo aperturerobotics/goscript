@@ -74,7 +74,7 @@ export function eiselLemire64(man: bigint, exp10: number, neg: boolean): [number
 	// From 54 to 53 Bits.
 	retMantissa = $.uint64Add(retMantissa, $.uint64And(retMantissa, 1))
 	retMantissa = $.uint64Shr(retMantissa, 1n)
-	if (($.uint64Shr(retMantissa, 53)) > 0) {
+	if (($.uint64Shr(retMantissa, 53)) > 0n) {
 		retMantissa = $.uint64Shr(retMantissa, 1n)
 		retExp2 = $.uint64Add(retExp2, 1n)
 	}
@@ -83,7 +83,7 @@ export function eiselLemire64(man: bigint, exp10: number, neg: boolean): [number
 	//
 	// The if block is equivalent to (but has fewer branches than):
 	//   if retExp2 <= 0 || retExp2 >= 0x7FF { etc }
-	if (($.uint64Sub(retExp2, 1)) >= ($.uint64Sub(0x7FF, 1))) {
+	if (($.uint64Sub(retExp2, 1)) >= 2046n) {
 		return [0, false]
 	}
 	let retBits = $.uint64Or(($.uint64Mul(retExp2, (2 ** 52))), ($.uint64And(retMantissa, ($.uint64Sub((4503599627370496), 1)))))
@@ -158,7 +158,7 @@ export function eiselLemire32(man: bigint, exp10: number, neg: boolean): [number
 	// From 54 to 53 Bits (and for float32, it's from 25 to 24 bits).
 	retMantissa = $.uint64Add(retMantissa, $.uint64And(retMantissa, 1))
 	retMantissa = $.uint64Shr(retMantissa, 1n)
-	if (($.uint64Shr(retMantissa, 24)) > 0) {
+	if (($.uint64Shr(retMantissa, 24)) > 0n) {
 		retMantissa = $.uint64Shr(retMantissa, 1n)
 		retExp2 = $.uint64Add(retExp2, 1n)
 	}
@@ -167,7 +167,7 @@ export function eiselLemire32(man: bigint, exp10: number, neg: boolean): [number
 	//
 	// The if block is equivalent to (but has fewer branches than):
 	//   if retExp2 <= 0 || retExp2 >= 0xFF { etc }
-	if (($.uint64Sub(retExp2, 1)) >= ($.uint64Sub(0xFF, 1))) {
+	if (($.uint64Sub(retExp2, 1)) >= 254n) {
 		return [0, false]
 	}
 	let retBits = $.uint64Or(($.uint64Shl(retExp2, 23)), ($.uint64And(retMantissa, ($.uint64Sub((8388608), 1)))))

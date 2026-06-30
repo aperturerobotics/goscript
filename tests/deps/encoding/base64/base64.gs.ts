@@ -266,7 +266,7 @@ export class Encoding {
 	public WithPadding(padding: number): Encoding | $.VarRef<Encoding> | null {
 		let enc = $.varRef(this)
 		switch (true) {
-			case (((padding < -1) || ($.int(padding, 32) == $.int(13, 32))) || ($.int(padding, 32) == $.int(10, 32))) || (padding > 0xff):
+			case ((($.int(padding, 32) < $.int(-1, 32)) || ($.int(padding, 32) == $.int(13, 32))) || ($.int(padding, 32) == $.int(10, 32))) || ($.int(padding, 32) > $.int(0xff, 32)):
 			{
 				$.panic("invalid padding")
 				break

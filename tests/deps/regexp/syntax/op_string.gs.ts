@@ -47,7 +47,7 @@ export function __goscript_set__Op_index_0(__goscriptValue: Uint8Array): void {
 
 export function Op_String(i: __goscript_regexp.Op): string {
 	switch (true) {
-		case (1 <= i) && (i <= 19):
+		case ($.uint(1, 8) <= $.uint(i, 8)) && ($.uint(i, 8) <= $.uint(19, 8)):
 		{
 			i = i - ($.uint(1, 8))
 			return $.sliceStringOrBytes("NoMatchEmptyMatchLiteralCharClassAnyCharNotNLAnyCharBeginLineEndLineBeginTextEndTextWordBoundaryNoWordBoundaryCaptureStarPlusQuestRepeatConcatAlternate", $.arrayIndex(_Op_index_0, i), $.arrayIndex(_Op_index_0, i + 1))

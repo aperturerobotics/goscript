@@ -215,7 +215,7 @@ export class Writer {
 			writeBuf_uint16(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).ModifiedTime, 16))
 			writeBuf_uint16(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).ModifiedDate, 16))
 			writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).CRC32, 32))
-			if ($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).isZip64() || ($.pointerValue<header>(h).offset >= 4294967295)) {
+			if ($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).isZip64() || ($.pointerValue<header>(h).offset >= 4294967295n)) {
 				// the file needs a zip64 header. store maxint in both
 				// 32 bit size fields (and offset later) to signal that the
 				// zip64 extra header should be used.
@@ -241,7 +241,7 @@ export class Writer {
 			writeBuf_uint16(b, $.uint($.uint($.len($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).Comment), 16), 16))
 			b.value = ($.goSlice(b.value, 4, undefined) as writeBuf)
 			writeBuf_uint32(b, $.uint($.pointerValue<__goscript_struct.FileHeader>($.pointerValue<header>(h).FileHeader).ExternalAttrs, 32))
-			if ($.pointerValue<header>(h).offset > 4294967295) {
+			if ($.pointerValue<header>(h).offset > 4294967295n) {
 				writeBuf_uint32(b, $.uint(4294967295, 32))
 			} else {
 				writeBuf_uint32(b, $.uint($.uint($.pointerValue<header>(h).offset, 32), 32))
@@ -284,7 +284,7 @@ export class Writer {
 			}
 		}
 
-		if (((records >= 65535) || (size >= 4294967295)) || (offset >= 4294967295)) {
+		if (((records >= 65535n) || (size >= 4294967295n)) || (offset >= 4294967295n)) {
 			let buf: Uint8Array = new Uint8Array(76)
 			let b: $.VarRef<writeBuf> = $.varRef((($.goSlice(buf, undefined, undefined) as writeBuf) as writeBuf))
 
@@ -1031,7 +1031,7 @@ export function detectUTF8(s: string): [boolean, boolean] {
 		//
 		// Forbid 0x7e and 0x5c since EUC-KR and Shift-JIS replace those
 		// characters with localized currency and overline characters.
-		if (((r < 0x20) || (r > 0x7d)) || ($.int(r, 32) == $.int(0x5c, 32))) {
+		if ((($.int(r, 32) < $.int(0x20, 32)) || ($.int(r, 32) > $.int(0x7d, 32))) || ($.int(r, 32) == $.int(0x5c, 32))) {
 			if (!utf8.ValidRune($.int(r, 32)) || (($.int(r, 32) == $.int(utf8.RuneError, 32)) && (size == 1))) {
 				return [false, false]
 			}

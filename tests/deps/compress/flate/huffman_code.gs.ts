@@ -159,7 +159,7 @@ export class huffmanEncoder {
 
 	public bitCounts(list: $.Slice<literalNode>, maxBits: number): $.Slice<number> {
 		const h: huffmanEncoder | $.VarRef<huffmanEncoder> | null = this
-		if (maxBits >= 16) {
+		if ($.int(maxBits, 32) >= $.int(16, 32)) {
 			$.panic("flate: maxBits too large")
 		}
 		let n = $.int($.int($.len(list), 32), 32)
@@ -168,7 +168,7 @@ export class huffmanEncoder {
 
 		// The tree can't have greater depth than n - 1, no matter what. This
 		// saves a little bit of work in some small cases
-		if (maxBits > (n - 1)) {
+		if ($.int(maxBits, 32) > $.int((n - 1), 32)) {
 			maxBits = $.int(n - 1, 32)
 		}
 
@@ -183,7 +183,7 @@ export class huffmanEncoder {
 		// of the level j ancestor.
 		let leafCounts: number[][] = Array.from({ length: 16 }, () => Array.from({ length: 16 }, () => 0))
 
-		for (let level = $.int($.int(1, 32), 32); level <= maxBits; level++) {
+		for (let level = $.int($.int(1, 32), 32); $.int(level, 32) <= $.int(maxBits, 32); level++) {
 			// For every level, the first two items are the first two characters.
 			// We initialize the levels as if we had already figured this out.
 			levels[level] = $.markAsStructValue(new levelInfo({level: $.int(level, 32), lastFreq: $.int($.arrayIndex(list!, 1).freq, 32), nextCharFreq: $.int($.arrayIndex(list!, 2).freq, 32), nextPairFreq: $.int($.arrayIndex(list!, 0).freq + $.arrayIndex(list!, 1).freq, 32)}))
@@ -211,7 +211,7 @@ export class huffmanEncoder {
 			}
 
 			let prevFreq = $.int($.pointerValue<levelInfo>(l).lastFreq, 32)
-			if ($.pointerValue<levelInfo>(l).nextCharFreq < $.pointerValue<levelInfo>(l).nextPairFreq) {
+			if ($.int($.pointerValue<levelInfo>(l).nextCharFreq, 32) < $.int($.pointerValue<levelInfo>(l).nextPairFreq, 32)) {
 				// The next item on this row is a leaf node.
 				let __goscriptShadow0 = $.int($.arrayIndex($.arrayIndex(leafCounts, level), level) + 1, 32)
 				$.pointerValue<levelInfo>(l).lastFreq = $.int($.pointerValue<levelInfo>(l).nextCharFreq, 32)
@@ -243,7 +243,7 @@ export class huffmanEncoder {
 					level++
 				} else {
 					// If we stole from below, move down temporarily to replenish it.
-					while ($.arrayIndex(levels, level - 1).needed > 0) {
+					while ($.int($.arrayIndex(levels, level - 1).needed, 32) > $.int(0, 32)) {
 						level--
 					}
 				}
@@ -259,7 +259,7 @@ export class huffmanEncoder {
 		let bitCount: $.Slice<number> = $.goSlice($.pointerValue<huffmanEncoder>(h).bitCount, undefined, maxBits + 1)
 		let __goscriptShadow1 = 1
 		let counts: $.VarRef<number[]> | null = $.indexRef(leafCounts, maxBits)
-		for (let __goscriptShadow2 = $.int(maxBits, 32); __goscriptShadow2 > 0; __goscriptShadow2--) {
+		for (let __goscriptShadow2 = $.int(maxBits, 32); $.int(__goscriptShadow2, 32) > $.int(0, 32); __goscriptShadow2--) {
 			// chain.leafCount gives the number of literals requiring at least "bits"
 			// bits to encode.
 			bitCount![__goscriptShadow1] = $.int($.arrayIndex($.pointerValue<number[]>(counts), __goscriptShadow2) - $.arrayIndex($.pointerValue<number[]>(counts), __goscriptShadow2 - 1), 32)
@@ -471,23 +471,23 @@ export function generateFixedLiteralEncoding(): huffmanEncoder | $.VarRef<huffma
 	let h: huffmanEncoder | $.VarRef<huffmanEncoder> | null = newHuffmanEncoder(286)
 	let codes: $.Slice<hcode> = $.pointerValue<huffmanEncoder>(h).codes
 	let ch: number = 0
-	for (ch = $.uint(0, 16); ch < 286; ch++) {
+	for (ch = $.uint(0, 16); $.uint(ch, 16) < $.uint(286, 16); ch++) {
 		let __goscriptShadow3: number = 0
 		let size: number = 0
 		switch (true) {
-			case ch < 144:
+			case $.uint(ch, 16) < $.uint(144, 16):
 			{
 				__goscriptShadow3 = $.uint(ch + 48, 16)
 				size = $.uint(8, 16)
 				break
 			}
-			case ch < 256:
+			case $.uint(ch, 16) < $.uint(256, 16):
 			{
 				__goscriptShadow3 = $.uint((ch + 400) - 144, 16)
 				size = $.uint(9, 16)
 				break
 			}
-			case ch < 280:
+			case $.uint(ch, 16) < $.uint(280, 16):
 			{
 				__goscriptShadow3 = $.uint(ch - 256, 16)
 				size = $.uint(7, 16)
@@ -551,7 +551,7 @@ export function byLiteral_Len(s: byLiteral): number {
 }
 
 export function byLiteral_Less(s: byLiteral, i: number, j: number): boolean {
-	return $.arrayIndex(s!, i).literal < $.arrayIndex(s!, j).literal
+	return $.uint($.arrayIndex(s!, i).literal, 16) < $.uint($.arrayIndex(s!, j).literal, 16)
 }
 
 export function byLiteral_Swap(s: byLiteral, i: number, j: number): void {
@@ -574,9 +574,9 @@ export function byFreq_Len(s: byFreq): number {
 
 export function byFreq_Less(s: byFreq, i: number, j: number): boolean {
 	if ($.int($.arrayIndex(s!, i).freq, 32) == $.int($.arrayIndex(s!, j).freq, 32)) {
-		return $.arrayIndex(s!, i).literal < $.arrayIndex(s!, j).literal
+		return $.uint($.arrayIndex(s!, i).literal, 16) < $.uint($.arrayIndex(s!, j).literal, 16)
 	}
-	return $.arrayIndex(s!, i).freq < $.arrayIndex(s!, j).freq
+	return $.int($.arrayIndex(s!, i).freq, 32) < $.int($.arrayIndex(s!, j).freq, 32)
 }
 
 export function byFreq_Swap(s: byFreq, i: number, j: number): void {
