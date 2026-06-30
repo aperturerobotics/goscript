@@ -56,13 +56,13 @@ export function Nextafter(x: number, y: number): number {
 				r = x
 				break
 			case x == 0:
-				r = Copysign(Float64frombits(1), y)
+				r = Copysign(Float64frombits(1n), y)
 				break
 			case (y > x) == (x > 0):
-				r = Float64frombits(Float64bits(x) + 1)
+				r = Float64frombits(Float64bits(x) + 1n)
 				break
 			default:
-				r = Float64frombits(Float64bits(x) - 1)
+				r = Float64frombits(Float64bits(x) - 1n)
 				break
 		}
 		return r

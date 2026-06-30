@@ -304,7 +304,7 @@ export class Encoding {
 					case j == 1:
 					case $.int($.pointerValue<Encoding>(enc).padChar, 32) != $.int(-1, 32):
 					{
-						return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - j, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - j), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 						break
 					}
 				}
@@ -326,7 +326,7 @@ export class Encoding {
 			}
 
 			if ($.int($.int(_in, 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
-				return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+				return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - 1), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 			}
 
 			// We've reached the end and there's padding
@@ -334,7 +334,7 @@ export class Encoding {
 				case 0:
 				case 1:
 				{
-					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - 1), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 					break
 				}
 				case 2:
@@ -344,11 +344,11 @@ export class Encoding {
 					}
 					if (si == $.len(src)) {
 						// not enough padding
-						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.len(src), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64($.len(src)), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 					}
 					if ($.int($.int($.arrayIndex(src!, si), 32), 32) != $.int($.pointerValue<Encoding>(enc).padChar, 32)) {
 						// incorrect padding
-						return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+						return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - 1), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 					}
 
 					si++
@@ -362,7 +362,7 @@ export class Encoding {
 			}
 			if (si < $.len(src)) {
 				// trailing garbage
-				err = $.namedValueInterfaceValue<$.GoError>(si, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })
+				err = $.namedValueInterfaceValue<$.GoError>($.int64(si), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })
 			}
 			dlen = j
 			break
@@ -386,7 +386,7 @@ export class Encoding {
 			{
 				dst![1] = $.uint($.arrayIndex(dbuf, 1), 8)
 				if ($.pointerValue<Encoding>(enc).strict && ($.uint($.arrayIndex(dbuf, 2), 8) != $.uint(0, 8))) {
-					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 1, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - 1), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 				}
 				dbuf[1] = $.uint(0, 8)
 			}
@@ -394,7 +394,7 @@ export class Encoding {
 			{
 				dst![0] = $.uint($.arrayIndex(dbuf, 0), 8)
 				if ($.pointerValue<Encoding>(enc).strict && (($.uint($.arrayIndex(dbuf, 1), 8) != $.uint(0, 8)) || ($.uint($.arrayIndex(dbuf, 2), 8) != $.uint(0, 8)))) {
-					return [si, 0, $.namedValueInterfaceValue<$.GoError>(si - 2, "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
+					return [si, 0, $.namedValueInterfaceValue<$.GoError>($.int64(si - 2), "base64.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "base64.CorruptInputError" })]
 				}
 				break
 			}

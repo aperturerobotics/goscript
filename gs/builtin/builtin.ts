@@ -715,13 +715,15 @@ export function normalizeBytes(
  * Handles all slice types including null, arrays, Uint8Array, and SliceProxy.
  * @param s The slice to sort in place
  */
-export function sortSlice<T extends string | number>(s: Slice<T>): void {
+export function sortSlice<T extends string | number | bigint>(
+  s: Slice<T>,
+): void {
   if (s === null || s === undefined) {
     return // Nothing to sort for nil slice
   }
 
   if (Array.isArray(s)) {
-    s.sort()
+    s.sort(ascendingOrdered)
     return
   }
 
@@ -735,13 +737,29 @@ export function sortSlice<T extends string | number>(s: Slice<T>): void {
     const proxy = s as SliceProxy<T>
     const meta = proxy.__meta__
     const section = meta.backing.slice(meta.offset, meta.offset + meta.length)
-    section.sort()
+    section.sort(ascendingOrdered)
     // Copy sorted section back to the backing array
     for (let i = 0; i < section.length; i++) {
       meta.backing[meta.offset + i] = section[i]
     }
     return
   }
+}
+
+// ascendingOrdered compares two ordered values for an ascending sort. Numbers
+// and bigints order numerically (the default Array.sort would order them
+// lexically by string form); strings order lexically.
+function ascendingOrdered<T extends string | number | bigint>(
+  a: T,
+  b: T,
+): number {
+  if (a < b) {
+    return -1
+  }
+  if (a > b) {
+    return 1
+  }
+  return 0
 }
 
 /**

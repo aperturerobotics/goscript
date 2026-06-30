@@ -23,34 +23,34 @@ export function trigReduce(x: number): [number, number] {
 		// Extract out the integer and exponent such that,
 		// x = ix * 2 ** exp.
 		let ix = Float64bits(x)
-		let exp = $.int(((ix >> 52) & 2047)) - 1023 - 52
-		ix &= ~(2047 << 52)
-		ix |= (1 << 52)
+		let exp = $.int(((ix >> 52n) & 2047n)) - 1023 - 52
+		ix = BigInt.asUintN(64, ix & ~(2047n << 52n))
+		ix = BigInt.asUintN(64, ix | (1n << 52n))
 		// Use the exponent to extract the 3 appropriate uint64 digits from mPi4,
 		// B ~ (z0, z1, z2), such that the product leading digit has the exponent -61.
 		// Note, exp >= -53 since x >= PI4 and exp < 971 for maximum float64.
-		let [digit, bitshift] = [$.int((exp + 61) / 64), (exp + 61) % 64]
-		let z0 = (((mPi4![digit] << bitshift)) | ((mPi4![digit + 1] >> (64 - bitshift))))
-		let z1 = (((mPi4![digit + 1] << bitshift)) | ((mPi4![digit + 2] >> (64 - bitshift))))
-		let z2 = (((mPi4![digit + 2] << bitshift)) | ((mPi4![digit + 3] >> (64 - bitshift))))
+		let [digit, bitshift] = [$.int((exp + 61) / 64), BigInt((exp + 61) % 64)]
+		let z0 = BigInt.asUintN(64, ((mPi4![digit] << bitshift)) | ((mPi4![digit + 1] >> (64n - bitshift))))
+		let z1 = BigInt.asUintN(64, ((mPi4![digit + 1] << bitshift)) | ((mPi4![digit + 2] >> (64n - bitshift))))
+		let z2 = BigInt.asUintN(64, ((mPi4![digit + 2] << bitshift)) | ((mPi4![digit + 3] >> (64n - bitshift))))
 		// Multiply mantissa by the digits and extract the upper two digits (hi, lo).
-		let [z2hi, ] = bits.Mul64(BigInt(z2), BigInt(ix))
-		let [z1hi, z1lo] = bits.Mul64(BigInt(z1), BigInt(ix))
-		let z0lo = BigInt(z0 * ix)
+		let [z2hi, ] = bits.Mul64(z2, ix)
+		let [z1hi, z1lo] = bits.Mul64(z1, ix)
+		let z0lo = BigInt.asUintN(64, z0 * ix)
 		let [lo, c] = bits.Add64(z1lo, z2hi, 0n)
 		let [hi, ] = bits.Add64(z0lo, z1hi, c)
 		// The top 3 bits are j.
 		j = Number(hi >> 61n)
 		// Extract the fraction and find its magnitude.
-		hi = ((hi << 3n) | (lo >> 61n))
+		hi = BigInt.asUintN(64, (hi << 3n) | (lo >> 61n))
 		let lz = bits.LeadingZeros64(hi)
 		let e = 1023 - (lz + 1)
 		// Clear implicit mantissa bit and shift into place.
-		hi = (((hi << BigInt(lz + 1))) | ((lo >> BigInt(64 - (lz + 1)))))
-		hi >>= 64n - 52n
+		hi = BigInt.asUintN(64, ((hi << BigInt(lz + 1))) | ((lo >> BigInt(64 - (lz + 1)))))
+		hi = BigInt.asUintN(64, hi >> (64n - 52n))
 		// Include the exponent and convert to a float.
-		hi |= BigInt(e) << 52n
-		z = Float64frombits(Number(hi))
+		hi = BigInt.asUintN(64, hi | (BigInt(e) << 52n))
+		z = Float64frombits(hi)
 		// Map zeros to origin.
 		if ((j & 1) == 1) {
 			j++
@@ -62,5 +62,5 @@ export function trigReduce(x: number): [number, number] {
 	}
 }
 
-let mPi4 = $.arrayToSlice<number>([0x0000000000000001, 0x45f306dc9c882a53, 0xf84eafa3ea69bb81, 0xb6c52b3278872083, 0xfca2c757bd778ac3, 0x6e48dc74849ba5c0, 0x0c925dd413a32439, 0xfc3bd63962534e7d, 0xd1046bea5d768909, 0xd338e04d68befc82, 0x7323ac7306a673e9, 0x3908bf177bf25076, 0x3ff12fffbc0b301f, 0xde5e2316b414da3e, 0xda6cfd9e4f96136e, 0x9e8c7ecd3cbfd45a, 0xea4f758fd7cbe2f6, 0x7a0e73ef14a525d4, 0xd7f6bf623f1aba10, 0xac06608df8f6d757])
+let mPi4 = $.arrayToSlice<bigint>([0x0000000000000001n, 0x45f306dc9c882a53n, 0xf84eafa3ea69bb81n, 0xb6c52b3278872083n, 0xfca2c757bd778ac3n, 0x6e48dc74849ba5c0n, 0x0c925dd413a32439n, 0xfc3bd63962534e7dn, 0xd1046bea5d768909n, 0xd338e04d68befc82n, 0x7323ac7306a673e9n, 0x3908bf177bf25076n, 0x3ff12fffbc0b301fn, 0xde5e2316b414da3en, 0xda6cfd9e4f96136en, 0x9e8c7ecd3cbfd45an, 0xea4f758fd7cbe2f6n, 0x7a0e73ef14a525d4n, 0xd7f6bf623f1aba10n, 0xac06608df8f6d757n])
 

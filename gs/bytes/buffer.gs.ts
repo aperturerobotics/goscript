@@ -268,11 +268,11 @@ export class Buffer {
 	// the buffer as needed. The return value n is the number of bytes read. Any
 	// error except io.EOF encountered during the read is also returned. If the
 	// buffer becomes too large, ReadFrom will panic with [ErrTooLarge].
-	public ReadFrom(r: io.Reader): [number, $.GoError] {
-		return (async (): Promise<[number, $.GoError]> => {
+	public ReadFrom(r: io.Reader): [bigint, $.GoError] {
+		return (async (): Promise<[bigint, $.GoError]> => {
 			const b = $.pointerValue<Buffer>(this)
 			b.lastRead = 0
-			let n = 0
+			let n = 0n
 			for (; ; ) {
 				let i = b.grow(512)
 				b.buf = $.goSlice(b.buf, undefined, i)
@@ -282,7 +282,7 @@ export class Buffer {
 				}
 
 				b.buf = $.goSlice(b.buf, undefined, i + m)
-				n += (m as number)
+				n += BigInt(m as number)
 
 				// e is EOF, so return nil explicitly
 				if (e == io.EOF) {
@@ -299,11 +299,11 @@ export class Buffer {
 	// The return value n is the number of bytes written; it always fits into an
 	// int, but it is int64 to match the [io.WriterTo] interface. Any error
 	// encountered during the write is also returned.
-	public WriteTo(w: io.Writer): [number, $.GoError] {
-		return (async (): Promise<[number, $.GoError]> => {
+	public WriteTo(w: io.Writer): [bigint, $.GoError] {
+		return (async (): Promise<[bigint, $.GoError]> => {
 			const b = $.pointerValue<Buffer>(this)
 			b.lastRead = 0
-			let n = 0
+			let n = 0n
 			{
 				let nBytes = b.Len()
 				if (nBytes > 0) {
@@ -312,7 +312,7 @@ export class Buffer {
 						$.panic("bytes.Buffer.WriteTo: invalid Write count")
 					}
 					b.off += m
-					n = (m as number)
+					n = BigInt(m as number)
 					if (e != null) {
 						return [n, e]
 					}

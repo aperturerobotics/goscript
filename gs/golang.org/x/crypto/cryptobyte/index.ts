@@ -317,14 +317,15 @@ export class Builder {
     this.add(byte(v / 0x1000000), byte(v >> 16), byte(v >> 8), byte(v))
   }
 
-  public AddUint48(v: number): void {
+  public AddUint48(v: number | bigint): void {
+    const value = toUint64BigInt(v)
     this.add(
-      byte(Math.floor(v / 0x10000000000)),
-      byte(Math.floor(v / 0x100000000)),
-      byte(v >> 24),
-      byte(v >> 16),
-      byte(v >> 8),
-      byte(v),
+      byte(value >> 40n),
+      byte(value >> 32n),
+      byte(value >> 24n),
+      byte(value >> 16n),
+      byte(value >> 8n),
+      byte(value),
     )
   }
 

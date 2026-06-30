@@ -400,11 +400,11 @@ export interface Type {
 
   // OverflowInt reports whether the int64 x cannot be represented by the type
   // Panics if the type's Kind is not Int, Int8, Int16, Int32, or Int64.
-  OverflowInt(x: number): boolean
+  OverflowInt(x: bigint): boolean
 
   // OverflowUint reports whether the uint64 x cannot be represented by the type
   // Panics if the type's Kind is not Uint, Uint8, Uint16, Uint32, Uint64, or Uintptr.
-  OverflowUint(x: number): boolean
+  OverflowUint(x: bigint): boolean
 
   // OverflowFloat reports whether the float64 x cannot be represented by the type
   // Panics if the type's Kind is not Float32 or Float64.
@@ -491,10 +491,10 @@ class InvalidTypeClass implements Type {
   AssignableTo(_u: Type | null): boolean {
     return false
   }
-  OverflowInt(_x: number): boolean {
+  OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: OverflowInt of invalid type')
   }
-  OverflowUint(_x: number): boolean {
+  OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: OverflowUint of invalid type')
   }
   OverflowFloat(_x: number): boolean {
@@ -1422,18 +1422,18 @@ export class Value {
   }
 
   // OverflowInt reports whether the int64 x cannot be represented by v's type
-  public OverflowInt(x: number): boolean {
+  public OverflowInt(x: bigint): boolean {
     const k = this.Kind()
     switch (k) {
       case Int8:
-        return x < -128 || x > 127
+        return x < -128n || x > 127n
       case Int16:
-        return x < -32768 || x > 32767
+        return x < -32768n || x > 32767n
       case Int32:
-        return x < -2147483648 || x > 2147483647
+        return x < -2147483648n || x > 2147483647n
       case Int:
       case Int64:
-        return x < Number.MIN_SAFE_INTEGER || x > Number.MAX_SAFE_INTEGER
+        return false
       default:
         throw new Error(
           'reflect: call of reflect.Value.OverflowInt on ' + k + ' Value',
@@ -1442,19 +1442,19 @@ export class Value {
   }
 
   // OverflowUint reports whether the uint64 x cannot be represented by v's type
-  public OverflowUint(x: number): boolean {
+  public OverflowUint(x: bigint): boolean {
     const k = this.Kind()
     switch (k) {
       case Uint8:
-        return x < 0 || x > 255
+        return x < 0n || x > 255n
       case Uint16:
-        return x < 0 || x > 65535
+        return x < 0n || x > 65535n
       case Uint32:
-        return x < 0 || x > 4294967295
+        return x < 0n || x > 4294967295n
       case Uint:
       case Uint64:
       case Uintptr:
-        return x < 0 || x > Number.MAX_SAFE_INTEGER
+        return false
       default:
         throw new Error(
           'reflect: call of reflect.Value.OverflowUint on ' + k + ' Value',
@@ -1594,18 +1594,18 @@ export class BasicType implements Type {
     return new rtype(this._kind)
   }
 
-  public OverflowInt(x: number): boolean {
+  public OverflowInt(x: bigint): boolean {
     const k = this._kind
     switch (k) {
       case Int8:
-        return x < -128 || x > 127
+        return x < -128n || x > 127n
       case Int16:
-        return x < -32768 || x > 32767
+        return x < -32768n || x > 32767n
       case Int32:
-        return x < -2147483648 || x > 2147483647
+        return x < -2147483648n || x > 2147483647n
       case Int:
       case Int64:
-        return x < Number.MIN_SAFE_INTEGER || x > Number.MAX_SAFE_INTEGER
+        return false
       default:
         throw new Error(
           'reflect: call of reflect.Type.OverflowInt on ' +
@@ -1615,19 +1615,19 @@ export class BasicType implements Type {
     }
   }
 
-  public OverflowUint(x: number): boolean {
+  public OverflowUint(x: bigint): boolean {
     const k = this._kind
     switch (k) {
       case Uint8:
-        return x < 0 || x > 255
+        return x < 0n || x > 255n
       case Uint16:
-        return x < 0 || x > 65535
+        return x < 0n || x > 65535n
       case Uint32:
-        return x < 0 || x > 4294967295
+        return x < 0n || x > 4294967295n
       case Uint:
       case Uint64:
       case Uintptr:
-        return x < 0 || x > Number.MAX_SAFE_INTEGER
+        return false
       default:
         throw new Error(
           'reflect: call of reflect.Type.OverflowUint on ' +
@@ -1800,11 +1800,11 @@ class SliceType implements Type {
     return typeAssignableTo(this, u)
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on slice Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on slice Type')
   }
 
@@ -1928,11 +1928,11 @@ class ArrayType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on array Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on array Type')
   }
 
@@ -2048,11 +2048,11 @@ class PointerType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on pointer Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error(
       'reflect: call of reflect.Type.OverflowUint on pointer Type',
     )
@@ -2247,11 +2247,11 @@ class FunctionType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on func Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on func Type')
   }
 
@@ -2627,11 +2627,11 @@ class MapType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on map Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on map Type')
   }
 
@@ -3259,11 +3259,11 @@ class StructType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on struct Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on struct Type')
   }
 
@@ -3568,11 +3568,11 @@ class ChannelType implements Type {
     return this._dir
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowInt on chan Type')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: call of reflect.Type.OverflowUint on chan Type')
   }
 
@@ -3706,13 +3706,13 @@ class InterfaceType implements Type {
     return new rtype(this.Kind())
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error(
       'reflect: call of reflect.Type.OverflowInt on interface Type',
     )
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error(
       'reflect: call of reflect.Type.OverflowUint on interface Type',
     )

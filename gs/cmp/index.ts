@@ -1,8 +1,9 @@
 // Minimal stub for cmp package
 // This provides the Ordered type and comparison functions needed by slices
 
-// Ordered represents types that can be ordered (comparable)
-export type Ordered = number | string | boolean | bigint
+// Ordered represents the Go cmp.Ordered constraint: integer, float, and string
+// types. Go's cmp.Ordered excludes bool; bigint covers int64/uint64.
+export type Ordered = number | string | bigint
 
 // Compare compares two values and returns:
 // -1 if a < b

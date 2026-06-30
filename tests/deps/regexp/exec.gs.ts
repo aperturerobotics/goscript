@@ -396,7 +396,7 @@ export class machine {
 				}
 				case syntax.InstEmptyWidth:
 				{
-					if (lazyFlag_match($.pointerValue<lazyFlag>(cond), $.uint($.pointerValue<syntax.Inst>(i).Arg, 8))) {
+					if (lazyFlag_match($.pointerValue<lazyFlag>(cond), $.uint($.uint($.pointerValue<syntax.Inst>(i).Arg, 8), 8))) {
 						pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
 						continue Again
 					}
@@ -701,7 +701,7 @@ export class onePassMachine {
 export type lazyFlag = bigint
 
 export function newLazyFlag(r1: number, r2: number): lazyFlag {
-	return $.uint64Add(($.uint64Mul(r1, (2 ** 32))), $.uint64($.uint(r2, 32)))
+	return $.uint64($.uint64Add(($.uint64Mul(r1, (2 ** 32))), $.uint64($.uint(r2, 32))))
 }
 
 export function lazyFlag_match(f: lazyFlag, op: syntax.EmptyOp): boolean {

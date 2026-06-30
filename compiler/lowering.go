@@ -2527,7 +2527,10 @@ func (o *LoweringOwner) lowerTupleValueSpec(
 		lazy := lazyTuple || ctx.topLevel && ctx.lazyPackageVars[obj]
 		if lazy {
 			keyword = "var"
-			code = "var " + o.lowerIdent(ctx, name, true) + ": " + variableType + " = undefined as " + variableType
+			// The lazy variable holds undefined until its getter runs the
+			// initializer; declaring it without an initializer keeps the
+			// declared type T while the runtime value starts as undefined.
+			code = "var " + o.lowerIdent(ctx, name, true) + ": " + variableType
 		}
 		indexExport := ""
 		if ctx.topLevel {
@@ -8569,6 +8572,14 @@ func (o *LoweringOwner) lowerConversionExpr(
 		if constantValue, ok := o.lowerNumericConstantExprForTarget(ctx, expr.Args[0], targetType); ok {
 			return constantValue, diagnostics
 		}
+		// A small integer literal converted to a named number-represented type
+		// (e.g. MyInt(5)) is just its already-lowered literal: the value fits a
+		// JS number, so a $.int/$.uint width helper would add noise. Builtin int
+		// conversions still widen below so their literal type does not narrow,
+		// and named-const references keep flowing through as their symbol.
+		if o.numericConversionKeepsLiteral(ctx, expr.Args[0], targetType) {
+			return value, diagnostics
+		}
 	}
 	if named := namedFunctionType(targetType); named != nil {
 		typeName := runtimeNamedTypeName(named)
@@ -8576,7 +8587,7 @@ func (o *LoweringOwner) lowerConversionExpr(
 			"(" + value + ", " + strconv.Quote(typeName) + ", " +
 			o.runtimeFunctionTypeInfo(named.Underlying().(*types.Signature), typeName) + ")", diagnostics
 	}
-	if named := namedNonStructType(targetType); named != nil {
+	if named := namedNonStructType(targetType); named != nil && !isNumericType(named) {
 		if _, ok := named.Underlying().(*types.Slice); ok {
 			return "(" + value + " as " + o.tsTypeFor(ctx, targetType) + ")", diagnostics
 		}
@@ -10675,6 +10686,7 @@ func (o *LoweringOwner) lowerMapCompositeLit(
 		value, valueDiagnostics := o.lowerExpr(ctx, keyed.Value)
 		diagnostics = append(diagnostics, keyDiagnostics...)
 		diagnostics = append(diagnostics, valueDiagnostics...)
+		key = o.lowerValueForTarget(ctx, keyed.Key, mapType.Key(), key)
 		value = o.lowerValueForTarget(ctx, keyed.Value, mapType.Elem(), value)
 		entries = append(entries, "["+key+", "+value+"]")
 	}
@@ -10796,6 +10808,28 @@ func (o *LoweringOwner) lowerNumericConstantExprForTarget(ctx lowerFileContext, 
 		}
 	}
 	return lowerRealNumericConstantExpr(ctx, expr)
+}
+
+// numericConversionKeepsLiteral reports whether a conversion to a named
+// number-represented integer type may keep the operand's already-lowered
+// literal text instead of wrapping it in a runtime width helper. It holds when
+// the operand is a small integer literal (not a named-const reference) and the
+// target is a named integer type whose representation is a JS number: the value
+// already fits, so $.int/$.uint normalization would add noise, and unlike a
+// builtin int the named literal type does not need widening. Bigint-backed
+// targets are excluded because they require BigInt conversion.
+func (o *LoweringOwner) numericConversionKeepsLiteral(ctx lowerFileContext, expr ast.Expr, targetType types.Type) bool {
+	if namedNonStructType(targetType) == nil || !isIntegerType(targetType) || isBigIntBackedType(targetType) {
+		return false
+	}
+	if _, ok := objectForValueExpr(ctx, expr).(*types.Const); ok {
+		return false
+	}
+	if ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	tv, ok := ctx.semPkg.source.TypesInfo.Types[expr]
+	return ok && tv.Value != nil && tv.Value.Kind() == constant.Int && constant.BitLen(tv.Value) <= 53
 }
 
 func isRealNumericConstantExpr(ctx lowerFileContext, expr ast.Expr) bool {

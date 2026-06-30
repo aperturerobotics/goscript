@@ -818,7 +818,7 @@ export class Regexp {
 
 		Return: {
 
-			if ((((pos == 0) && __goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8))) && ($.len($.pointerValue<Regexp>(re).prefix) > 0)) && await $.pointerValue<Exclude<input, null>>(i).canCheckPrefix()) {
+			if ((((pos == 0) && __goscript_exec.lazyFlag_match(flag, $.uint($.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8), 8))) && ($.len($.pointerValue<Regexp>(re).prefix) > 0)) && await $.pointerValue<Exclude<input, null>>(i).canCheckPrefix()) {
 
 				if (!await $.pointerValue<Exclude<input, null>>(i).hasPrefix(re)) {
 					break Return
@@ -896,7 +896,7 @@ export class Regexp {
 					}
 					case syntax.InstEmptyWidth:
 					{
-						if (!__goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8))) {
+						if (!__goscript_exec.lazyFlag_match(flag, $.uint($.uint($.pointerValue<__goscript_onepass.onePassInst>(inst).Inst.Arg, 8), 8))) {
 							break Return
 						}
 						continue
@@ -1276,7 +1276,7 @@ export class Regexp {
 							case syntax.InstEmptyWidth:
 							{
 								let flag = await $.pointerValue<Exclude<input, null>>(i).context(__goscriptShadow2)
-								if (!__goscript_exec.lazyFlag_match(flag, $.uint($.pointerValue<syntax.Inst>(inst).Arg, 8))) {
+								if (!__goscript_exec.lazyFlag_match(flag, $.uint($.uint($.pointerValue<syntax.Inst>(inst).Arg, 8), 8))) {
 									continue __goscriptLoop0
 								}
 								__goscriptShadow1 = $.uint($.pointerValue<syntax.Inst>(inst).Out, 32)

@@ -444,7 +444,7 @@ export function classifyScope(ip: netip.Addr): scope {
 	let ipv6 = $.markAsStructValue($.cloneStructValue(ip)).Is6() && !$.markAsStructValue($.cloneStructValue(ip)).Is4In6()
 	let ipv6AsBytes = $.markAsStructValue($.cloneStructValue(ip)).As16()
 	if (ipv6 && $.markAsStructValue($.cloneStructValue(ip)).IsMulticast()) {
-		return $.uint($.arrayIndex(ipv6AsBytes, 1) & 0xf, 8)
+		return $.uint($.uint($.arrayIndex(ipv6AsBytes, 1) & 0xf, 8), 8)
 	}
 	// Site-local addresses are defined in RFC 3513 section 2.5.6
 	// (and deprecated in RFC 3879).

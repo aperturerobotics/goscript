@@ -577,17 +577,17 @@ export class UnmarshalState {
     })
   }
 
-  public ReadInt64(): number {
-    return Math.trunc(numberFromJSON(this.value))
+  public ReadInt64(): bigint {
+    return BigInt.asIntN(64, bigintFromJSON(this.value))
   }
 
-  public ReadInt64Array(): $.Slice<number> {
+  public ReadInt64Array(): $.Slice<bigint> {
     return this.readArrayValues(() => this.ReadInt64())
   }
 
-  public ReadInt64Map(cb: ((key: number) => void) | null): void {
+  public ReadInt64Map(cb: ((key: bigint) => void) | null): void {
     this.readMapKeys((key) => {
-      const parsed = parseSignedMapKey(key, 64)
+      const parsed = parseSigned64MapKey(key)
       if (parsed == null) {
         this.SetErrorf('invalid map key %q for int64 map', key)
         return
@@ -686,17 +686,17 @@ export class UnmarshalState {
     })
   }
 
-  public ReadUint64(): number {
-    return this.ReadUint32()
+  public ReadUint64(): bigint {
+    return BigInt.asUintN(64, bigintFromJSON(this.value))
   }
 
-  public ReadUint64Array(): $.Slice<number> {
+  public ReadUint64Array(): $.Slice<bigint> {
     return this.readArrayValues(() => this.ReadUint64())
   }
 
-  public ReadUint64Map(cb: ((key: number) => void) | null): void {
+  public ReadUint64Map(cb: ((key: bigint) => void) | null): void {
     this.readMapKeys((key) => {
-      const parsed = parseUnsignedMapKey(key, 64)
+      const parsed = parseUnsigned64MapKey(key)
       if (parsed == null) {
         this.SetErrorf('invalid map key %q for uint64 map', key)
         return
@@ -720,7 +720,7 @@ export class UnmarshalState {
   public ReadWrappedInt32(): number {
     return this.readWrapped(() => this.ReadInt32())
   }
-  public ReadWrappedInt64(): number {
+  public ReadWrappedInt64(): bigint {
     return this.readWrapped(() => this.ReadInt64())
   }
   public ReadWrappedString(): string {
@@ -729,7 +729,7 @@ export class UnmarshalState {
   public ReadWrappedUint32(): number {
     return this.readWrapped(() => this.ReadUint32())
   }
-  public ReadWrappedUint64(): number {
+  public ReadWrappedUint64(): bigint {
     return this.readWrapped(() => this.ReadUint64())
   }
 
@@ -984,6 +984,27 @@ function numberFromJSON(value: unknown): number {
   return 0
 }
 
+// bigintFromJSON parses a proto3 JSON int64/uint64 value into a bigint. Go
+// represents 64-bit integers as JS bigint, and proto3 JSON encodes them as
+// decimal strings to preserve full precision, so parse the string directly
+// instead of routing through a lossy Number.
+function bigintFromJSON(value: unknown): bigint {
+  if (typeof value === 'bigint') {
+    return value
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (/^[+-]?(0|[1-9]\d*)$/.test(trimmed)) {
+      return BigInt(trimmed)
+    }
+    return 0n
+  }
+  if (typeof value === 'number') {
+    return BigInt(Math.trunc(value))
+  }
+  return 0n
+}
+
 function parseBoolMapKey(key: string): boolean | null {
   switch (key) {
     case 'true':
@@ -1018,6 +1039,33 @@ function parseUnsignedMapKey(key: string, bits: 32 | 64): number | null {
     return null
   }
   if (bits === 32 && parsed > 4294967295) {
+    return null
+  }
+  return parsed
+}
+
+// parseSigned64MapKey parses an int64 map key into a normalized bigint, the Go
+// runtime representation of a 64-bit integer; null on malformed or out-of-range
+// input.
+function parseSigned64MapKey(key: string): bigint | null {
+  if (!/^-?(0|[1-9]\d*)$/.test(key)) {
+    return null
+  }
+  const parsed = BigInt(key)
+  if (parsed < -(2n ** 63n) || parsed > 2n ** 63n - 1n) {
+    return null
+  }
+  return parsed
+}
+
+// parseUnsigned64MapKey parses a uint64 map key into a normalized bigint; null
+// on malformed or out-of-range input.
+function parseUnsigned64MapKey(key: string): bigint | null {
+  if (!/^(0|[1-9]\d*)$/.test(key)) {
+    return null
+  }
+  const parsed = BigInt(key)
+  if (parsed > 2n ** 64n - 1n) {
     return null
   }
   return parsed

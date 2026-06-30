@@ -228,7 +228,7 @@ export function sinPi(x: number): number {
 			if (x < 4503599627370496) {
 				z = x + 4503599627370496; // exact
 			}
-			n = $.int((1 & Float64bits(z)));
+			n = $.int(Number((1n & Float64bits(z))));
 			x = (n as number);
 			n <<= 2;
 		}

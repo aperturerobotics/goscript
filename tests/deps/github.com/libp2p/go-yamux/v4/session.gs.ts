@@ -991,7 +991,7 @@ export class Session {
 
 	public getRTT(): time.Duration {
 		const s: Session | $.VarRef<Session> | null = this
-		return atomic.LoadInt64($.pointerValue<Session>(s)._fields.rtt)
+		return $.int64(atomic.LoadInt64($.pointerValue<Session>(s)._fields.rtt))
 	}
 
 	public goAway(reason: number): __goscript__const.header {

@@ -250,7 +250,7 @@ export function onePassPrefix(p: syntax.Prog | $.VarRef<syntax.Prog> | null): [s
 	let complete: boolean = false
 	let pc: number = 0
 	let i: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>(p).Inst!, $.pointerValue<syntax.Prog>(p).Start)
-	if (($.uint($.pointerValue<syntax.Inst>(i).Op, 8) != $.uint(syntax.InstEmptyWidth, 8)) || ($.uint((($.pointerValue<syntax.Inst>(i).Arg) & syntax.EmptyBeginText), 8) == $.uint(0, 8))) {
+	if (($.uint($.pointerValue<syntax.Inst>(i).Op, 8) != $.uint(syntax.InstEmptyWidth, 8)) || ($.uint((($.uint($.pointerValue<syntax.Inst>(i).Arg, 8)) & syntax.EmptyBeginText), 8) == $.uint(0, 8))) {
 		return ["", $.uint($.pointerValue<syntax.Inst>(i).Op, 8) == $.uint(syntax.InstMatch, 8), $.uint($.uint($.pointerValue<syntax.Prog>(p).Start, 32), 32)]
 	}
 	pc = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
@@ -266,14 +266,14 @@ export function onePassPrefix(p: syntax.Prog | $.VarRef<syntax.Prog> | null): [s
 
 	// Have prefix; gather characters.
 	let buf: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-	while (((($.uint(iop(i), 8) == $.uint(syntax.InstRune, 8)) && ($.len($.pointerValue<syntax.Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<syntax.Inst>(i).Arg & syntax.FoldCase), 16) == $.uint(0, 16))) && ($.int($.arrayIndex($.pointerValue<syntax.Inst>(i).Rune!, 0), 32) != $.int(utf8.RuneError, 32))) {
+	while (((($.uint(iop(i), 8) == $.uint(syntax.InstRune, 8)) && ($.len($.pointerValue<syntax.Inst>(i).Rune) == 1)) && ($.uint(($.uint($.pointerValue<syntax.Inst>(i).Arg, 16) & syntax.FoldCase), 16) == $.uint(0, 16))) && ($.int($.arrayIndex($.pointerValue<syntax.Inst>(i).Rune!, 0), 32) != $.int(utf8.RuneError, 32))) {
 		buf.value.WriteRune($.int($.arrayIndex($.pointerValue<syntax.Inst>(i).Rune!, 0), 32))
 		let __goscriptAssign0_0: number = $.uint($.pointerValue<syntax.Inst>(i).Out, 32)
 		let __goscriptAssign0_1: syntax.Inst | $.VarRef<syntax.Inst> | null = $.indexRef($.pointerValue<syntax.Prog>(p).Inst!, $.pointerValue<syntax.Inst>(i).Out)
 		pc = __goscriptAssign0_0
 		i = __goscriptAssign0_1
 	}
-	if ((($.uint($.pointerValue<syntax.Inst>(i).Op, 8) == $.uint(syntax.InstEmptyWidth, 8)) && ($.uint(($.pointerValue<syntax.Inst>(i).Arg & syntax.EmptyEndText), 8) != $.uint(0, 8))) && ($.uint($.arrayIndex($.pointerValue<syntax.Prog>(p).Inst!, $.pointerValue<syntax.Inst>(i).Out).Op, 8) == $.uint(syntax.InstMatch, 8))) {
+	if ((($.uint($.pointerValue<syntax.Inst>(i).Op, 8) == $.uint(syntax.InstEmptyWidth, 8)) && ($.uint(($.uint($.pointerValue<syntax.Inst>(i).Arg, 8) & syntax.EmptyEndText), 8) != $.uint(0, 8))) && ($.uint($.arrayIndex($.pointerValue<syntax.Prog>(p).Inst!, $.pointerValue<syntax.Inst>(i).Out).Op, 8) == $.uint(syntax.InstMatch, 8))) {
 		complete = true
 	}
 	return [buf.value.String(), complete, $.uint(pc, 32)]
@@ -601,7 +601,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 					break
 				}
 				let runes: $.Slice<number> = $.makeSlice<number>(0, undefined, "number")
-				if (($.len($.pointerValue<onePassInst>(inst).Inst.Rune) == 1) && ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16))) {
+				if (($.len($.pointerValue<onePassInst>(inst).Inst.Rune) == 1) && ($.uint(($.uint($.pointerValue<onePassInst>(inst).Inst.Arg, 16) & syntax.FoldCase), 16) != $.uint(0, 16))) {
 					let r0 = $.int($.arrayIndex($.pointerValue<onePassInst>(inst).Inst.Rune!, 0), 32)
 					runes = $.append(runes, $.int(r0, 32), $.int(r0, 32))
 					for (let r1 = $.int(unicode.SimpleFold($.int(r0, 32)), 32); $.int(r1, 32) != $.int(r0, 32); r1 = $.int(unicode.SimpleFold($.int(r1, 32)), 32)) {
@@ -628,7 +628,7 @@ export async function makeOnePass(p: onePassProg | $.VarRef<onePassProg> | null)
 				queueOnePass.prototype.insert.call(instQueue, $.uint($.pointerValue<onePassInst>(inst).Inst.Out, 32))
 				let runes: $.Slice<number> = $.arrayToSlice<number>([])
 				// expand case-folded runes
-				if ($.uint(($.pointerValue<onePassInst>(inst).Inst.Arg & syntax.FoldCase), 16) != $.uint(0, 16)) {
+				if ($.uint(($.uint($.pointerValue<onePassInst>(inst).Inst.Arg, 16) & syntax.FoldCase), 16) != $.uint(0, 16)) {
 					let r0 = $.int($.arrayIndex($.pointerValue<onePassInst>(inst).Inst.Rune!, 0), 32)
 					runes = $.append(runes, $.int(r0, 32), $.int(r0, 32))
 					for (let r1 = $.int(unicode.SimpleFold($.int(r0, 32)), 32); $.int(r1, 32) != $.int(r0, 32); r1 = $.int(unicode.SimpleFold($.int(r1, 32)), 32)) {
@@ -700,7 +700,7 @@ export async function compileOnePass(prog: syntax.Prog | $.VarRef<syntax.Prog> |
 		return null
 	}
 	// onepass regexp is anchored
-	if (($.uint($.arrayIndex($.pointerValue<syntax.Prog>(prog).Inst!, $.pointerValue<syntax.Prog>(prog).Start).Op, 8) != $.uint(syntax.InstEmptyWidth, 8)) || ($.uint(($.arrayIndex($.pointerValue<syntax.Prog>(prog).Inst!, $.pointerValue<syntax.Prog>(prog).Start).Arg & syntax.EmptyBeginText), 8) != $.uint(syntax.EmptyBeginText, 8))) {
+	if (($.uint($.arrayIndex($.pointerValue<syntax.Prog>(prog).Inst!, $.pointerValue<syntax.Prog>(prog).Start).Op, 8) != $.uint(syntax.InstEmptyWidth, 8)) || ($.uint(($.uint($.arrayIndex($.pointerValue<syntax.Prog>(prog).Inst!, $.pointerValue<syntax.Prog>(prog).Start).Arg, 8) & syntax.EmptyBeginText), 8) != $.uint(syntax.EmptyBeginText, 8))) {
 		return null
 	}
 	let hasAlt = false
@@ -735,7 +735,7 @@ export async function compileOnePass(prog: syntax.Prog | $.VarRef<syntax.Prog> |
 			case syntax.InstEmptyWidth:
 			{
 				if ($.uint(opOut, 8) == $.uint(syntax.InstMatch, 8)) {
-					if ($.uint((inst.Arg & syntax.EmptyEndText), 8) == $.uint(syntax.EmptyEndText, 8)) {
+					if ($.uint(($.uint(inst.Arg, 8) & syntax.EmptyEndText), 8) == $.uint(syntax.EmptyEndText, 8)) {
 						continue
 					}
 					return null

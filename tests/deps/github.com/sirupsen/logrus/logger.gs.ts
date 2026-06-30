@@ -626,7 +626,7 @@ export class Logger {
 
 	public level(): __goscript_logrus.Level {
 		const logger: Logger | $.VarRef<Logger> | null = this
-		return $.uint(atomic.LoadUint32($.pointerValue<Logger>(logger)._fields.Level), 32)
+		return $.uint($.uint(atomic.LoadUint32($.pointerValue<Logger>(logger)._fields.Level), 32), 32)
 	}
 
 	public async newEntry(): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {

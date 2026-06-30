@@ -191,11 +191,11 @@ export function Backward<T>(
   }
 }
 
-export function Sort<T extends string | number>(s: $.Slice<T>): void {
+export function Sort<T extends cmp.Ordered>(s: $.Slice<T>): void {
   $.sortSlice(s)
 }
 
-export function IsSorted<T extends string | number>(x: $.Slice<T>): boolean {
+export function IsSorted<T extends cmp.Ordered>(x: $.Slice<T>): boolean {
   for (let i = $.len(x) - 1; i > 0; i--) {
     if (cmp.Compare((x as any)[i] as T, (x as any)[i - 1] as T) < 0) {
       return false

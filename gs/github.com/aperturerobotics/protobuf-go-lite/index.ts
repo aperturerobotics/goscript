@@ -1182,21 +1182,15 @@ export function DecodeFixed32(
 export function DecodeFixed64(
   b: $.Slice<number>,
   idx: number,
-): [number, number, $.GoError] {
+): [bigint, number, $.GoError] {
   if (idx + 8 > $.len(b)) {
-    return [0, 0, ioUnexpectedEOF()]
+    return [0n, 0, ioUnexpectedEOF()]
   }
-  const low =
-    byteSliceValue(b, idx) +
-    byteSliceValue(b, idx + 1) * 2 ** 8 +
-    byteSliceValue(b, idx + 2) * 2 ** 16 +
-    byteSliceValue(b, idx + 3) * 2 ** 24
-  const high =
-    byteSliceValue(b, idx + 4) +
-    byteSliceValue(b, idx + 5) * 2 ** 8 +
-    byteSliceValue(b, idx + 6) * 2 ** 16 +
-    byteSliceValue(b, idx + 7) * 2 ** 24
-  return [low + high * 2 ** 32, idx + 8, null]
+  let v = 0n
+  for (let i = 7; i >= 0; i--) {
+    v = (v << 8n) | BigInt(byteSliceValue(b, idx + i) & 0xff)
+  }
+  return [v, idx + 8, null]
 }
 
 export function Skip(dAtA: $.Slice<number>): [number, $.GoError] {

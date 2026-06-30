@@ -110,7 +110,7 @@ export class File {
 		return ErrUnimplemented
 	}
 
-	public Truncate(size: number): $.GoError {
+	public Truncate(size: bigint): $.GoError {
 		return ErrUnimplemented
 	}
 

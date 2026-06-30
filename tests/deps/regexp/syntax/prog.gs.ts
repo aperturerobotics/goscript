@@ -81,7 +81,7 @@ export class Prog {
 
 		// Have prefix; gather characters.
 		let buf: $.VarRef<strings.Builder> = $.varRef($.markAsStructValue(new strings.Builder()))
-		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(7, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) == $.uint(0, 16))) && ($.int($.arrayIndex($.pointerValue<Inst>(i).Rune!, 0), 32) != $.int(utf8.RuneError, 32))) {
+		while (((($.uint(Inst.prototype.op.call(i), 8) == $.uint(7, 8)) && ($.len($.pointerValue<Inst>(i).Rune) == 1)) && ($.uint(($.uint($.pointerValue<Inst>(i).Arg, 16) & 1), 16) == $.uint(0, 16))) && ($.int($.arrayIndex($.pointerValue<Inst>(i).Rune!, 0), 32) != $.int(utf8.RuneError, 32))) {
 			buf.value.WriteRune($.int($.arrayIndex($.pointerValue<Inst>(i).Rune!, 0), 32))
 			i = Prog.prototype.skipNop.call(p, $.uint($.pointerValue<Inst>(i).Out, 32))
 		}
@@ -97,7 +97,7 @@ export class Prog {
 			switch ($.pointerValue<Inst>(i).Op) {
 				case 3:
 				{
-					flag = flag | ($.uint($.pointerValue<Inst>(i).Arg, 8))
+					flag = flag | ($.uint($.uint($.pointerValue<Inst>(i).Arg, 8), 8))
 					break
 				}
 				case 5:
@@ -205,7 +205,7 @@ export class Inst {
 
 	public MatchEmptyWidth(before: number, after: number): boolean {
 		const i: Inst | $.VarRef<Inst> | null = this
-		switch ($.pointerValue<Inst>(i).Arg) {
+		switch ($.uint($.pointerValue<Inst>(i).Arg, 8)) {
 			case 1:
 			{
 				return ($.int(before, 32) == $.int(10, 32)) || ($.int(before, 32) == $.int(-1, 32))
@@ -262,7 +262,7 @@ export class Inst {
 				if ($.int(r, 32) == $.int(r0, 32)) {
 					return 0
 				}
-				if ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) != $.uint(0, 16)) {
+				if ($.uint(($.uint($.pointerValue<Inst>(i).Arg, 16) & 1), 16) != $.uint(0, 16)) {
 					for (let r1 = $.int(unicode.SimpleFold($.int(r0, 32)), 32); $.int(r1, 32) != $.int(r0, 32); r1 = $.int(unicode.SimpleFold($.int(r1, 32)), 32)) {
 						if ($.int(r, 32) == $.int(r1, 32)) {
 							return 0
@@ -517,7 +517,7 @@ export function dumpInst(b: strings.Builder | $.VarRef<strings.Builder> | null, 
 				bw(b, $.arrayToSlice<string>(["rune <nil>"]))
 			}
 			bw(b, $.arrayToSlice<string>(["rune ", strconv.QuoteToASCII($.runesToString($.pointerValue<Inst>(i).Rune))]))
-			if ($.uint(($.pointerValue<Inst>(i).Arg & 1), 16) != $.uint(0, 16)) {
+			if ($.uint(($.uint($.pointerValue<Inst>(i).Arg, 16) & 1), 16) != $.uint(0, 16)) {
 				bw(b, $.arrayToSlice<string>(["/i"]))
 			}
 			bw(b, $.arrayToSlice<string>([" -> ", u32($.uint($.pointerValue<Inst>(i).Out, 32))]))

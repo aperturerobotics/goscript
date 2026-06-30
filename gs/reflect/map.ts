@@ -105,11 +105,11 @@ class MapType implements Type {
     return u != null && this.String() === u.String()
   }
 
-  public OverflowInt(_x: number): boolean {
+  public OverflowInt(_x: bigint): boolean {
     throw new Error('reflect: OverflowInt of non-integer type map')
   }
 
-  public OverflowUint(_x: number): boolean {
+  public OverflowUint(_x: bigint): boolean {
     throw new Error('reflect: OverflowUint of non-integer type map')
   }
 

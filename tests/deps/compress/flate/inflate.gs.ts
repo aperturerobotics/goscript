@@ -670,7 +670,7 @@ export class decompressor {
 		let n = $.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 0)) | ($.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 1)) << 8)
 		let nn = $.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 2)) | ($.int($.arrayIndex($.pointerValue<decompressor>(f).buf, 3)) << 8)
 		if ($.uint($.uint(nn, 16), 16) != $.uint($.uint(Number($.int64Xor(n, -1n)), 16), 16)) {
-			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+			$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			return
 		}
 
@@ -731,7 +731,7 @@ export class decompressor {
 				if (n == 0) {
 					$.pointerValue<decompressor>(f).b = $.uint(b, 32)
 					$.pointerValue<decompressor>(f).nb = nb
-					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+					$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					return [0, $.pointerValue<decompressor>(f).err]
 				}
 				$.pointerValue<decompressor>(f).b = $.uint($.uintShr(b, ($.uint($.uint64And(n, 31), 64)), 32), 32)
@@ -845,7 +845,7 @@ export class decompressor {
 							}
 							default:
 							{
-								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 								return
 								break
 							}
@@ -919,7 +919,7 @@ export class decompressor {
 							}
 							default:
 							{
-								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+								$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 								return
 								break
 							}
@@ -927,7 +927,7 @@ export class decompressor {
 
 						// No check on length; encoding can be prescient.
 						if (dist > $.pointerValue<decompressor>(f).dict.histSize()) {
-							$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+							$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 							return
 						}
 
@@ -1046,7 +1046,7 @@ export class decompressor {
 			}
 			default:
 			{
-				$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+				$.pointerValue<decompressor>(f).err = $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 				break
 			}
 		}
@@ -1065,12 +1065,12 @@ export class decompressor {
 		}
 		let nlit = $.int($.pointerValue<decompressor>(f).b & 0x1F) + 257
 		if (nlit > 286) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+			return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
 		let ndist = $.int($.pointerValue<decompressor>(f).b & 0x1F) + 1
 		if (ndist > 30) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+			return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 		$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(5, 32))) >>> 0
 		let nclen = $.int($.pointerValue<decompressor>(f).b & 0xF) + 4
@@ -1096,7 +1096,7 @@ export class decompressor {
 			$.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits)[$.arrayIndex(codeOrder, i)] = 0
 		}
 		if (!$.pointerValue<decompressor>(f).h1.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).codebits), 0, undefined))) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+			return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 
 		// HLIT + 257 code lengths, HDIST + 1 code lengths,
@@ -1127,7 +1127,7 @@ export class decompressor {
 					rep = 3
 					nb = 2
 					if (i == 0) {
-						return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+						return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 					}
 					b = $.arrayIndex($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), i - 1)
 					break
@@ -1159,7 +1159,7 @@ export class decompressor {
 			$.pointerValue<decompressor>(f).b = ($.pointerValue<decompressor>(f).b >>> ($.uint(nb, 32))) >>> 0
 			$.pointerValue<decompressor>(f).nb = $.uint($.uint64Sub($.pointerValue<decompressor>(f).nb, nb), 64)
 			if ((i + rep) > n) {
-				return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+				return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 			}
 			for (let j = 0; j < rep; j++) {
 				$.pointerValue<number[]>($.pointerValue<decompressor>(f).bits)[i] = b
@@ -1168,7 +1168,7 @@ export class decompressor {
 		}
 
 		if (!$.pointerValue<decompressor>(f).h1.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), 0, nlit)) || !$.pointerValue<decompressor>(f).h2.init($.goSlice($.pointerValue<number[]>($.pointerValue<decompressor>(f).bits), nlit, nlit + ndist))) {
-			return $.namedValueInterfaceValue<$.GoError>($.pointerValue<decompressor>(f).roffset, "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
+			return $.namedValueInterfaceValue<$.GoError>($.int64($.pointerValue<decompressor>(f).roffset), "flate.CorruptInputError", {"Error": CorruptInputError_Error}, { kind: $.TypeKind.Basic, name: "int64", typeName: "flate.CorruptInputError" })
 		}
 
 		// As an optimization, we can initialize the min bits to read at a time

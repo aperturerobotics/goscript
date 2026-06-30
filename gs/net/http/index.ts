@@ -1881,11 +1881,11 @@ export class Server {
   public Handler: Handler | null
   public DisableGeneralOptionsHandler: boolean
   public TLSConfig: any
-  public ReadTimeout: number
+  public ReadTimeout: bigint
   public ReadTimeoutHandler: any
-  public ReadHeaderTimeout: number
-  public WriteTimeout: number
-  public IdleTimeout: number
+  public ReadHeaderTimeout: bigint
+  public WriteTimeout: bigint
+  public IdleTimeout: bigint
   public MaxHeaderBytes: number
   public TLSNextProto: Map<string, any> | null
   public ConnState: ((conn: any, state: ConnState) => void) | null
@@ -1901,11 +1901,11 @@ export class Server {
     this.DisableGeneralOptionsHandler =
       init?.DisableGeneralOptionsHandler ?? false
     this.TLSConfig = init?.TLSConfig ?? null
-    this.ReadTimeout = init?.ReadTimeout ?? 0
+    this.ReadTimeout = init?.ReadTimeout ?? 0n
     this.ReadTimeoutHandler = (init as any)?.ReadTimeoutHandler ?? null
-    this.ReadHeaderTimeout = init?.ReadHeaderTimeout ?? 0
-    this.WriteTimeout = init?.WriteTimeout ?? 0
-    this.IdleTimeout = init?.IdleTimeout ?? 0
+    this.ReadHeaderTimeout = init?.ReadHeaderTimeout ?? 0n
+    this.WriteTimeout = init?.WriteTimeout ?? 0n
+    this.IdleTimeout = init?.IdleTimeout ?? 0n
     this.MaxHeaderBytes = init?.MaxHeaderBytes ?? 0
     this.TLSNextProto = init?.TLSNextProto ?? null
     this.ConnState = init?.ConnState ?? null

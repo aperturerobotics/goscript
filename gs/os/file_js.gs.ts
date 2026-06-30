@@ -202,7 +202,7 @@ export function Readlink(name: string): [string, $.GoError] {
   return readlink(name)
 }
 
-export function Truncate(name: string, size: number): $.GoError {
+export function Truncate(name: string, size: bigint): $.GoError {
   return truncatePath(name, size)
 }
 

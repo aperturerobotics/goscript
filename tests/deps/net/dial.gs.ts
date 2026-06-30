@@ -1705,7 +1705,7 @@ export function partialDeadline(now: time.Time, deadline: time.Time, addrsRemain
 		return [$.markAsStructValue(new time.Time()), __goscript_net.errTimeout]
 	}
 	// Tentatively allocate equal time to each remaining address.
-	let __goscriptShadow3 = $.int64Div(timeRemaining, addrsRemaining)
+	let __goscriptShadow3 = $.int64Div(timeRemaining, $.int64(addrsRemaining))
 	// If the time per address is too short, steal from the end of the list.
 	const saneMinimum: time.Duration = 2000000000n
 	if (__goscriptShadow3 < 2000000000n) {

@@ -278,7 +278,7 @@ export function erf(x: number): number {
 		R = -0.00986494 + s * (-0.799283 + s * (-17.758 + s * (-160.636 + s * (-637.566 + s * (-1025.1 + s * -483.519)))))
 		S = 1 + s * (30.3381 + s * (325.793 + s * (1536.73 + s * (3199.86 + s * (2553.05 + s * (474.529 + s * -22.441))))))
 	}
-	let z = Float64frombits((Float64bits(x) & 0xffffffff00000000)) // pseudo-single (20-bit) precision x
+	let z = Float64frombits((Float64bits(x) & 0xffffffff00000000n)) // pseudo-single (20-bit) precision x
 	let r = Exp(-z * z - 0.5625) * Exp((z - x) * (z + x) + R / S)
 	if (sign) {
 		return r / x - 1
@@ -394,7 +394,7 @@ export function erfc(x: number): number {
 			R = -0.00986494 + s * (-0.799283 + s * (-17.758 + s * (-160.636 + s * (-637.566 + s * (-1025.1 + s * -483.519)))))
 			S = 1 + s * (30.3381 + s * (325.793 + s * (1536.73 + s * (3199.86 + s * (2553.05 + s * (474.529 + s * -22.441))))))
 		}
-		let z = Float64frombits((Float64bits(x) & 0xffffffff00000000)) // pseudo-single (20-bit) precision x
+		let z = Float64frombits((Float64bits(x) & 0xffffffff00000000n)) // pseudo-single (20-bit) precision x
 		let r = Exp(-z * z - 0.5625) * Exp((z - x) * (z + x) + R / S)
 		if (sign) {
 			return 2 - r / x

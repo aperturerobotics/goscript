@@ -6,7 +6,7 @@ import * as $ from "@goscript/builtin/index.js"
 export type state = number
 
 export function state__set(s: $.VarRef<state> | null, v: number): void {
-	s!.value = v
+	s!.value = $.int(v)
 }
 
 export async function call(fn: (() => void) | null): globalThis.Promise<void> {

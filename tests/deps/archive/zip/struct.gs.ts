@@ -618,7 +618,7 @@ export function timeZone(offset: time.Duration): time.Location | $.VarRef<time.L
 }
 
 export function msDosTimeToTime(dosDate: number, dosTime: number): time.Time {
-	return $.markAsStructValue($.cloneStructValue(time.Date($.int(($.uintShr(dosDate, 9, 16)) + 1980), ($.uintShr(dosDate, 5, 16)) & 0xf, $.int(dosDate & 0x1f), $.int($.uintShr(dosTime, 11, 16)), $.int(($.uintShr(dosTime, 5, 16)) & 0x3f), $.int((dosTime & 0x1f) * 2), 0, time.UTC)))
+	return $.markAsStructValue($.cloneStructValue(time.Date($.int(($.uintShr(dosDate, 9, 16)) + 1980), $.int(($.uintShr(dosDate, 5, 16)) & 0xf), $.int(dosDate & 0x1f), $.int($.uintShr(dosTime, 11, 16)), $.int(($.uintShr(dosTime, 5, 16)) & 0x3f), $.int((dosTime & 0x1f) * 2), 0, time.UTC)))
 }
 
 export function timeToMsDosTime(t: time.Time): [number, number] {
@@ -694,7 +694,7 @@ export function fileModeToUnixMode(mode: fs.FileMode): number {
 }
 
 export function unixModeToFileMode(m: number): fs.FileMode {
-	let mode = $.uint(m & 0o777, 32)
+	let mode = $.uint($.uint(m & 0o777, 32), 32)
 	switch (m & 61440) {
 		case 24576:
 		{

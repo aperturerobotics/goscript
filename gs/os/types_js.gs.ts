@@ -708,11 +708,11 @@ export class File {
 		return ErrUnimplemented
 	}
 
-	public Truncate(size: number): $.GoError {
+	public Truncate(size: bigint): $.GoError {
 		const handle = this.file?.handle
 		if (handle && typeof handle.truncateSync === "function") {
 			try {
-				handle.truncateSync(size)
+				handle.truncateSync(Number(size))
 				return null
 			} catch (err) {
 				return newHostError(err)
@@ -721,7 +721,7 @@ export class File {
 		const nodeFS = getNodeFS()
 		if (nodeFS?.ftruncateSync && this.fd >= 0) {
 			try {
-				nodeFS.ftruncateSync(this.fd, size)
+				nodeFS.ftruncateSync(this.fd, Number(size))
 				return null
 			} catch (err) {
 				return newHostError(err)

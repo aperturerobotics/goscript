@@ -136,11 +136,11 @@ export function Symlink(oldname: string, newname: string): $.GoError {
 	return ErrUnimplemented
 }
 
-export function Truncate(name: string, size: number): $.GoError {
+export function Truncate(name: string, size: bigint): $.GoError {
 	const denoObj = getDeno()
 	if (denoObj?.truncateSync) {
 		try {
-			denoObj.truncateSync(name, size)
+			denoObj.truncateSync(name, Number(size))
 			return null
 		} catch (err) {
 			return newHostError(err)
@@ -149,7 +149,7 @@ export function Truncate(name: string, size: number): $.GoError {
 	const nodeFS = getNodeFS()
 	if (nodeFS?.truncateSync) {
 		try {
-			nodeFS.truncateSync(name, size)
+			nodeFS.truncateSync(name, Number(size))
 			return null
 		} catch (err) {
 			return newHostError(err)

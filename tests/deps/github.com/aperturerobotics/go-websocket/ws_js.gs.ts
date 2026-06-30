@@ -441,7 +441,7 @@ export class Conn {
 		$.pointerValue<Conn>(c).msgReadLimit.Store(32768n)
 
 		$.pointerValue<Conn>(c).releaseOnClose = await $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).OnClose($.functionValue(async (e: wsjs.CloseEvent): globalThis.Promise<void> => {
-			let err = $.markAsStructValue(new CloseError({Code: e.Code, Reason: e.Reason}))
+			let err = $.markAsStructValue(new CloseError({Code: $.int(e.Code), Reason: e.Reason}))
 			// We do not know if we sent or received this close as
 			// its possible the browser triggered it without us
 			// explicitly sending it.

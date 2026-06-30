@@ -125,7 +125,7 @@ export async function dnsReadConfig(filename: string): globalThis.Promise<__gosc
 							if (n < 1) {
 								n = 1
 							}
-							$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).timeout = $.int64Mul(n, time.Second)
+							$.pointerValue<__goscript_dnsconfig.dnsConfig>(__goscriptShadow0).timeout = $.int64Mul($.int64(n), time.Second)
 							break
 						}
 						case stringslite.HasPrefix(s, "attempts:"):
