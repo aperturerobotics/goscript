@@ -210,7 +210,7 @@ export class parser {
 		return $.markAsStructValue(cloned)
 	}
 
-	public alternate(): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
+	public async alternate(): globalThis.Promise<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> {
 		let p: parser | $.VarRef<parser> | null = this
 		// Scan down to find pseudo-operator (.
 		// There are no | above (.
@@ -224,7 +224,7 @@ export class parser {
 		// Make sure top class is clean.
 		// All the others already are (see swapVerticalBar).
 		if ($.len(subs) > 0) {
-			cleanAlt($.arrayIndex(subs!, $.len(subs) - 1))
+			await cleanAlt($.arrayIndex(subs!, $.len(subs) - 1))
 		}
 
 		// Empty alternate is special case
@@ -233,10 +233,10 @@ export class parser {
 			return parser.prototype.push.call(p, parser.prototype.newRegexp.call(p, $.uint(1, 8)))
 		}
 
-		return parser.prototype.push.call(p, parser.prototype.collapse.call(p, subs, $.uint(19, 8)))
+		return parser.prototype.push.call(p, await parser.prototype.collapse.call(p, subs, $.uint(19, 8)))
 	}
 
-	public appendGroup(r: $.Slice<number>, g: charGroup): $.Slice<number> {
+	public async appendGroup(r: $.Slice<number>, g: charGroup): globalThis.Promise<$.Slice<number>> {
 		let p: parser | $.VarRef<parser> | null = this
 		if ($.uint(($.pointerValue<parser>(p).flags & 1), 16) == $.uint(0, 16)) {
 			if (g.sign < 0) {
@@ -248,7 +248,7 @@ export class parser {
 			let tmp: $.Slice<number> = $.goSlice($.pointerValue<parser>(p).tmpClass, undefined, 0)
 			tmp = appendFoldedClass(tmp, g._class)
 			$.pointerValue<parser>(p).tmpClass = tmp
-			tmp = cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
+			tmp = await cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
 			if (g.sign < 0) {
 				r = appendNegatedClass(r, tmp)
 			} else {
@@ -423,7 +423,7 @@ export class parser {
 		}
 	}
 
-	public collapse(subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, op: __goscript_regexp.Op): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
+	public async collapse(subs: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>, op: __goscript_regexp.Op): globalThis.Promise<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> {
 		const p: parser | $.VarRef<parser> | null = this
 		if ($.len(subs) == 1) {
 			return $.arrayIndex(subs!, 0)
@@ -440,7 +440,7 @@ export class parser {
 			}
 		}
 		if ($.uint(op, 8) == $.uint(19, 8)) {
-			$.pointerValue<__goscript_regexp.Regexp>(re).Sub = parser.prototype.factor.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub)
+			$.pointerValue<__goscript_regexp.Regexp>(re).Sub = await parser.prototype.factor.call(p, $.pointerValue<__goscript_regexp.Regexp>(re).Sub)
 			if ($.len($.pointerValue<__goscript_regexp.Regexp>(re).Sub) == 1) {
 				let old: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = re
 				re = $.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Sub!, 0)
@@ -450,7 +450,7 @@ export class parser {
 		return re
 	}
 
-	public concat(): __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null {
+	public async concat(): globalThis.Promise<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> {
 		let p: parser | $.VarRef<parser> | null = this
 		parser.prototype.maybeConcat.call(p, $.int(-1, 32), $.uint(0, 16))
 
@@ -467,10 +467,10 @@ export class parser {
 			return parser.prototype.push.call(p, parser.prototype.newRegexp.call(p, $.uint(2, 8)))
 		}
 
-		return parser.prototype.push.call(p, parser.prototype.collapse.call(p, subs, $.uint(18, 8)))
+		return parser.prototype.push.call(p, await parser.prototype.collapse.call(p, subs, $.uint(18, 8)))
 	}
 
-	public factor(sub: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>): $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null> {
+	public async factor(sub: $.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>): globalThis.Promise<$.Slice<__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null>> {
 		const p: parser | $.VarRef<parser> | null = this
 		if ($.len(sub) < 2) {
 			return sub
@@ -528,7 +528,7 @@ export class parser {
 						sub![j] = parser.prototype.removeLeadingString.call(p, $.arrayIndex(sub!, j), $.len(str))
 						parser.prototype.checkLimits.call(p, $.arrayIndex(sub!, j))
 					}
-					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
+					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = await parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
 
 					let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.newRegexp.call(p, $.uint(18, 8))
 					$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.append($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub, undefined, 0), prefix, suffix)
@@ -585,7 +585,7 @@ export class parser {
 						sub![j] = parser.prototype.removeLeadingRegexp.call(p, $.arrayIndex(sub!, j), reuse)
 						parser.prototype.checkLimits.call(p, $.arrayIndex(sub!, j))
 					}
-					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
+					let suffix: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = await parser.prototype.collapse.call(p, $.goSlice(sub, start, i), $.uint(19, 8))
 
 					let re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null = parser.prototype.newRegexp.call(p, $.uint(18, 8))
 					$.pointerValue<__goscript_regexp.Regexp>(re).Sub = $.append($.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Sub, undefined, 0), prefix, suffix)
@@ -637,7 +637,7 @@ export class parser {
 						mergeCharClass($.arrayIndex(sub!, start), $.arrayIndex(sub!, j))
 						parser.prototype.reuse.call(p, $.arrayIndex(sub!, j))
 					}
-					cleanAlt($.arrayIndex(sub!, start))
+					await cleanAlt($.arrayIndex(sub!, start))
 					out = $.append(out, $.arrayIndex(sub!, start))
 				}
 			}
@@ -786,7 +786,7 @@ export class parser {
 
 			// Look for POSIX [:alnum:] etc.
 			if ((($.len(t) > 2) && ($.uint($.indexStringOrBytes(t, 0), 8) == $.uint(91, 8))) && ($.uint($.indexStringOrBytes(t, 1), 8) == $.uint(58, 8))) {
-				let __goscriptTuple2: any = parser.prototype.parseNamedClass.call(p, t, _class)
+				let __goscriptTuple2: any = await parser.prototype.parseNamedClass.call(p, t, _class)
 				let nclass: $.Slice<number> = __goscriptTuple2[0]
 				let nt = __goscriptTuple2[1]
 				let __goscriptShadow0 = __goscriptTuple2[2]
@@ -820,7 +820,7 @@ export class parser {
 
 			// Look for Perl character class symbols (extension).
 			{
-				let __goscriptTuple4: any = parser.prototype.parsePerlClassEscape.call(p, t, _class)
+				let __goscriptTuple4: any = await parser.prototype.parsePerlClassEscape.call(p, t, _class)
 				let __goscriptShadow2: $.Slice<number> = __goscriptTuple4[0]
 				let __goscriptShadow3 = __goscriptTuple4[1]
 				if (__goscriptShadow2 != null) {
@@ -873,7 +873,7 @@ export class parser {
 
 		// Use &re.Rune instead of &class to avoid allocation.
 		$.pointerValue<__goscript_regexp.Regexp>(re).Rune = _class
-		_class = cleanClass($.pointerValue<__goscript_regexp.Regexp>(re)._fields.Rune)
+		_class = await cleanClass($.pointerValue<__goscript_regexp.Regexp>(re)._fields.Rune)
 		if (sign < 0) {
 			_class = negateClass(_class)
 		}
@@ -1095,7 +1095,7 @@ export class parser {
 		return [n, rest, ok]
 	}
 
-	public parseNamedClass(s: string, r: $.Slice<number>): [$.Slice<number>, string, $.GoError] {
+	public async parseNamedClass(s: string, r: $.Slice<number>): globalThis.Promise<[$.Slice<number>, string, $.GoError]> {
 		const p: parser | $.VarRef<parser> | null = this
 		let out: $.Slice<number> = null as $.Slice<number>
 		let rest: string = ""
@@ -1115,10 +1115,10 @@ export class parser {
 		if (g.sign == 0) {
 			return [null, "", $.interfaceValue<$.GoError>(new Error({Code: "invalid character class range", Expr: name}), "*syntax.Error")]
 		}
-		return [parser.prototype.appendGroup.call(p, r, $.markAsStructValue($.cloneStructValue(g))), s, null]
+		return [await parser.prototype.appendGroup.call(p, r, $.markAsStructValue($.cloneStructValue(g))), s, null]
 	}
 
-	public parsePerlClassEscape(s: string, r: $.Slice<number>): [$.Slice<number>, string] {
+	public async parsePerlClassEscape(s: string, r: $.Slice<number>): globalThis.Promise<[$.Slice<number>, string]> {
 		const p: parser | $.VarRef<parser> | null = this
 		let out: $.Slice<number> = null as $.Slice<number>
 		let rest: string = ""
@@ -1129,7 +1129,7 @@ export class parser {
 		if (g.sign == 0) {
 			return [out, rest]
 		}
-		return [parser.prototype.appendGroup.call(p, r, $.markAsStructValue($.cloneStructValue(g))), $.sliceStringOrBytes(s, 2, undefined)]
+		return [await parser.prototype.appendGroup.call(p, r, $.markAsStructValue($.cloneStructValue(g))), $.sliceStringOrBytes(s, 2, undefined)]
 	}
 
 	public parsePerlFlags(s: string): [string, $.GoError] {
@@ -1333,14 +1333,14 @@ export class parser {
 		return [min, max, rest, ok]
 	}
 
-	public parseRightParen(): $.GoError {
+	public async parseRightParen(): globalThis.Promise<$.GoError> {
 		let p: parser | $.VarRef<parser> | null = this
-		parser.prototype.concat.call(p)
-		if (parser.prototype.swapVerticalBar.call(p)) {
+		await parser.prototype.concat.call(p)
+		if (await parser.prototype.swapVerticalBar.call(p)) {
 			// pop vertical bar
 			$.pointerValue<parser>(p).stack = $.goSlice($.pointerValue<parser>(p).stack, undefined, $.len($.pointerValue<parser>(p).stack) - 1)
 		}
-		parser.prototype.alternate.call(p)
+		await parser.prototype.alternate.call(p)
 
 		let n = $.len($.pointerValue<parser>(p).stack)
 		if (n < 2) {
@@ -1450,7 +1450,7 @@ export class parser {
 			tmp = appendTable(tmp, tab)
 			tmp = appendTable(tmp, fold)
 			$.pointerValue<parser>(p).tmpClass = tmp
-			tmp = cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
+			tmp = await cleanClass($.pointerValue<parser>(p)._fields.tmpClass)
 			if (sign > 0) {
 				r = appendClass(r, tmp)
 			} else {
@@ -1460,15 +1460,15 @@ export class parser {
 		return [r, t, null]
 	}
 
-	public parseVerticalBar(): void {
+	public async parseVerticalBar(): globalThis.Promise<void> {
 		const p: parser | $.VarRef<parser> | null = this
-		parser.prototype.concat.call(p)
+		await parser.prototype.concat.call(p)
 
 		// The concatenation we just parsed is on top of the stack.
 		// If it sits above an opVerticalBar, swap it below
 		// (things below an opVerticalBar become an alternation).
 		// Otherwise, push a new vertical bar.
-		if (!parser.prototype.swapVerticalBar.call(p)) {
+		if (!await parser.prototype.swapVerticalBar.call(p)) {
 			parser.prototype.op.call(p, $.uint(129, 8))
 		}
 	}
@@ -1630,7 +1630,7 @@ export class parser {
 		$.pointerValue<parser>(p).free = re
 	}
 
-	public swapVerticalBar(): boolean {
+	public async swapVerticalBar(): globalThis.Promise<boolean> {
 		let p: parser | $.VarRef<parser> | null = this
 		// If above and below vertical bar are literal or char class,
 		// can merge into a single char class.
@@ -1659,7 +1659,7 @@ export class parser {
 				if (n >= 3) {
 					// Now out of reach.
 					// Clean opportunistically.
-					cleanAlt($.arrayIndex($.pointerValue<parser>(p).stack!, n - 3))
+					await cleanAlt($.arrayIndex($.pointerValue<parser>(p).stack!, n - 3))
 				}
 				$.pointerValue<parser>(p).stack![n - 2] = re1
 				$.pointerValue<parser>(p).stack![n - 1] = re2
@@ -1903,11 +1903,11 @@ export function repeatIsValid(re: __goscript_regexp.Regexp | $.VarRef<__goscript
 	return true
 }
 
-export function cleanAlt(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): void {
+export async function cleanAlt(re: __goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null): globalThis.Promise<void> {
 	switch ($.pointerValue<__goscript_regexp.Regexp>(re).Op) {
 		case 4:
 		{
-			$.pointerValue<__goscript_regexp.Regexp>(re).Rune = cleanClass($.pointerValue<__goscript_regexp.Regexp>(re)._fields.Rune)
+			$.pointerValue<__goscript_regexp.Regexp>(re).Rune = await cleanClass($.pointerValue<__goscript_regexp.Regexp>(re)._fields.Rune)
 			if ((($.len($.pointerValue<__goscript_regexp.Regexp>(re).Rune) == 2) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 0), 32) == $.int(0, 32))) && ($.int($.arrayIndex($.pointerValue<__goscript_regexp.Regexp>(re).Rune!, 1), 32) == $.int(unicode.MaxRune, 32))) {
 				$.pointerValue<__goscript_regexp.Regexp>(re).Rune = null
 				$.pointerValue<__goscript_regexp.Regexp>(re).Op = $.uint(6, 8)
@@ -2049,14 +2049,14 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 					}
 					case 124:
 					{
-						p.value.parseVerticalBar()
+						await p.value.parseVerticalBar()
 						t = $.sliceStringOrBytes(t, 1, undefined)
 						break
 					}
 					case 41:
 					{
 						{
-							err = p.value.parseRightParen()
+							err = await p.value.parseRightParen()
 							if (err != null) {
 								const __goscriptReturn7: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn7[1]
@@ -2274,7 +2274,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 						// Perl character class escape.
 						{
-							let __goscriptTuple24: any = p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
+							let __goscriptTuple24: any = await p.value.parsePerlClassEscape(t, $.goSlice($.pointerValue<__goscript_regexp.Regexp>(re).Rune0, undefined, 0))
 							let r: $.Slice<number> = __goscriptTuple24[0]
 							let rest = __goscriptTuple24[1]
 							if (r != null) {
@@ -2307,12 +2307,12 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 			lastRepeat = repeat
 		}
 
-		p.value.concat()
-		if (p.value.swapVerticalBar()) {
+		await p.value.concat()
+		if (await p.value.swapVerticalBar()) {
 			// pop vertical bar
 			p.value.stack = $.goSlice(p.value.stack, undefined, $.len(p.value.stack) - 1)
 		}
-		p.value.alternate()
+		await p.value.alternate()
 
 		let n = $.len(p.value.stack)
 		if (n != 1) {
@@ -2551,10 +2551,10 @@ export async function unicodeTable(name: string): globalThis.Promise<[unicode.Ra
 	return [null, null, 0]
 }
 
-export function cleanClass(rp: $.VarRef<$.Slice<number>> | null): $.Slice<number> {
+export async function cleanClass(rp: $.VarRef<$.Slice<number>> | null): globalThis.Promise<$.Slice<number>> {
 
 	// Sort by lo increasing, hi decreasing to break ties.
-	sort.Sort($.interfaceValue<sort.Interface | null>($.markAsStructValue(new ranges({p: rp})), "syntax.ranges"))
+	await sort.Sort($.interfaceValue<sort.Interface | null>($.markAsStructValue(new ranges({p: rp})), "syntax.ranges"))
 
 	let r: $.Slice<number> = $.pointerValue<$.Slice<number>>(rp)
 	if ($.len(r) < 2) {

@@ -64,9 +64,9 @@ export class descending {
 
 export type byFreq = $.Slice<number>
 
-export function byFreq_sort(s: $.VarRef<byFreq> | null, a: $.Slice<number>): void {
+export async function byFreq_sort(s: $.VarRef<byFreq> | null, a: $.Slice<number>): globalThis.Promise<void> {
 	s!.value = ((a as byFreq) as byFreq)
-	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*main.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "main.byFreq" }))!)
+	await sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*main.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "main.byFreq" }))!)
 }
 
 export function byFreq_Len(s: byFreq): number {
@@ -153,12 +153,12 @@ export async function main(): globalThis.Promise<void> {
 
 	// Test custom sort.Interface values.
 	let custom = $.markAsStructValue(new descending({values: $.arrayToSlice<number>([1, 3, 2])}))
-	sort2.Sort($.interfaceValue<sort2.Interface | null>($.markAsStructValue($.cloneStructValue(custom)), "main.descending"))
+	await sort2.Sort($.interfaceValue<sort2.Interface | null>($.markAsStructValue($.cloneStructValue(custom)), "main.descending"))
 	$.println("Custom interface sort:", $.arrayIndex(custom.values!, 0), $.arrayIndex(custom.values!, 1), $.arrayIndex(custom.values!, 2))
 
 	let namedSlice: $.Slice<number> = $.arrayToSlice<number>([4, 1, 3])
 	let namedSliceSorter: $.VarRef<byFreq> = $.varRef(null as byFreq)
-	byFreq_sort(namedSliceSorter, namedSlice)
+	await byFreq_sort(namedSliceSorter, namedSlice)
 	$.println("Named slice pointer sort:", $.arrayIndex(namedSlice!, 0), $.arrayIndex(namedSlice!, 1), $.arrayIndex(namedSlice!, 2))
 
 	$.println("test finished")

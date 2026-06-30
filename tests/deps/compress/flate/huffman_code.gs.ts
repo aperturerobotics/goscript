@@ -132,7 +132,7 @@ export class huffmanEncoder {
 		return $.markAsStructValue(cloned)
 	}
 
-	public assignEncodingAndSize(bitCount: $.Slice<number>, list: $.Slice<literalNode>): void {
+	public async assignEncodingAndSize(bitCount: $.Slice<number>, list: $.Slice<literalNode>): globalThis.Promise<void> {
 		let h: huffmanEncoder | $.VarRef<huffmanEncoder> | null = this
 		let code = $.uint($.uint(0, 16), 16)
 		for (let __goscriptRangeTarget1 = bitCount, n = 0; n < $.len(__goscriptRangeTarget1); n++) {
@@ -147,7 +147,7 @@ export class huffmanEncoder {
 			// assigned in literal order (not frequency order).
 			let chunk: $.Slice<literalNode> = $.goSlice(list, $.len(list) - $.int(bits), undefined)
 
-			byLiteral_sort($.pointerValue<huffmanEncoder>(h)._fields.lns, chunk)
+			await byLiteral_sort($.pointerValue<huffmanEncoder>(h)._fields.lns, chunk)
 			for (let __goscriptRangeTarget0 = chunk, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {
 				let node = __goscriptRangeTarget0![__rangeIndex]
 				$.pointerValue<huffmanEncoder>(h).codes![node.literal] = (() => { const __goscriptLiteralField0 = $.uint(reverseBits($.uint(code, 16), $.uint($.uint(n, 8), 8)), 16); return $.markAsStructValue(new hcode({code: __goscriptLiteralField0, len: $.uint($.uint(n, 16), 16)})) })()
@@ -280,7 +280,7 @@ export class huffmanEncoder {
 		return total
 	}
 
-	public generate(freq: $.Slice<number>, maxBits: number): void {
+	public async generate(freq: $.Slice<number>, maxBits: number): globalThis.Promise<void> {
 		let h: huffmanEncoder | $.VarRef<huffmanEncoder> | null = this
 		if ($.pointerValue<huffmanEncoder>(h).freqcache == null) {
 			// Allocate a reusable buffer with the longest possible frequency table.
@@ -313,12 +313,12 @@ export class huffmanEncoder {
 			}
 			return
 		}
-		byFreq_sort($.pointerValue<huffmanEncoder>(h)._fields.lfs, list)
+		await byFreq_sort($.pointerValue<huffmanEncoder>(h)._fields.lfs, list)
 
 		// Get the number of literals for each bit count
 		let bitCount: $.Slice<number> = huffmanEncoder.prototype.bitCounts.call(h, list, $.int(maxBits, 32))
 		// And do the assignment
-		huffmanEncoder.prototype.assignEncodingAndSize.call(h, bitCount, list)
+		await huffmanEncoder.prototype.assignEncodingAndSize.call(h, bitCount, list)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -541,9 +541,9 @@ export function __goscript_set_fixedOffsetEncoding(__goscriptValue: huffmanEncod
 
 export type byLiteral = $.Slice<literalNode>
 
-export function byLiteral_sort(s: $.VarRef<byLiteral> | null, a: $.Slice<literalNode>): void {
+export async function byLiteral_sort(s: $.VarRef<byLiteral> | null, a: $.Slice<literalNode>): globalThis.Promise<void> {
 	s!.value = ((a as byLiteral) as byLiteral)
-	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byLiteral", {Len: (receiver: any, ...args: any[]) => (byLiteral_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byLiteral_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byLiteral_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byLiteral_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byLiteral" }))!)
+	await sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byLiteral", {Len: (receiver: any, ...args: any[]) => (byLiteral_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byLiteral_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byLiteral_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byLiteral_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byLiteral" }))!)
 }
 
 export function byLiteral_Len(s: byLiteral): number {
@@ -563,9 +563,9 @@ export function byLiteral_Swap(s: byLiteral, i: number, j: number): void {
 
 export type byFreq = $.Slice<literalNode>
 
-export function byFreq_sort(s: $.VarRef<byFreq> | null, a: $.Slice<literalNode>): void {
+export async function byFreq_sort(s: $.VarRef<byFreq> | null, a: $.Slice<literalNode>): globalThis.Promise<void> {
 	s!.value = ((a as byFreq) as byFreq)
-	sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byFreq" }))!)
+	await sort2.Sort($.pointerValueOrNil($.namedValueInterfaceValue<sort2.Interface | null>(s, "*flate.byFreq", {Len: (receiver: any, ...args: any[]) => (byFreq_Len as any)($.pointerValue(receiver), ...args), Less: (receiver: any, ...args: any[]) => (byFreq_Less as any)($.pointerValue(receiver), ...args), Swap: (receiver: any, ...args: any[]) => (byFreq_Swap as any)($.pointerValue(receiver), ...args), sort: (receiver: any, ...args: any[]) => (byFreq_sort as any)(receiver, ...args)}, { kind: $.TypeKind.Pointer, elemType: "flate.byFreq" }))!)
 }
 
 export function byFreq_Len(s: byFreq): number {
