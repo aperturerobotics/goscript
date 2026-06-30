@@ -595,6 +595,20 @@ describe('protobuf-go-lite wire helpers', () => {
       ),
     ).toEqual([-1n, 10, null])
     expect(DecodeVarintUint32(buf, offset)).toEqual([300, 4, null])
+    expect(DecodeVarint(AppendVarint([], -1n), 0)).toEqual([
+      0xffffffffffffffffn,
+      10,
+      null,
+    ])
+    expect(DecodeVarintInt64(AppendVarint([], 0x7fffffffffffffffn), 0)).toEqual([
+      0x7fffffffffffffffn,
+      9,
+      null,
+    ])
+    expect(DecodeVarintInt64(AppendVarint([], -1n), 0)).toEqual([-1n, 10, null])
+    expect(
+      DecodeVarintInt64(AppendVarint([], -0x8000000000000000n), 0),
+    ).toEqual([-0x8000000000000000n, 10, null])
     expect(Array.from(AppendVarint([], 300) as number[])).toEqual([0xac, 0x02])
     expect(SizeOfVarint(0xffffffffffffffffn)).toBe(10)
     expect(SizeOfZigzag(-1)).toBe(1)
