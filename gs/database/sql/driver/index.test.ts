@@ -71,9 +71,13 @@ describe('database/sql/driver override', () => {
   })
 
   it('round trips RowsAffected result methods', () => {
-    expect(RowsAffected_RowsAffected(42)).toEqual([42, null])
-    const [id, err] = RowsAffected_LastInsertId(42)
-    expect(id).toBe(0)
+    expect(RowsAffected_RowsAffected(42n)).toEqual([42n, null])
+    expect(RowsAffected_RowsAffected(9007199254740993n)).toEqual([
+      9007199254740993n,
+      null,
+    ])
+    const [id, err] = RowsAffected_LastInsertId(42n)
+    expect(id).toBe(0n)
     expect(err?.Error()).toBe('LastInsertId is not supported by this driver')
   })
 

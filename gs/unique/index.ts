@@ -1,6 +1,7 @@
 import * as $ from '@goscript/builtin/index.js'
 
 const handles = new Map<string, Handle<any>>()
+let nextNonReflexiveKey = 0
 
 export class Handle<T = any> {
   private readonly value: T | undefined
@@ -62,6 +63,21 @@ function normalize(
   seen: WeakMap<object, number>,
   nextID: () => number,
 ): unknown {
+  if (typeof value === 'bigint') {
+    return { $bigint: value.toString() }
+  }
+  if (typeof value === 'number') {
+    if (Number.isNaN(value)) {
+      return { $nan: nextNonReflexiveKey++ }
+    }
+    if (value === Infinity) {
+      return { $number: '+Inf' }
+    }
+    if (value === -Infinity) {
+      return { $number: '-Inf' }
+    }
+    return value
+  }
   if (value == null || typeof value !== 'object') {
     return value
   }

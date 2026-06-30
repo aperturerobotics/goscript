@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as $ from '@goscript/builtin/index.js'
 
-import { File, FileInfo, Stat } from './index.js'
+import { File, FileInfo, FileInfoToDirEntry, ModeDir, Stat } from './index.js'
 
 function fileInfo(name: string, isDir = false): FileInfo {
   return {
@@ -12,7 +12,7 @@ function fileInfo(name: string, isDir = false): FileInfo {
       return null
     },
     Mode(): number {
-      return isDir ? 0o040000 : 0
+      return isDir ? ModeDir : 0
     },
     Name(): string {
       return name
@@ -44,6 +44,12 @@ describe('io/fs Stat override', () => {
 
     expect(err).toBeNull()
     expect(got).toBe(info)
+  })
+
+  it('preserves high FileMode type bits through FileInfoToDirEntry', () => {
+    const entry = FileInfoToDirEntry(fileInfo('dir', true))
+
+    expect(entry.Type()).toBe(ModeDir)
   })
 
   it('awaits async Open, File.Stat, and Close fallback implementations', async () => {

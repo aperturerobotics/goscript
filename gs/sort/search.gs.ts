@@ -1,4 +1,6 @@
-import * as $ from "@goscript/builtin/index.js";
+import * as $ from '@goscript/builtin/index.js'
+
+import { compareStrings } from './order.js'
 
 // Search uses binary search to find and return the smallest index i
 // in [0, n) at which f(i) is true, assuming that on the range [0, n),
@@ -139,5 +141,8 @@ export function SearchFloat64s(a: $.Slice<number>, x: number): number {
 // present (it could be len(a)).
 // The slice must be sorted in ascending order.
 export function SearchStrings(a: $.Slice<string>, x: string): number {
-	return searchSync($.len(a), (i: number) => ($.index(a, i) as string) >= x)
+	return searchSync(
+		$.len(a),
+		(i: number) => compareStrings($.index(a, i) as string, x) >= 0,
+	)
 }

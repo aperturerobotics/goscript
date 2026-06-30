@@ -3,7 +3,7 @@ import { uintptr } from './types.js'
 
 import * as iter from '@goscript/iter/index.js'
 
-export function rangeNum<T extends number | uintptr, N extends number>(
+export function rangeNum<_T extends number | uintptr, N extends number>(
   num: N,
   t: Type,
 ): iter.Seq<Value> {

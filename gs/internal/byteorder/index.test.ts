@@ -3,13 +3,19 @@ import { describe, expect, test } from 'vitest'
 import {
   BEAppendUint64,
   BEPutUint64,
+  BEUint32,
   BEUint64,
   LEAppendUint64,
   LEPutUint64,
+  LEUint32,
   LEUint64,
 } from './index.js'
 
 describe('internal/byteorder uint64', () => {
+  test('reads uint32 values as unsigned', () => {
+    expect(BEUint32(new Uint8Array([0x80, 0, 0, 0]))).toBe(2147483648)
+    expect(LEUint32(new Uint8Array([0, 0, 0, 0x80]))).toBe(2147483648)
+  })
   test('reads and writes big-endian bigint values', () => {
     const bytes = new Uint8Array(8)
 

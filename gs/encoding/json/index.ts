@@ -805,9 +805,9 @@ export function Number_Float64(n: Number): [number, $.GoError] {
   return [value, null]
 }
 
-export function Number_Int64(n: Number): [number, $.GoError] {
+export function Number_Int64(n: Number): [bigint, $.GoError] {
   if (!/^[+-]?\d+$/.test(n)) {
-    return [0, $.newError(`strconv.ParseInt: parsing "${n}": invalid syntax`)]
+    return [0n, $.newError(`strconv.ParseInt: parsing "${n}": invalid syntax`)]
   }
   const value = BigInt(n)
   const min = -(1n << 63n)
@@ -815,11 +815,11 @@ export function Number_Int64(n: Number): [number, $.GoError] {
   if (value < min || value > max) {
     const clamped = value < min ? min : max
     return [
-      Number(clamped),
+      clamped,
       $.newError(`strconv.ParseInt: parsing "${n}": value out of range`),
     ]
   }
-  return [Number(value), null]
+  return [value, null]
 }
 
 export function Number_String(n: Number): string {

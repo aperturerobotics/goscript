@@ -586,6 +586,14 @@ describe('protobuf-go-lite wire helpers', () => {
     expect(DecodeVarint(buf, offset)).toEqual([300n, 4, null])
     expect(DecodeVarintInt32(buf, offset)).toEqual([300, 4, null])
     expect(DecodeVarintInt64(buf, offset)).toEqual([300n, 4, null])
+    expect(
+      DecodeVarintInt64(
+        new Uint8Array([
+          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01,
+        ]),
+        0,
+      ),
+    ).toEqual([-1n, 10, null])
     expect(DecodeVarintUint32(buf, offset)).toEqual([300, 4, null])
     expect(Array.from(AppendVarint([], 300) as number[])).toEqual([0xac, 0x02])
     expect(SizeOfVarint(0xffffffffffffffffn)).toBe(10)
@@ -614,7 +622,7 @@ describe('protobuf-go-lite wire helpers', () => {
         new Uint8Array([0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]),
         0,
       ),
-    ).toEqual([0x1122334455667800, 8, null])
+    ).toEqual([0x1122334455667788n, 8, null])
 
     const [, , err] = DecodeFixed64(new Uint8Array([1, 2, 3]), 0)
     expect(err?.Error()).toBe('unexpected EOF')

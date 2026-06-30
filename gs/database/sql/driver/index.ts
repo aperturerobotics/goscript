@@ -37,7 +37,9 @@ export interface Connector {
   Driver(): Driver | null
 }
 
-export const ErrSkip = $.newError('driver: skip fast-path; continue as if unimplemented')
+export const ErrSkip = $.newError(
+  'driver: skip fast-path; continue as if unimplemented',
+)
 export const ErrBadConn = $.newError('driver: bad connection')
 
 export interface Pinger {
@@ -87,7 +89,9 @@ export class TxOptions {
   public Isolation: IsolationLevel
   public ReadOnly: boolean
 
-  constructor(init?: Partial<{ Isolation: IsolationLevel; ReadOnly: boolean }>) {
+  constructor(
+    init?: Partial<{ Isolation: IsolationLevel; ReadOnly: boolean }>,
+  ) {
     this.Isolation = init?.Isolation ?? 0
     this.ReadOnly = init?.ReadOnly ?? false
   }
@@ -113,8 +117,8 @@ export interface Validator {
 }
 
 export interface Result {
-  LastInsertId(): [number, $.GoError]
-  RowsAffected(): [number, $.GoError]
+  LastInsertId(): [bigint, $.GoError]
+  RowsAffected(): [bigint, $.GoError]
 }
 
 export interface Stmt {
@@ -138,7 +142,9 @@ export interface StmtQueryContext {
   ): [Rows | null, $.GoError]
 }
 
-export const ErrRemoveArgument = $.newError('driver: remove argument from query')
+export const ErrRemoveArgument = $.newError(
+  'driver: remove argument from query',
+)
 
 export interface NamedValueChecker {
   CheckNamedValue(value: NamedValue | $.VarRef<NamedValue> | null): $.GoError
@@ -184,23 +190,27 @@ export interface Tx {
   Rollback(): $.GoError
 }
 
-export type RowsAffected = number
+export type RowsAffected = bigint
 
-export function RowsAffected_LastInsertId(_v: RowsAffected): [number, $.GoError] {
-  return [0, $.newError('LastInsertId is not supported by this driver')]
+export function RowsAffected_LastInsertId(
+  _v: RowsAffected,
+): [bigint, $.GoError] {
+  return [0n, $.newError('LastInsertId is not supported by this driver')]
 }
 
-export function RowsAffected_RowsAffected(v: RowsAffected): [number, $.GoError] {
+export function RowsAffected_RowsAffected(
+  v: RowsAffected,
+): [bigint, $.GoError] {
   return [v, null]
 }
 
 class noRows implements Result {
-  public LastInsertId(): [number, $.GoError] {
-    return [0, $.newError('no LastInsertId available after DDL statement')]
+  public LastInsertId(): [bigint, $.GoError] {
+    return [0n, $.newError('no LastInsertId available after DDL statement')]
   }
 
-  public RowsAffected(): [number, $.GoError] {
-    return [0, $.newError('no RowsAffected available after DDL statement')]
+  public RowsAffected(): [bigint, $.GoError] {
+    return [0n, $.newError('no RowsAffected available after DDL statement')]
   }
 }
 
@@ -236,7 +246,10 @@ class boolType implements ValueConverter {
       if (value === 0n || value === 1n) {
         return [value === 1n, null]
       }
-      return [null, $.newError(`sql/driver: couldn't convert ${value} into type bool`)]
+      return [
+        null,
+        $.newError(`sql/driver: couldn't convert ${value} into type bool`),
+      ]
     }
     return [
       null,
@@ -265,7 +278,10 @@ class int32Type implements ValueConverter {
       ]
     }
     if (value > 2147483647n || value < -2147483648n) {
-      return [null, $.newError(`sql/driver: value ${globalThis.String(v)} overflows int32`)]
+      return [
+        null,
+        $.newError(`sql/driver: value ${globalThis.String(v)} overflows int32`),
+      ]
     }
     return [Number(value), null]
   }
@@ -279,7 +295,11 @@ class stringType implements ValueConverter {
     if (typeof v === 'string' || isBytes(v)) {
       return [v, null]
     }
-    if (typeof v === 'number' || typeof v === 'bigint' || typeof v === 'boolean') {
+    if (
+      typeof v === 'number' ||
+      typeof v === 'bigint' ||
+      typeof v === 'boolean'
+    ) {
       return [globalThis.String(v), null]
     }
     return [
@@ -342,7 +362,10 @@ class defaultConverter implements ValueConverter {
         return [null, err]
       }
       if (!IsValue(sv)) {
-        return [null, $.newError(`non-Value type ${typeName(sv)} returned from Value`)]
+        return [
+          null,
+          $.newError(`non-Value type ${typeName(sv)} returned from Value`),
+        ]
       }
       return [sv, null]
     }
@@ -391,7 +414,9 @@ export function IsScanValue(v: any): boolean {
 
 function converterValue(converter: ValueConverter | null): ValueConverter {
   if (converter === null) {
-    throw new Error('runtime error: invalid memory address or nil pointer dereference')
+    throw new Error(
+      'runtime error: invalid memory address or nil pointer dereference',
+    )
   }
   return converter
 }
@@ -448,7 +473,9 @@ function int32InputValue(v: any): [bigint | null, $.GoError] {
   if (!/^[+-]?\d+$/.test(v)) {
     return [
       null,
-      $.newError(`sql/driver: value ${JSON.stringify(v)} can't be converted to int32`),
+      $.newError(
+        `sql/driver: value ${JSON.stringify(v)} can't be converted to int32`,
+      ),
     ]
   }
   return [BigInt(v), null]
@@ -459,7 +486,9 @@ function isValuer(v: any): v is Valuer {
 }
 
 function isDecimalDecompose(v: any): boolean {
-  return v !== null && typeof v === 'object' && typeof v.Decompose === 'function'
+  return (
+    v !== null && typeof v === 'object' && typeof v.Decompose === 'function'
+  )
 }
 
 function isNamedValue(v: any): boolean {
@@ -541,59 +570,127 @@ function ret(name: string, type: $.TypeInfo | string): $.MethodArg {
 
 const rowsMethods: $.MethodSignature[] = [
   { name: 'Close', args: [], returns: [ret('_r0', errorType)] },
-  { name: 'Columns', args: [], returns: [ret('_r0', { kind: $.TypeKind.Slice, elemType: stringTypeInfo })] },
-  { name: 'Next', args: [arg('dest', valueSliceType)], returns: [ret('_r0', errorType)] },
+  {
+    name: 'Columns',
+    args: [],
+    returns: [ret('_r0', { kind: $.TypeKind.Slice, elemType: stringTypeInfo })],
+  },
+  {
+    name: 'Next',
+    args: [arg('dest', valueSliceType)],
+    returns: [ret('_r0', errorType)],
+  },
 ]
 
 $.registerInterfaceType('driver.Driver', null, [
-  { name: 'Open', args: [arg('name', stringTypeInfo)], returns: [ret('_r0', 'driver.Conn'), ret('_r1', errorType)] },
+  {
+    name: 'Open',
+    args: [arg('name', stringTypeInfo)],
+    returns: [ret('_r0', 'driver.Conn'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.DriverContext', null, [
-  { name: 'OpenConnector', args: [arg('name', stringTypeInfo)], returns: [ret('_r0', 'driver.Connector'), ret('_r1', errorType)] },
+  {
+    name: 'OpenConnector',
+    args: [arg('name', stringTypeInfo)],
+    returns: [ret('_r0', 'driver.Connector'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Connector', null, [
-  { name: 'Connect', args: [arg('ctx', 'context.Context')], returns: [ret('_r0', 'driver.Conn'), ret('_r1', errorType)] },
+  {
+    name: 'Connect',
+    args: [arg('ctx', 'context.Context')],
+    returns: [ret('_r0', 'driver.Conn'), ret('_r1', errorType)],
+  },
   { name: 'Driver', args: [], returns: [ret('_r0', 'driver.Driver')] },
 ])
 
 $.registerInterfaceType('driver.Pinger', null, [
-  { name: 'Ping', args: [arg('ctx', 'context.Context')], returns: [ret('_r0', errorType)] },
+  {
+    name: 'Ping',
+    args: [arg('ctx', 'context.Context')],
+    returns: [ret('_r0', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Execer', null, [
-  { name: 'Exec', args: [arg('query', stringTypeInfo), arg('args', valueSliceType)], returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)] },
+  {
+    name: 'Exec',
+    args: [arg('query', stringTypeInfo), arg('args', valueSliceType)],
+    returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.ExecerContext', null, [
-  { name: 'ExecContext', args: [arg('ctx', 'context.Context'), arg('query', stringTypeInfo), arg('args', namedValueSliceType)], returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)] },
+  {
+    name: 'ExecContext',
+    args: [
+      arg('ctx', 'context.Context'),
+      arg('query', stringTypeInfo),
+      arg('args', namedValueSliceType),
+    ],
+    returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Queryer', null, [
-  { name: 'Query', args: [arg('query', stringTypeInfo), arg('args', valueSliceType)], returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)] },
+  {
+    name: 'Query',
+    args: [arg('query', stringTypeInfo), arg('args', valueSliceType)],
+    returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.QueryerContext', null, [
-  { name: 'QueryContext', args: [arg('ctx', 'context.Context'), arg('query', stringTypeInfo), arg('args', namedValueSliceType)], returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)] },
+  {
+    name: 'QueryContext',
+    args: [
+      arg('ctx', 'context.Context'),
+      arg('query', stringTypeInfo),
+      arg('args', namedValueSliceType),
+    ],
+    returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Conn', null, [
-  { name: 'Begin', args: [], returns: [ret('_r0', 'driver.Tx'), ret('_r1', errorType)] },
+  {
+    name: 'Begin',
+    args: [],
+    returns: [ret('_r0', 'driver.Tx'), ret('_r1', errorType)],
+  },
   { name: 'Close', args: [], returns: [ret('_r0', errorType)] },
-  { name: 'Prepare', args: [arg('query', stringTypeInfo)], returns: [ret('_r0', 'driver.Stmt'), ret('_r1', errorType)] },
+  {
+    name: 'Prepare',
+    args: [arg('query', stringTypeInfo)],
+    returns: [ret('_r0', 'driver.Stmt'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.ConnPrepareContext', null, [
-  { name: 'PrepareContext', args: [arg('ctx', 'context.Context'), arg('query', stringTypeInfo)], returns: [ret('_r0', 'driver.Stmt'), ret('_r1', errorType)] },
+  {
+    name: 'PrepareContext',
+    args: [arg('ctx', 'context.Context'), arg('query', stringTypeInfo)],
+    returns: [ret('_r0', 'driver.Stmt'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.ConnBeginTx', null, [
-  { name: 'BeginTx', args: [arg('ctx', 'context.Context'), arg('opts', 'driver.TxOptions')], returns: [ret('_r0', 'driver.Tx'), ret('_r1', errorType)] },
+  {
+    name: 'BeginTx',
+    args: [arg('ctx', 'context.Context'), arg('opts', 'driver.TxOptions')],
+    returns: [ret('_r0', 'driver.Tx'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.SessionResetter', null, [
-  { name: 'ResetSession', args: [arg('ctx', 'context.Context')], returns: [ret('_r0', errorType)] },
+  {
+    name: 'ResetSession',
+    args: [arg('ctx', 'context.Context')],
+    returns: [ret('_r0', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Validator', null, [
@@ -601,31 +698,63 @@ $.registerInterfaceType('driver.Validator', null, [
 ])
 
 $.registerInterfaceType('driver.Result', null, [
-  { name: 'LastInsertId', args: [], returns: [ret('_r0', int64TypeInfo), ret('_r1', errorType)] },
-  { name: 'RowsAffected', args: [], returns: [ret('_r0', int64TypeInfo), ret('_r1', errorType)] },
+  {
+    name: 'LastInsertId',
+    args: [],
+    returns: [ret('_r0', int64TypeInfo), ret('_r1', errorType)],
+  },
+  {
+    name: 'RowsAffected',
+    args: [],
+    returns: [ret('_r0', int64TypeInfo), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Stmt', null, [
   { name: 'Close', args: [], returns: [ret('_r0', errorType)] },
-  { name: 'Exec', args: [arg('args', valueSliceType)], returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)] },
+  {
+    name: 'Exec',
+    args: [arg('args', valueSliceType)],
+    returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)],
+  },
   { name: 'NumInput', args: [], returns: [ret('_r0', intTypeInfo)] },
-  { name: 'Query', args: [arg('args', valueSliceType)], returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)] },
+  {
+    name: 'Query',
+    args: [arg('args', valueSliceType)],
+    returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.StmtExecContext', null, [
-  { name: 'ExecContext', args: [arg('ctx', 'context.Context'), arg('args', namedValueSliceType)], returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)] },
+  {
+    name: 'ExecContext',
+    args: [arg('ctx', 'context.Context'), arg('args', namedValueSliceType)],
+    returns: [ret('_r0', 'driver.Result'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.StmtQueryContext', null, [
-  { name: 'QueryContext', args: [arg('ctx', 'context.Context'), arg('args', namedValueSliceType)], returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)] },
+  {
+    name: 'QueryContext',
+    args: [arg('ctx', 'context.Context'), arg('args', namedValueSliceType)],
+    returns: [ret('_r0', 'driver.Rows'), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.NamedValueChecker', null, [
-  { name: 'CheckNamedValue', args: [arg('_p0', namedValuePointerType)], returns: [ret('_r0', errorType)] },
+  {
+    name: 'CheckNamedValue',
+    args: [arg('_p0', namedValuePointerType)],
+    returns: [ret('_r0', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.ColumnConverter', null, [
-  { name: 'ColumnConverter', args: [arg('idx', intTypeInfo)], returns: [ret('_r0', 'driver.ValueConverter')] },
+  {
+    name: 'ColumnConverter',
+    args: [arg('idx', intTypeInfo)],
+    returns: [ret('_r0', 'driver.ValueConverter')],
+  },
 ])
 
 $.registerInterfaceType('driver.Rows', null, rowsMethods)
@@ -638,27 +767,51 @@ $.registerInterfaceType('driver.RowsNextResultSet', null, [
 
 $.registerInterfaceType('driver.RowsColumnTypeScanType', null, [
   ...rowsMethods,
-  { name: 'ColumnTypeScanType', args: [arg('index', intTypeInfo)], returns: [ret('_r0', 'reflect.Type')] },
+  {
+    name: 'ColumnTypeScanType',
+    args: [arg('index', intTypeInfo)],
+    returns: [ret('_r0', 'reflect.Type')],
+  },
 ])
 
 $.registerInterfaceType('driver.RowsColumnTypeDatabaseTypeName', null, [
   ...rowsMethods,
-  { name: 'ColumnTypeDatabaseTypeName', args: [arg('index', intTypeInfo)], returns: [ret('_r0', stringTypeInfo)] },
+  {
+    name: 'ColumnTypeDatabaseTypeName',
+    args: [arg('index', intTypeInfo)],
+    returns: [ret('_r0', stringTypeInfo)],
+  },
 ])
 
 $.registerInterfaceType('driver.RowsColumnTypeLength', null, [
   ...rowsMethods,
-  { name: 'ColumnTypeLength', args: [arg('index', intTypeInfo)], returns: [ret('length', int64TypeInfo), ret('ok', boolTypeInfo)] },
+  {
+    name: 'ColumnTypeLength',
+    args: [arg('index', intTypeInfo)],
+    returns: [ret('length', int64TypeInfo), ret('ok', boolTypeInfo)],
+  },
 ])
 
 $.registerInterfaceType('driver.RowsColumnTypeNullable', null, [
   ...rowsMethods,
-  { name: 'ColumnTypeNullable', args: [arg('index', intTypeInfo)], returns: [ret('nullable', boolTypeInfo), ret('ok', boolTypeInfo)] },
+  {
+    name: 'ColumnTypeNullable',
+    args: [arg('index', intTypeInfo)],
+    returns: [ret('nullable', boolTypeInfo), ret('ok', boolTypeInfo)],
+  },
 ])
 
 $.registerInterfaceType('driver.RowsColumnTypePrecisionScale', null, [
   ...rowsMethods,
-  { name: 'ColumnTypePrecisionScale', args: [arg('index', intTypeInfo)], returns: [ret('precision', int64TypeInfo), ret('scale', int64TypeInfo), ret('ok', boolTypeInfo)] },
+  {
+    name: 'ColumnTypePrecisionScale',
+    args: [arg('index', intTypeInfo)],
+    returns: [
+      ret('precision', int64TypeInfo),
+      ret('scale', int64TypeInfo),
+      ret('ok', boolTypeInfo),
+    ],
+  },
 ])
 
 $.registerInterfaceType('driver.Tx', null, [
@@ -667,9 +820,17 @@ $.registerInterfaceType('driver.Tx', null, [
 ])
 
 $.registerInterfaceType('driver.ValueConverter', null, [
-  { name: 'ConvertValue', args: [arg('v', anyType)], returns: [ret('_r0', valueType), ret('_r1', errorType)] },
+  {
+    name: 'ConvertValue',
+    args: [arg('v', anyType)],
+    returns: [ret('_r0', valueType), ret('_r1', errorType)],
+  },
 ])
 
 $.registerInterfaceType('driver.Valuer', null, [
-  { name: 'Value', args: [], returns: [ret('_r0', valueType), ret('_r1', errorType)] },
+  {
+    name: 'Value',
+    args: [],
+    returns: [ret('_r0', valueType), ret('_r1', errorType)],
+  },
 ])

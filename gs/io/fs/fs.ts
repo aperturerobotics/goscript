@@ -5,7 +5,6 @@ import * as time from '@goscript/time/index.js'
 import * as utf8 from '@goscript/unicode/utf8/index.js'
 import * as oserror from '@goscript/internal/oserror/index.js'
 
-
 export type FS = null | {
   // Open opens the named file.
   // [File.Close] must be called to release any associated resources.
@@ -503,7 +502,7 @@ export function fileModeString(mode: FileMode): string {
 }
 
 export function fileModeType(mode: FileMode): FileMode {
-  return (mode & ModeType) as FileMode
+  return ((mode & ModeType) >>> 0) as FileMode
 }
 
 export class PathError {

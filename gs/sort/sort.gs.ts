@@ -1,5 +1,7 @@
 import * as $ from '@goscript/builtin/index.js'
 
+import { compareStrings, lessFloat64 } from './order.js'
+
 // Interface defines the methods required for sorting
 export interface Interface {
   Len(): number
@@ -50,7 +52,10 @@ export class Float64Slice {
   }
 
   Less(i: number, j: number): boolean {
-    return ($.index(this._value, i) as number) < ($.index(this._value, j) as number)
+    return lessFloat64(
+      $.index(this._value, i) as number,
+      $.index(this._value, j) as number,
+    )
   }
 
   Swap(i: number, j: number): void {
@@ -76,7 +81,12 @@ export class StringSlice {
   }
 
   Less(i: number, j: number): boolean {
-    return ($.index(this._value, i) as string) < ($.index(this._value, j) as string)
+    return (
+      compareStrings(
+        $.index(this._value, i) as string,
+        $.index(this._value, j) as string,
+      ) < 0
+    )
   }
 
   Swap(i: number, j: number): void {
@@ -184,7 +194,12 @@ export function Float64s(x: $.Slice<number>): void {
   const n = $.len(x)
   // Simple insertion sort
   for (let i = 1; i < n; i++) {
-    for (let j = i; j > 0 && ($.index(x, j) as number) < ($.index(x, j - 1) as number); j--) {
+    for (
+      let j = i;
+      j > 0 &&
+      lessFloat64($.index(x, j) as number, $.index(x, j - 1) as number);
+      j--
+    ) {
       swapInSlice(x, j, j - 1)
     }
   }
@@ -196,7 +211,7 @@ export function Float64sAreSorted(x: $.Slice<number>): boolean {
   
   const n = $.len(x)
   for (let i = n - 1; i > 0; i--) {
-    if (($.index(x, i) as number) < ($.index(x, i - 1) as number)) {
+    if (lessFloat64($.index(x, i) as number, $.index(x, i - 1) as number)) {
       return false
     }
   }
@@ -210,7 +225,12 @@ export function Strings(x: $.Slice<string>): void {
   const n = $.len(x)
   // Simple insertion sort
   for (let i = 1; i < n; i++) {
-    for (let j = i; j > 0 && ($.index(x, j) as string) < ($.index(x, j - 1) as string); j--) {
+    for (
+      let j = i;
+      j > 0 &&
+      compareStrings($.index(x, j) as string, $.index(x, j - 1) as string) < 0;
+      j--
+    ) {
       swapInSlice(x, j, j - 1)
     }
   }
@@ -222,7 +242,9 @@ export function StringsAreSorted(x: $.Slice<string>): boolean {
   
   const n = $.len(x)
   for (let i = n - 1; i > 0; i--) {
-    if (($.index(x, i) as string) < ($.index(x, i - 1) as string)) {
+    if (
+      compareStrings($.index(x, i) as string, $.index(x, i - 1) as string) < 0
+    ) {
       return false
     }
   }

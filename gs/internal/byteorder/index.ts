@@ -31,7 +31,7 @@ export function LEUint16(b: $.Bytes): number {
 }
 
 export function LEUint32(b: $.Bytes): number {
-  return b![0] | (b![1] << 8) | (b![2] << 16) | (b![3] << 24)
+  return (b![0] | (b![1] << 8) | (b![2] << 16) | (b![3] << 24)) >>> 0
 }
 
 export function LEUint64(b: $.Bytes): bigint {

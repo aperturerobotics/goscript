@@ -1153,7 +1153,8 @@ export function DecodeVarintInt64(
   b: $.Slice<number>,
   idx: number,
 ): [bigint, number, $.GoError] {
-  return DecodeVarint(b, idx)
+  const [v, next, err] = DecodeVarint(b, idx)
+  return [BigInt.asIntN(64, v), next, err]
 }
 
 export function DecodeVarintUint32(
@@ -1659,7 +1660,10 @@ export function TextWriteListStart(
   textBuilder(sb).WriteString('[')
 }
 
-export function TextWriteListSeparator(sb: TextBuilderArg, index: number): void {
+export function TextWriteListSeparator(
+  sb: TextBuilderArg,
+  index: number,
+): void {
   if (index > 0) {
     textBuilder(sb).WriteString(', ')
   }
@@ -1695,7 +1699,11 @@ export function TextSortedMapKeys<K, V>(m: Map<K, V> | null): $.Slice<K> {
     return $.arrayToSlice<K>([])
   }
   const keys = Array.from(m.keys())
-  keys.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+  keys.sort((a, b) =>
+    a < b ? -1
+    : a > b ? 1
+    : 0,
+  )
   return $.arrayToSlice(keys)
 }
 

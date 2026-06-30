@@ -427,9 +427,7 @@ describe('encoding/json override', () => {
 
     // Go's Indent copies trailing whitespace after the value verbatim.
     const trailing = new bytes.Buffer()
-    expect(
-      Indent(trailing, $.stringToBytes('{"a":1}\n'), '', '  '),
-    ).toBeNull()
+    expect(Indent(trailing, $.stringToBytes('{"a":1}\n'), '', '  ')).toBeNull()
     expect(trailing.String()).toBe('{\n  "a": 1\n}\n')
   })
 
@@ -530,12 +528,19 @@ describe('encoding/json override', () => {
     expect($.bytesToString(rawRef.value)).toBe('[1,2]')
 
     expect(Number_String('42')).toBe('42')
-    expect(Number_Int64('42')).toEqual([42, null])
+    expect(Number_Int64('42')).toEqual([42n, null])
+    expect(Number_Int64('9007199254740993')).toEqual([9007199254740993n, null])
     expect(Number_Float64('3.5')).toEqual([3.5, null])
     expect(Number.isNaN(Number_Float64('NaN')[0])).toBe(true)
     expect(Number_Float64('-Inf')).toEqual([-Infinity, null])
     expect(Number_Float64('1x')[1]?.Error()).toContain('invalid syntax')
     expect(Number_Float64('1e999')[1]?.Error()).toContain('value out of range')
+    expect(Number_Int64('9223372036854775808')).toEqual([
+      9223372036854775807n,
+      expect.objectContaining({
+        Error: expect.any(Function),
+      }),
+    ])
     expect(Number_Int64('9223372036854775808')[1]?.Error()).toContain(
       'value out of range',
     )
