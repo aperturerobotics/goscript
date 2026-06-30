@@ -20,7 +20,7 @@ function jsonBytes(value: string): $.Slice<number> {
 class TestMessage {
   constructor(
     public name = '',
-    public count = 0,
+    public count: number | bigint = 0,
   ) {}
 
   MarshalProtoJSON(s: MarshalState | null): void {
@@ -131,7 +131,7 @@ describe('protobuf-go-lite/json override', () => {
     )
 
     expect(err).toBeNull()
-    expect(msg).toEqual(new TestMessage('ok', 42))
+    expect(msg).toEqual(new TestMessage('ok', 42n))
     expect(state?.ReadBytesArray()).toEqual([
       [102, 111, 111, 98],
       [97, 114],
