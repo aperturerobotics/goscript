@@ -53,7 +53,7 @@ export class File {
 		return [0, ErrUnimplemented]
 	}
 
-	public ReadAt(b: $.Bytes, off: number): [number, $.GoError] {
+	public ReadAt(b: $.Bytes, off: bigint): [number, $.GoError] {
 		return [0, ErrUnimplemented]
 	}
 
@@ -65,7 +65,7 @@ export class File {
 		return [0, ErrUnimplemented]
 	}
 
-	public WriteAt(b: $.Bytes, off: number): [number, $.GoError] {
+	public WriteAt(b: $.Bytes, off: bigint): [number, $.GoError] {
 		return [0, ErrUnimplemented]
 	}
 

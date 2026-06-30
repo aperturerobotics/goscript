@@ -210,7 +210,7 @@ export class PacketReadWriter {
 		const __goscriptReturn1: [number, $.GoError] = await $.pointerValue<Exclude<io.ReadWriteCloser, null>>($.pointerValue<PacketReadWriter>(r).rw).Write(p)
 		n = __goscriptReturn1[0]
 		err = __goscriptReturn1[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [n, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

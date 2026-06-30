@@ -448,7 +448,7 @@ export class pipe {
 						const __goscriptReturn0: [number, $.GoError] = [n, io.ErrClosedPipe]
 						n = __goscriptReturn0[0]
 						err = __goscriptReturn0[1]
-						__defer[Symbol.dispose]()
+						__defer.dispose()
 						return [n, err]
 					}
 				},
@@ -460,7 +460,7 @@ export class pipe {
 						const __goscriptReturn1: [number, $.GoError] = [n, io.ErrClosedPipe]
 						n = __goscriptReturn1[0]
 						err = __goscriptReturn1[1]
-						__defer[Symbol.dispose]()
+						__defer.dispose()
 						return [n, err]
 					}
 				},
@@ -472,7 +472,7 @@ export class pipe {
 						const __goscriptReturn2: [number, $.GoError] = [n, os.ErrDeadlineExceeded]
 						n = __goscriptReturn2[0]
 						err = __goscriptReturn2[1]
-						__defer[Symbol.dispose]()
+						__defer.dispose()
 						return [n, err]
 					}
 				}
@@ -484,7 +484,7 @@ export class pipe {
 		const __goscriptReturn3: [number, $.GoError] = [n, null]
 		n = __goscriptReturn3[0]
 		err = __goscriptReturn3[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [n, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

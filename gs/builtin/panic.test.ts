@@ -11,6 +11,8 @@ import {
   runtimePanic,
 } from './panic.js'
 import { goSlice, index, makeSlice } from './slice.js'
+import { DisposableStack } from './defer.js'
+
 
 // captureThrow returns whatever value the callback throws, or undefined if it
 // did not throw. Go panics surface as a thrown GoPanic in the transpiled
@@ -107,10 +109,12 @@ describe('recover consumes the in-flight panic', () => {
     body: () => void,
     deferred: () => void,
   ): { rethrew: unknown; finished: boolean } {
+    const stack = new DisposableStack()
+    stack.defer(deferred)
     try {
       body()
     } catch (e) {
-      deferred()
+      stack.disposePanic(e)
       if (!recovered(e)) {
         // This frame is the outermost boundary in the test. In a real program an
         // unrecovered panic propagates to the entrypoint and crashes the
@@ -185,5 +189,42 @@ describe('recover consumes the in-flight panic', () => {
     expect((seen as RuntimeError).Error()).toBe(
       'runtime error: integer divide by zero',
     )
+  })
+
+  it('normal defer disposal cannot recover an unrelated panic', () => {
+    let seen: unknown = 'unset'
+    try {
+      panic('other task')
+    } catch (e) {
+      const stack = new DisposableStack()
+      stack.defer(() => {
+        seen = recover()
+      })
+      stack.dispose()
+      if (e instanceof GoPanic) {
+        e.recovered = true
+        recovered(e)
+      }
+    }
+
+    expect(seen).toBeNull()
+  })
+
+  it('panic defer disposal recovers while unwinding', () => {
+    let seen: unknown = 'unset'
+    const stack = new DisposableStack()
+    stack.defer(() => {
+      seen = recover()
+    })
+
+    try {
+      panic('boom')
+    } catch (e) {
+      stack.disposePanic(e)
+      expect(recovered(e)).toBe(true)
+    }
+
+    expect(seen).toBe('boom')
+    expect(recover()).toBeNull()
   })
 })

@@ -10,12 +10,23 @@ export class GoPanic extends Error {
   }
 }
 
-// panicStack holds the GoPanics currently unwinding the stack, innermost last.
-// panic() and runtimePanic() push before throwing; a deferred recover() consults
-// the top entry, and the recover-aware catch generated for a defer+recover
-// function removes it once handled. Empty when no panic is in flight, so a
-// recover() outside a panic returns nil.
+// panicStack holds GoPanics that have been thrown but not yet cleared by a
+// recover-aware catch. activeRecoverPanic is set only while a defer stack is
+// disposing the exact GoPanic caught by that frame; recover() outside that
+// dynamic scope returns nil, so unrelated async panics cannot be recovered by
+// another task.
 const panicStack: GoPanic[] = []
+let activeRecoverPanic: GoPanic | null = null
+
+export function withRecoveringPanic<T>(err: unknown, fn: () => T): T {
+  const previous = activeRecoverPanic
+  activeRecoverPanic = err instanceof GoPanic ? err : null
+  try {
+    return fn()
+  } finally {
+    activeRecoverPanic = previous
+  }
+}
 
 // RuntimeError is the value carried by a panic from a Go runtime fault: index
 // out of range, slice bounds out of range, integer divide by zero, or nil
@@ -75,18 +86,19 @@ function formatPanicValue(value: unknown): string {
   return String(value)
 }
 
-// recover stops the in-flight panic and returns its value, matching Go's
-// built-in recover. It returns nil when no panic is unwinding (an empty stack)
-// or when the current panic was already recovered. Generated code only routes a
-// recover() call to a useful panic when it runs inside a deferred function whose
-// enclosing function is unwinding, so a recover() in ordinary control flow reads
-// an empty stack and returns nil.
+// recover stops the panic currently unwinding this defer stack and returns its
+// value. It returns nil when no defer stack is unwinding a panic, so unrelated
+// async panics cannot be recovered by a normal-return defer in another task.
 export function recover(): any {
-  const goPanic = panicStack[panicStack.length - 1]
-  if (goPanic === undefined || goPanic.recovered) {
+  const goPanic = activeRecoverPanic
+  if (goPanic === null || goPanic.recovered) {
     return null
   }
   goPanic.recovered = true
+  const idx = panicStack.indexOf(goPanic)
+  if (idx !== -1) {
+    panicStack.splice(idx, 1)
+  }
   return goPanic.value
 }
 

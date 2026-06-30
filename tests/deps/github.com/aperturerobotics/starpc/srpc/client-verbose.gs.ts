@@ -86,7 +86,7 @@ export class VClient {
 		err = await $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<VClient>(c).client).ExecCall(ctx, service, method, _in, out)
 		const __goscriptReturn0: $.GoError = err
 		err = __goscriptReturn0
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return err
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -106,7 +106,7 @@ export class VClient {
 		const __goscriptReturn1: [__goscript_stream.Stream | null, $.GoError] = [stream, err]
 		stream = __goscriptReturn1[0]
 		err = __goscriptReturn1[1]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [stream, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

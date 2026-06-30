@@ -4,8 +4,8 @@
 import * as $ from "@goscript/builtin/index.js"
 
 export async function recoverMsg(label: string, fn: (() => void) | null): globalThis.Promise<void> {
+	const __defer = new $.DisposableStack()
 	try {
-		using __defer = new $.DisposableStack()
 		__defer.defer(() => { ((): void => {
 			{
 				let r = $.recover()
@@ -22,7 +22,9 @@ export async function recoverMsg(label: string, fn: (() => void) | null): global
 			}
 		})() })
 		await fn!()
+		__defer.dispose()
 	} catch (e) {
+		__defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}

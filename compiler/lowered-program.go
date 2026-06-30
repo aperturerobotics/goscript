@@ -108,10 +108,10 @@ type loweredFunction struct {
 	result                  string
 	body                    []loweredStmt
 	deferState              *loweredDeferState
-	// recoverReturn is the return statement emitted after a deferred recover()
-	// swallows a panic in a defer+recover function: the named results, the zero
-	// values for unnamed results, or empty for a void function. Only used when
-	// deferState.recover is set.
+	// recoverReturn is the return statement emitted if a deferred recover()
+	// swallows a panic: the named results, the zero values for unnamed results, or
+	// empty for a void function. Defer wrappers keep it for every deferred
+	// function so TypeScript sees a total return path after the catch.
 	recoverReturn string
 }
 

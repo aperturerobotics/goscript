@@ -1,3 +1,5 @@
+import { withRecoveringPanic } from './panic.js'
+
 /**
  * DisposableStack manages synchronous disposable resources, mimicking Go's defer behavior.
  * Functions added via `defer` are executed in LIFO order when the stack is disposed.
@@ -14,18 +16,22 @@ export class DisposableStack implements Disposable {
     this.stack.push(fn)
   }
 
-  /**
-   * Disposes of the resources in the stack by executing the deferred functions
-   * in Last-In, First-Out (LIFO) order.
-   * If a deferred function throws an error, disposal stops, and the error is rethrown,
-   * similar to Go's panic behavior during defer execution.
-   */
-  [Symbol.dispose](): void {
-    // Emulate Go: if a deferred throws, stop and rethrow
+  dispose(): void {
     while (this.stack.length) {
       const fn = this.stack.pop()!
       fn()
     }
+  }
+
+  disposePanic(err: unknown): void {
+    withRecoveringPanic(err, () => this.dispose())
+  }
+
+  /**
+   * Disposes during ordinary scope exit.
+   */
+  [Symbol.dispose](): void {
+    this.dispose()
   }
 }
 
@@ -45,16 +51,25 @@ export class AsyncDisposableStack implements AsyncDisposable {
     this.stack.push(fn)
   }
 
-  /**
-   * Asynchronously disposes of the resources in the stack by executing the deferred functions
-   * sequentially in Last-In, First-Out (LIFO) order. It awaits each function if it returns a promise.
-   */
-  async [Symbol.asyncDispose](): Promise<void> {
-    // Execute in LIFO order, awaiting each potentially async function
+  async dispose(): Promise<void> {
     while (this.stack.length) {
       const fn = this.stack.pop()!
       await fn()
     }
+  }
+
+  async disposePanic(err: unknown): Promise<void> {
+    while (this.stack.length) {
+      const fn = this.stack.pop()!
+      const result = withRecoveringPanic(err, () => fn())
+      if (result && typeof (result as Promise<void>).then === 'function') {
+        await result
+      }
+    }
+  }
+
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.dispose()
   }
 
   [Symbol.dispose](): void {

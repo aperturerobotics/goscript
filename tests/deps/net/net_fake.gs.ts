@@ -1293,7 +1293,7 @@ export class packetQueue {
 			n = __goscriptReturn6[0]
 			_from = __goscriptReturn6[1]
 			err = __goscriptReturn6[2]
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return [n, _from, err]
 		}
 
@@ -1307,14 +1307,14 @@ export class packetQueue {
 						n = __goscriptReturn7[0]
 						_from = __goscriptReturn7[1]
 						err = __goscriptReturn7[2]
-						await __defer[Symbol.asyncDispose]()
+						await __defer.dispose()
 						return [n, _from, err]
 					}
 					const __goscriptReturn8: [number, __goscript_sockaddr_posix.sockaddr | null, $.GoError] = [0, null, io.EOF]
 					n = __goscriptReturn8[0]
 					_from = __goscriptReturn8[1]
 					err = __goscriptReturn8[2]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [n, _from, err]
 					break
 				}
@@ -1324,7 +1324,7 @@ export class packetQueue {
 					n = __goscriptReturn9[0]
 					_from = __goscriptReturn9[1]
 					err = __goscriptReturn9[2]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [n, _from, err]
 					break
 				}
@@ -1346,7 +1346,7 @@ export class packetQueue {
 					n = __goscriptReturn10[0]
 					_from = __goscriptReturn10[1]
 					err = __goscriptReturn10[2]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [n, _from, err]
 				}
 			},
@@ -1370,7 +1370,7 @@ export class packetQueue {
 					n = __goscriptReturn11[0]
 					_from = __goscriptReturn11[1]
 					err = __goscriptReturn11[2]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [n, _from, err]
 				}
 			}
@@ -1391,7 +1391,7 @@ export class packetQueue {
 		n = __goscriptReturn12[0]
 		_from = __goscriptReturn12[1]
 		err = __goscriptReturn12[2]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [n, _from, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -1468,7 +1468,7 @@ export class packetQueue {
 					const __goscriptReturn13: [number, $.GoError] = [0, os.ErrDeadlineExceeded]
 					n = __goscriptReturn13[0]
 					err = __goscriptReturn13[1]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [n, err]
 				}
 			},
@@ -1487,14 +1487,14 @@ export class packetQueue {
 			const __goscriptReturn14: [number, $.GoError] = [0, __goscript_net.ErrClosed]
 			n = __goscriptReturn14[0]
 			err = __goscriptReturn14[1]
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return [n, err]
 		} else {
 			if (q.readClosed && (q.nBytes >= q.readBufferBytes)) {
 				const __goscriptReturn15: [number, $.GoError] = [0, os.NewSyscallError("send", $.namedValueInterfaceValue<$.GoError>(syscall.ECONNRESET, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))]
 				n = __goscriptReturn15[0]
 				err = __goscriptReturn15[1]
-				await __defer[Symbol.asyncDispose]()
+				await __defer.dispose()
 				return [n, err]
 			}
 		}
@@ -1514,7 +1514,7 @@ export class packetQueue {
 		const __goscriptReturn16: [number, $.GoError] = [$.len(b), null]
 		n = __goscriptReturn16[0]
 		err = __goscriptReturn16[1]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [n, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -1967,7 +1967,7 @@ export async function fakeListen(fd: __goscript_fd_fake.netFD | $.VarRef<__goscr
 		if (__goscriptShadow10 != null) {
 			const __goscriptReturn17: $.GoError = await wrapErr!(__goscriptShadow10)
 			err = __goscriptReturn17
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return err
 		}
 	}
@@ -1992,7 +1992,7 @@ export async function fakeListen(fd: __goscript_fd_fake.netFD | $.VarRef<__goscr
 		{
 			const __goscriptReturn18: $.GoError = await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 			err = __goscriptReturn18
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return err
 			break
 		}
@@ -2005,14 +2005,14 @@ export async function fakeListen(fd: __goscript_fd_fake.netFD | $.VarRef<__goscr
 			$.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD = null
 			const __goscriptReturn19: $.GoError = await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EADDRINUSE, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 			err = __goscriptReturn19
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return err
 		}
 	}
 
 	const __goscriptReturn20: $.GoError = null
 	err = __goscriptReturn20
-	await __defer[Symbol.asyncDispose]()
+	await __defer.dispose()
 	return err
 	throw new globalThis.Error("goscript: unreachable return")
 }

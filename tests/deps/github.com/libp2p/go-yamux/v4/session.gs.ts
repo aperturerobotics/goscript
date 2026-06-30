@@ -788,7 +788,7 @@ export class Session {
 					const __goscriptReturn1: [time.Duration, $.GoError] = [0n, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
 					dur = __goscriptReturn1[0]
 					err = __goscriptReturn1[1]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [dur, err]
 				}
 			},
@@ -800,7 +800,7 @@ export class Session {
 					const __goscriptReturn2: [time.Duration, $.GoError] = [0n, $.pointerValue<Session>(s).shutdownErr]
 					dur = __goscriptReturn2[0]
 					err = __goscriptReturn2[1]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [dur, err]
 				}
 			}
@@ -834,7 +834,7 @@ export class Session {
 					const __goscriptReturn3: [time.Duration, $.GoError] = [0n, $.interfaceValue<$.GoError>(__goscript__const.ErrTimeout, "*yamux.Error")]
 					dur = __goscriptReturn3[0]
 					err = __goscriptReturn3[1]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [dur, err]
 				}
 			},
@@ -846,7 +846,7 @@ export class Session {
 					const __goscriptReturn4: [time.Duration, $.GoError] = [0n, $.pointerValue<Session>(s).shutdownErr]
 					dur = __goscriptReturn4[0]
 					err = __goscriptReturn4[1]
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return [dur, err]
 				}
 			}
@@ -859,7 +859,7 @@ export class Session {
 		const __goscriptReturn5: [time.Duration, $.GoError] = [time.Since($.markAsStructValue($.cloneStructValue(start))), null]
 		dur = __goscriptReturn5[0]
 		err = __goscriptReturn5[1]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [dur, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -1265,8 +1265,8 @@ export class Session {
 	public async recvLoop(): globalThis.Promise<$.GoError> {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
+		const __defer = new $.AsyncDisposableStack()
 		try {
-			await using __defer = new $.AsyncDisposableStack()
 			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				{
 					let rerr = $.recover()
@@ -1289,7 +1289,7 @@ export class Session {
 						}
 						const __goscriptReturn6: $.GoError = __goscriptShadow3
 						err = __goscriptReturn6
-						await __defer[Symbol.asyncDispose]()
+						await __defer.dispose()
 						return err
 					}
 				}
@@ -1305,7 +1305,7 @@ export class Session {
 					await log.Logger.prototype.Printf.call($.pointerValue<Session>(s).logger, "[ERR] yamux: Invalid protocol version: %d", $.arrayToSlice<any>([$.namedValueInterfaceValue<any>(__goscript__const.header_Version(hdr), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" })]))
 					const __goscriptReturn7: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidVersion, "*yamux.Error")
 					err = __goscriptReturn7
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return err
 				}
 
@@ -1313,7 +1313,7 @@ export class Session {
 				if (($.uint(mt, 8) < $.uint(0, 8)) || ($.uint(mt, 8) > $.uint(3, 8))) {
 					const __goscriptReturn8: $.GoError = $.interfaceValue<$.GoError>(__goscript__const.ErrInvalidMsgType, "*yamux.Error")
 					err = __goscriptReturn8
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return err
 				}
 
@@ -1322,12 +1322,14 @@ export class Session {
 					if (__goscriptShadow4 != null) {
 						const __goscriptReturn9: $.GoError = __goscriptShadow4
 						err = __goscriptReturn9
-						await __defer[Symbol.asyncDispose]()
+						await __defer.dispose()
 						return err
 					}
 				}
 			}
+			await __defer.dispose()
 		} catch (e) {
+			await __defer.disposePanic(e)
 			if (!$.recovered(e)) {
 				throw e
 			}
@@ -1348,8 +1350,8 @@ export class Session {
 	public async sendLoop(): globalThis.Promise<$.GoError> {
 		const s: Session | $.VarRef<Session> | null = this
 		let err: $.GoError = null as $.GoError
+		const __defer = new $.AsyncDisposableStack()
 		try {
-			await using __defer = new $.AsyncDisposableStack()
 			__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 				{
 					let rerr = $.recover()
@@ -1407,7 +1409,7 @@ export class Session {
 						onSelected: async (__goscriptSelect11Result) => {
 							const __goscriptReturn10: $.GoError = null
 							err = __goscriptReturn10
-							await __defer[Symbol.asyncDispose]()
+							await __defer.dispose()
 							return err
 						}
 					},
@@ -1491,7 +1493,7 @@ export class Session {
 									onSelected: async (__goscriptSelect13Result) => {
 										const __goscriptReturn11: $.GoError = null
 										err = __goscriptReturn11
-										await __defer[Symbol.asyncDispose]()
+										await __defer.dispose()
 										return err
 									}
 								}
@@ -1512,7 +1514,7 @@ export class Session {
 						await pool.Put(buf)
 						const __goscriptReturn12: $.GoError = __goscriptShadow5
 						err = __goscriptReturn12
-						await __defer[Symbol.asyncDispose]()
+						await __defer.dispose()
 						return err
 					}
 				}
@@ -1526,11 +1528,13 @@ export class Session {
 					}
 					const __goscriptReturn13: $.GoError = __goscriptShadow6
 					err = __goscriptReturn13
-					await __defer[Symbol.asyncDispose]()
+					await __defer.dispose()
 					return err
 				}
 			}
+			await __defer.dispose()
 		} catch (e) {
+			await __defer.disposePanic(e)
 			if (!$.recovered(e)) {
 				throw e
 			}

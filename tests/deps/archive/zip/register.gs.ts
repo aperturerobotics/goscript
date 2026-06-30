@@ -86,13 +86,13 @@ export class pooledFlateWriter {
 			const __goscriptReturn0: [number, $.GoError] = [0, errors.New("Write after Close")]
 			n = __goscriptReturn0[0]
 			err = __goscriptReturn0[1]
-			__defer[Symbol.dispose]()
+			__defer.dispose()
 			return [n, err]
 		}
 		const __goscriptReturn2: [number, $.GoError] = await flate.Writer.prototype.Write.call($.pointerValue<pooledFlateWriter>(w).fw, p)
 		n = __goscriptReturn2[0]
 		err = __goscriptReturn2[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [n, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -167,13 +167,13 @@ export class pooledFlateReader {
 			const __goscriptReturn3: [number, $.GoError] = [0, errors.New("Read after Close")]
 			n = __goscriptReturn3[0]
 			err = __goscriptReturn3[1]
-			__defer[Symbol.dispose]()
+			__defer.dispose()
 			return [n, err]
 		}
 		const __goscriptReturn5: [number, $.GoError] = await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<pooledFlateReader>(r).fr).Read(p)
 		n = __goscriptReturn5[0]
 		err = __goscriptReturn5[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [n, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

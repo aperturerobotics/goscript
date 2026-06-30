@@ -35,14 +35,22 @@ export class WebSocket {
 	public async Close(code: number, reason: string): globalThis.Promise<$.GoError> {
 		const c = this
 		let err: $.VarRef<$.GoError> = $.varRef(null as $.GoError)
-		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
-		$.markAsStructValue($.cloneStructValue(c.v)).Call("close", $.namedValueInterfaceValue<any>(code, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), reason)
-		const __goscriptReturn1: $.GoError = err.value
-		err.value = __goscriptReturn1
-		await __defer[Symbol.asyncDispose]()
+		const __defer = new $.AsyncDisposableStack()
+		try {
+			__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
+			$.markAsStructValue($.cloneStructValue(c.v)).Call("close", $.namedValueInterfaceValue<any>(code, "int", {}, { kind: $.TypeKind.Basic, name: "int" }), reason)
+			const __goscriptReturn1: $.GoError = err.value
+			err.value = __goscriptReturn1
+			await __defer.dispose()
+			return err.value
+			await __defer.dispose()
+		} catch (e) {
+			await __defer.disposePanic(e)
+			if (!$.recovered(e)) {
+				throw e
+			}
+		}
 		return err.value
-		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public async OnClose(fn: ((_p0: CloseEvent) => void) | null): globalThis.Promise<(() => void) | null> {
@@ -87,27 +95,43 @@ export class WebSocket {
 	public async SendBytes(v: $.Slice<number>): globalThis.Promise<$.GoError> {
 		const c = this
 		let err: $.VarRef<$.GoError> = $.varRef(null as $.GoError)
-		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
-		$.markAsStructValue($.cloneStructValue(c.v)).Call("send", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(uint8Array(v))), "js.Value"))
-		const __goscriptReturn2: $.GoError = err.value
-		err.value = __goscriptReturn2
-		await __defer[Symbol.asyncDispose]()
+		const __defer = new $.AsyncDisposableStack()
+		try {
+			__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
+			$.markAsStructValue($.cloneStructValue(c.v)).Call("send", $.interfaceValue<any>($.markAsStructValue($.cloneStructValue(uint8Array(v))), "js.Value"))
+			const __goscriptReturn2: $.GoError = err.value
+			err.value = __goscriptReturn2
+			await __defer.dispose()
+			return err.value
+			await __defer.dispose()
+		} catch (e) {
+			await __defer.disposePanic(e)
+			if (!$.recovered(e)) {
+				throw e
+			}
+		}
 		return err.value
-		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public async SendText(v: string): globalThis.Promise<$.GoError> {
 		const c = this
 		let err: $.VarRef<$.GoError> = $.varRef(null as $.GoError)
-		await using __defer = new $.AsyncDisposableStack()
-		__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
-		$.markAsStructValue($.cloneStructValue(c.v)).Call("send", v)
-		const __goscriptReturn3: $.GoError = err.value
-		err.value = __goscriptReturn3
-		await __defer[Symbol.asyncDispose]()
+		const __defer = new $.AsyncDisposableStack()
+		try {
+			__defer.defer(async () => { await handleJSError(err, (null as (() => void) | null)) })
+			$.markAsStructValue($.cloneStructValue(c.v)).Call("send", v)
+			const __goscriptReturn3: $.GoError = err.value
+			err.value = __goscriptReturn3
+			await __defer.dispose()
+			return err.value
+			await __defer.dispose()
+		} catch (e) {
+			await __defer.disposePanic(e)
+			if (!$.recovered(e)) {
+				throw e
+			}
+		}
 		return err.value
-		throw new globalThis.Error("goscript: unreachable return")
 	}
 
 	public Subprotocol(): string {
@@ -257,27 +281,35 @@ export async function handleJSError(err: $.VarRef<$.GoError> | null, onErr: (() 
 export async function New(url: string, protocols: $.Slice<string>): globalThis.Promise<[WebSocket, $.GoError]> {
 	let c: WebSocket = $.markAsStructValue(new WebSocket())
 	let err: $.VarRef<$.GoError> = $.varRef(null as $.GoError)
-	await using __defer = new $.AsyncDisposableStack()
-	__defer.defer(async () => { await handleJSError(err, $.functionValue((): void => {
-		c = $.markAsStructValue(new WebSocket())
-	}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))) })
+	const __defer = new $.AsyncDisposableStack()
+	try {
+		__defer.defer(async () => { await handleJSError(err, $.functionValue((): void => {
+			c = $.markAsStructValue(new WebSocket())
+		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo))) })
 
-	let jsProtocols: $.Slice<any> = $.makeSlice<any>($.len(protocols))
-	for (let __goscriptRangeTarget0 = protocols, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
-		let p = __goscriptRangeTarget0![i]
-		jsProtocols![i] = p
+		let jsProtocols: $.Slice<any> = $.makeSlice<any>($.len(protocols))
+		for (let __goscriptRangeTarget0 = protocols, i = 0; i < $.len(__goscriptRangeTarget0); i++) {
+			let p = __goscriptRangeTarget0![i]
+			jsProtocols![i] = p
+		}
+
+		c = (() => { const __goscriptLiteralField0 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(js.Global())).Get("WebSocket"))).New(url, $.interfaceValue<any>(jsProtocols, "[]any")))); return $.markAsStructValue(new WebSocket({v: __goscriptLiteralField0})) })()
+
+		$.markAsStructValue($.cloneStructValue(c)).setBinaryType("arraybuffer")
+
+		const __goscriptReturn0: [WebSocket, $.GoError] = [$.markAsStructValue($.cloneStructValue(c)), null]
+		c = __goscriptReturn0[0]
+		err.value = __goscriptReturn0[1]
+		await __defer.dispose()
+		return [c, err.value]
+		await __defer.dispose()
+	} catch (e) {
+		await __defer.disposePanic(e)
+		if (!$.recovered(e)) {
+			throw e
+		}
 	}
-
-	c = (() => { const __goscriptLiteralField0 = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(js.Global())).Get("WebSocket"))).New(url, $.interfaceValue<any>(jsProtocols, "[]any")))); return $.markAsStructValue(new WebSocket({v: __goscriptLiteralField0})) })()
-
-	$.markAsStructValue($.cloneStructValue(c)).setBinaryType("arraybuffer")
-
-	const __goscriptReturn0: [WebSocket, $.GoError] = [$.markAsStructValue($.cloneStructValue(c)), null]
-	c = __goscriptReturn0[0]
-	err.value = __goscriptReturn0[1]
-	await __defer[Symbol.asyncDispose]()
 	return [c, err.value]
-	throw new globalThis.Error("goscript: unreachable return")
 }
 
 export function extractArrayBuffer(arrayBuffer: js.Value): $.Slice<number> {

@@ -245,7 +245,7 @@ export class ipv6ZoneCache {
 		if (!force && $.markAsStructValue($.cloneStructValue($.pointerValue<ipv6ZoneCache>(zc).lastFetched)).After($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add(-60000000000n))))) {
 			const __goscriptReturn0: boolean = false
 			updated = __goscriptReturn0
-			__defer[Symbol.dispose]()
+			__defer.dispose()
 			return updated
 		}
 		$.pointerValue<ipv6ZoneCache>(zc).lastFetched = $.markAsStructValue($.cloneStructValue(now))
@@ -258,7 +258,7 @@ export class ipv6ZoneCache {
 				if (err != null) {
 					const __goscriptReturn1: boolean = false
 					updated = __goscriptReturn1
-					__defer[Symbol.dispose]()
+					__defer.dispose()
 					return updated
 				}
 			}
@@ -279,7 +279,7 @@ export class ipv6ZoneCache {
 		}
 		const __goscriptReturn2: boolean = true
 		updated = __goscriptReturn2
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return updated
 		throw new globalThis.Error("goscript: unreachable return")
 	}

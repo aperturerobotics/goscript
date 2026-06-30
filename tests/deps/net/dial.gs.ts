@@ -992,7 +992,7 @@ export class sysDialer {
 						const __goscriptReturn10: [__goscript_net.Conn | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new __goscript_net.OpError({Op: "dial", Net: $.pointerValue<sysDialer>(sd).network, Source: la, Addr: ra, Err: $.interfaceValue<$.GoError>(new __goscript_net.AddrError({Err: "unexpected address type", Addr: $.pointerValue<sysDialer>(sd).address}), "*net.AddrError")}), "*net.OpError")]
 						c = __goscriptReturn10[0]
 						err = __goscriptReturn10[1]
-						await __defer[Symbol.asyncDispose]()
+						await __defer.dispose()
 						return [c, err]
 					}
 					break
@@ -1002,13 +1002,13 @@ export class sysDialer {
 			const __goscriptReturn11: [__goscript_net.Conn | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new __goscript_net.OpError({Op: "dial", Net: $.pointerValue<sysDialer>(sd).network, Source: la, Addr: ra, Err: err}), "*net.OpError")]
 			c = __goscriptReturn11[0]
 			err = __goscriptReturn11[1]
-			await __defer[Symbol.asyncDispose]()
+			await __defer.dispose()
 			return [c, err]
 		}
 		const __goscriptReturn12: [__goscript_net.Conn | null, $.GoError] = [c, null]
 		c = __goscriptReturn12[0]
 		err = __goscriptReturn12[1]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [c, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

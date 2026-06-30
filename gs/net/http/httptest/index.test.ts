@@ -75,13 +75,13 @@ describe('net/http/httptest override', () => {
       '/body',
       bytes.NewReader($.stringToBytes('abc')),
     )
-    expect(bodyReq.ContentLength).toBe(3)
+    expect(bodyReq.ContentLength).toBe(3n)
     const noBodyReq = NewTestRequest(MethodPost, '/empty', NoBody)
-    expect(noBodyReq.ContentLength).toBe(0)
+    expect(noBodyReq.ContentLength).toBe(0n)
     const unknownReq = NewTestRequest(MethodPost, '/unknown', {
       Read: () => [0, io.EOF],
     })
-    expect(unknownReq.ContentLength).toBe(-1)
+    expect(unknownReq.ContentLength).toBe(-1n)
 
     const recorder = NewRecorder()
     recorder.WriteString('ok')

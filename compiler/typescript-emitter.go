@@ -792,6 +792,14 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 		return
 	}
 	writeIndent(b, indent)
+	if state.recover {
+		if state.async {
+			b.WriteString("const __defer = new $.AsyncDisposableStack()\n")
+			return
+		}
+		b.WriteString("const __defer = new $.DisposableStack()\n")
+		return
+	}
 	if state.async {
 		b.WriteString("await using __defer = new $.AsyncDisposableStack()\n")
 		return
@@ -800,24 +808,34 @@ func renderDeferStack(b *strings.Builder, state *loweredDeferState, indent int) 
 }
 
 // renderBodyWithDefer emits the defer stack, body, and trailing return for a
-// function. When the function uses recover, it wraps the defer stack and body in
-// a try/catch so the deferred functions run during stack unwinding (via the
-// using-declaration's disposal) before the catch decides whether the panic was
-// recovered; an unrecovered panic rethrows, a recovered one falls through to the
-// function's named-result return. Functions without recover keep the plain
+// function. Defer stacks that may call recover use explicit disposal so normal
+// returns call dispose(), panic unwinding calls disposePanic(), and recover()
+// cannot observe unrelated async panics. Other defer stacks keep the plain
 // using-declaration shape.
 func renderBodyWithDefer(b *strings.Builder, fn *loweredFunction, indent int) {
-	if fn.deferState == nil || !fn.deferState.recover {
+	if fn.deferState == nil || !fn.deferState.used || !fn.deferState.recover {
 		renderDeferStack(b, fn.deferState, indent)
 		renderStmts(b, fn.body, indent)
 		return
 	}
+	renderDeferStack(b, fn.deferState, indent)
 	writeIndent(b, indent)
 	b.WriteString("try {\n")
-	renderDeferStack(b, fn.deferState, indent+1)
 	renderStmts(b, fn.body, indent+1)
+	writeIndent(b, indent+1)
+	if fn.deferState.async {
+		b.WriteString("await __defer.dispose()\n")
+	} else {
+		b.WriteString("__defer.dispose()\n")
+	}
 	writeIndent(b, indent)
 	b.WriteString("} catch (e) {\n")
+	writeIndent(b, indent+1)
+	if fn.deferState.async {
+		b.WriteString("await __defer.disposePanic(e)\n")
+	} else {
+		b.WriteString("__defer.disposePanic(e)\n")
+	}
 	writeIndent(b, indent+1)
 	b.WriteString("if (!$.recovered(e)) {\n")
 	writeIndent(b, indent+2)

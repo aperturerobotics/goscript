@@ -15,6 +15,24 @@ const ErrCrossedBoundary = $.newError('chroot boundary crossed')
 const ErrBaseDirCannotBeRemoved = $.newError('base dir cannot be removed')
 const ErrBaseDirCannotBeRenamed = $.newError('base dir cannot be renamed')
 
+type Filesystem = {
+  Chroot(path: string): [Filesystem | null, $.GoError]
+  Create(filename: string): [os.File | null, $.GoError]
+  Join(...elem: JoinElement[]): string
+  Lstat(filename: string): [fs.FileInfo, $.GoError]
+  MkdirAll(filename: string, perm: fs.FileMode): $.GoError
+  Open(filename: string): [os.File | null, $.GoError]
+  OpenFile(filename: string, flag: number, perm: fs.FileMode): [os.File | null, $.GoError]
+  ReadDir(path: string): [$.Slice<fs.DirEntry | null>, $.GoError]
+  Readlink(link: string): [string, $.GoError]
+  Remove(filename: string): $.GoError
+  Rename(oldpath: string, newpath: string): $.GoError
+  Root(): string
+  Stat(filename: string): [fs.FileInfo, $.GoError]
+  Symlink(target: string, link: string): $.GoError
+  TempFile(dir: string, prefix: string): [os.File | null, $.GoError]
+}
+
 type JoinElement = string | $.Slice<string>
 
 class options {
@@ -129,7 +147,7 @@ export class BoundOS {
     return os.Lstat(full)
   }
 
-  public ReadDir(name: string): [$.Slice<fs.DirEntry>, $.GoError] {
+  public ReadDir(name: string): [$.Slice<fs.DirEntry | null>, $.GoError] {
     const [full, err] = this.abs(name)
     if (err !== null) {
       return [null, err]
@@ -232,7 +250,7 @@ export class BoundOS {
     return filepath.Join(...(elem as string[]))
   }
 
-  public Chroot(path: string): [BoundOS | null, $.GoError] {
+  public Chroot(path: string): [Filesystem | null, $.GoError] {
     const [full, err] = this.abs(path)
     if (err !== null) {
       return [null, err]

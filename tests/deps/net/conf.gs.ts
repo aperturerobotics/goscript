@@ -173,7 +173,7 @@ export class conf {
 		const __goscriptReturn1: [__goscript_dnsclient_unix.hostLookupOrder, __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null] = await conf.prototype.lookupOrder.call(c, r, "")
 		ret = __goscriptReturn1[0]
 		dnsConf = __goscriptReturn1[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [ret, dnsConf]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -191,7 +191,7 @@ export class conf {
 		const __goscriptReturn3: [__goscript_dnsclient_unix.hostLookupOrder, __goscript_dnsconfig.dnsConfig | $.VarRef<__goscript_dnsconfig.dnsConfig> | null] = await conf.prototype.lookupOrder.call(c, r, hostname)
 		ret = __goscriptReturn3[0]
 		dnsConf = __goscriptReturn3[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [ret, dnsConf]
 		throw new globalThis.Error("goscript: unreachable return")
 	}

@@ -109,22 +109,22 @@ export function NewRequestWithContext(
   return req
 }
 
-function requestBodyContentLength(body: io.Reader | null): number {
+function requestBodyContentLength(body: io.Reader | null): bigint {
   if (body == null) {
-    return 0
+    return 0n
   }
-  const value = $.pointerValueOrNil<any>(body as any)
+  const value = $.pointerValueOrNil<io.Reader>(body)
   if (value === http.NoBody) {
-    return 0
+    return 0n
   }
   if (
     value instanceof bytes.Buffer ||
     value instanceof bytes.Reader ||
     value instanceof strings.Reader
   ) {
-    return value.Len()
+    return BigInt(value.Len())
   }
-  return -1
+  return -1n
 }
 
 export class Server {

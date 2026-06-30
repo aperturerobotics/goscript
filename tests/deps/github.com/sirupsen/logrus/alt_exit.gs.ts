@@ -18,8 +18,8 @@ export function __goscript_set_handlers(__goscriptValue: $.Slice<(() => void) | 
 }
 
 export async function runHandler(handler: (() => void) | null): globalThis.Promise<void> {
+	const __defer = new $.AsyncDisposableStack()
 	try {
-		await using __defer = new $.AsyncDisposableStack()
 		__defer.defer(async () => { await (async (): globalThis.Promise<void> => {
 			{
 				let err = $.recover()
@@ -30,7 +30,9 @@ export async function runHandler(handler: (() => void) | null): globalThis.Promi
 		})() })
 
 		await handler!()
+		await __defer.dispose()
 	} catch (e) {
+		await __defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}

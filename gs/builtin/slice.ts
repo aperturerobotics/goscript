@@ -1378,19 +1378,29 @@ export function index<T>(
   runtimePanic('runtime error: index on unsupported type')
 }
 
+type ArrayIndexValue<C> =
+  C extends Uint8Array ? number
+  : C extends readonly (infer T)[] ? T
+  : C extends SliceProxy<infer T> ? T
+  : C extends null | undefined ? never
+  : C extends Slice<infer T> ? T
+  : any
+
 /**
  * arrayIndex reads collection[index] with Go bounds-check semantics, panicking
  * with the Go runtime message when index is out of range. Strings and maps are
- * lowered through their own helpers, so this covers Go arrays and slices. The
- * overloads reproduce the element type of a direct collection[index]: a byte
- * collection yields number, an element slice yields its element type.
+ * lowered through their own helpers, so this covers Go arrays and slices.
+ * TypeScript-friendly generic.
  */
-export function arrayIndex(collection: Uint8Array, index: number): number
-export function arrayIndex<T>(collection: Slice<T> | T[], index: number): T
-export function arrayIndex<T>(
-  collection: Slice<T> | T[] | Uint8Array,
-  index: number,
-): T | number {
+export function arrayIndex<
+  C extends
+    | Slice<unknown>
+    | SliceProxy<unknown>
+    | unknown[]
+    | Uint8Array
+    | null
+    | undefined,
+>(collection: C, index: number): ArrayIndexValue<C> {
   if (collection === null || collection === undefined) {
     outOfRangeIndex(index, 0)
   }
@@ -1398,20 +1408,20 @@ export function arrayIndex<T>(
     if (index < 0 || index >= collection.length) {
       outOfRangeIndex(index, collection.length)
     }
-    return collection[index]
+    return collection[index] as ArrayIndexValue<C>
   }
   if (isComplexSlice(collection)) {
     const length = collection.__meta__.length
     if (index < 0 || index >= length) {
       outOfRangeIndex(index, length)
     }
-    return collection.__meta__.backing[collection.__meta__.offset + index]
+    return collection.__meta__.backing[collection.__meta__.offset + index] as ArrayIndexValue<C>
   }
   if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {
       outOfRangeIndex(index, collection.length)
     }
-    return collection[index]
+    return collection[index] as ArrayIndexValue<C>
   }
   runtimePanic('runtime error: index on unsupported type')
 }

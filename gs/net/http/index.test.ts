@@ -270,7 +270,7 @@ describe('net/http override', () => {
       expect(
         Array.from(Header_Values(req!.Header, 'X-Test') ?? []),
       ).toHaveLength(want.xTestValues)
-      expect(req!.ContentLength).toBe(want.contentLength)
+      expect(req!.ContentLength).toBe(BigInt(want.contentLength))
       expect(req!.Close).toBe(want.close)
       expect(Array.from(req!.TransferEncoding ?? [])).toEqual(
         want.transferEncoding,
@@ -343,7 +343,7 @@ describe('net/http override', () => {
       expect(resp!.ProtoMajor).toBe(want.protoMajor)
       expect(resp!.ProtoMinor).toBe(want.protoMinor)
       expect(Header_Get(resp!.Header, 'Content-Type')).toBe(want.contentType)
-      expect(resp!.ContentLength).toBe(want.contentLength)
+      expect(resp!.ContentLength).toBe(BigInt(want.contentLength))
       expect(resp!.Close).toBe(want.close)
       expect(Array.from(resp!.TransferEncoding ?? [])).toEqual(
         want.transferEncoding,
@@ -471,21 +471,21 @@ describe('net/http override', () => {
       bytes.NewReader($.stringToBytes('abc')),
     )
     expect(bodyReqErr).toBeNull()
-    expect(bodyReq?.ContentLength).toBe(3)
+    expect(bodyReq?.ContentLength).toBe(3n)
     const [stringReq, stringReqErr] = NewRequest(
       MethodPost,
       'https://example.invalid/upload',
       strings.NewReader('abcd'),
     )
     expect(stringReqErr).toBeNull()
-    expect(stringReq?.ContentLength).toBe(4)
+    expect(stringReq?.ContentLength).toBe(4n)
     const [noBodyReq, noBodyErr] = NewRequest(
       MethodPost,
       'https://example.invalid/upload',
       NoBody,
     )
     expect(noBodyErr).toBeNull()
-    expect(noBodyReq?.ContentLength).toBe(0)
+    expect(noBodyReq?.ContentLength).toBe(0n)
     expect(noBodyReq?.Body).toBe(NoBody)
   })
 
@@ -814,11 +814,11 @@ describe('net/http override', () => {
 
     const resp = new Response({
       StatusCode: StatusCreated,
-      ContentLength: -1,
+      ContentLength: -1n,
       Request: varRef(req!),
     })
-    expect(resp.ContentLength).toBe(-1)
-    expect((resp.Request as any).value).toBe(req)
+    expect(resp.ContentLength).toBe(-1n)
+    expect($.pointerValue(resp.Request)).toBe(req)
   })
 
   it('exports fetch-backed default transport surface', async () => {
@@ -862,7 +862,7 @@ describe('net/http override', () => {
 
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusCreated)
-    expect(resp?.ContentLength).toBe(8)
+    expect(resp?.ContentLength).toBe(8n)
     expect(Header_Get(resp!.Header, 'x-reply')).toBe('yes')
     expect(requestBodyClosed).toBe(true)
   })
@@ -899,7 +899,7 @@ describe('net/http override', () => {
 
     expect(err).toBeNull()
     expect(resp?.StatusCode).toBe(StatusOK)
-    expect(resp?.ContentLength).toBe(5)
+    expect(resp?.ContentLength).toBe(5n)
     expect(arrayBufferCalled).toBe(false)
     expect(resp?.Body?.Close()).toBeNull()
   })
@@ -1164,16 +1164,16 @@ describe('net/http override', () => {
     const [req] = NewRequest(MethodPost, 'https://example.invalid/path', null)
     Header_Set(req!.Header, 'User-Agent', 'goscript-test')
     req!.RemoteAddr = '127.0.0.1:1234'
-    req!.ContentLength = 42
+    req!.ContentLength = 42n
 
     const client = new Client({
       Transport: {
         RoundTrip: (got) => {
-          const request = (got as any).value ?? got
+          const request = $.pointerValue(got)
           expect(request.UserAgent()).toBe('goscript-test')
           expect(request.RemoteAddr).toBe('127.0.0.1:1234')
           expect(request.RequestURI).toBe('')
-          expect(request.ContentLength).toBe(42)
+          expect(request.ContentLength).toBe(42n)
           return [new Response({ StatusCode: StatusOK }), null]
         },
       },

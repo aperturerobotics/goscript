@@ -3542,9 +3542,11 @@ func (o *LoweringOwner) lowerNamedReceiverMethodDecl(
 		bodyCtx := ctx.withSignature(signature).withAsyncFunction(async).withDeferState(deferState)
 		body, diagnostics := o.lowerBlock(bodyCtx, decl.Body)
 		lowered.body = body
-		if deferState.used && funcBodyUsesRecover(bodyCtx, decl.Body) {
-			deferState.recover = true
+		if deferState.used {
 			lowered.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+			if funcBodyUsesRecover(bodyCtx, decl.Body) {
+				deferState.recover = true
+			}
 		}
 		if deferState.async && !lowered.async {
 			lowered.async = true
@@ -3636,9 +3638,11 @@ func (o *LoweringOwner) lowerFuncDecl(ctx lowerFileContext, decl *ast.FuncDecl) 
 		bodyCtx := functionCtx.withAsyncFunction(async).withDeferState(deferState)
 		body, diagnostics := o.lowerBlock(bodyCtx, decl.Body)
 		lowered.body = body
-		if deferState.used && funcBodyUsesRecover(bodyCtx, decl.Body) {
-			deferState.recover = true
+		if deferState.used {
 			lowered.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+			if funcBodyUsesRecover(bodyCtx, decl.Body) {
+				deferState.recover = true
+			}
 		}
 		if deferState.async && !lowered.async {
 			lowered.async = true
@@ -4872,6 +4876,9 @@ func (o *LoweringOwner) lowerDeferStmt(ctx lowerFileContext, stmt *ast.DeferStmt
 			if async {
 				ctx.deferState.async = true
 			}
+			if deferCallMayRecover(ctx, stmt.Call) {
+				ctx.deferState.recover = true
+			}
 		}
 		if async {
 			return "const " + calleeTemp + " = " + callee + "\n__defer.defer(async () => { " + call + " })", diagnostics
@@ -4884,6 +4891,9 @@ func (o *LoweringOwner) lowerDeferStmt(ctx lowerFileContext, stmt *ast.DeferStmt
 		ctx.deferState.used = true
 		if async {
 			ctx.deferState.async = true
+		}
+		if deferCallMayRecover(ctx, stmt.Call) {
+			ctx.deferState.recover = true
 		}
 	}
 	if async {
@@ -5880,9 +5890,9 @@ func (o *LoweringOwner) lowerNamedResultReturnWithExplicitTemp(ctx lowerFileCont
 
 func (o *LoweringOwner) lowerDeferDisposeStmt(ctx lowerFileContext) string {
 	if ctx.deferState != nil && ctx.deferState.async {
-		return "await __defer[Symbol.asyncDispose]()"
+		return "await __defer.dispose()"
 	}
-	return "__defer[Symbol.dispose]()"
+	return "__defer.dispose()"
 }
 
 func (o *LoweringOwner) lowerBodylessReturnStmt(ctx lowerFileContext, signature *types.Signature) (string, bool) {
@@ -7635,9 +7645,11 @@ func (o *LoweringOwner) lowerFuncLitArrowWithAsyncCalls(
 	}
 	body, diagnostics := o.lowerBlock(bodyCtx, lit.Body)
 	litFn := &loweredFunction{body: body, deferState: deferState}
-	if deferState.used && funcBodyUsesRecover(bodyCtx, lit.Body) {
-		deferState.recover = true
+	if deferState.used {
 		litFn.recoverReturn = o.recoverReturnStmt(bodyCtx, signature)
+		if funcBodyUsesRecover(bodyCtx, lit.Body) {
+			deferState.recover = true
+		}
 	}
 	var rendered strings.Builder
 	renderStmts(&rendered, paramBindings, 1)
@@ -8367,6 +8379,34 @@ func funcBodyUsesRecover(ctx lowerFileContext, body ast.Node) bool {
 		return true
 	})
 	return found
+}
+
+func deferCallMayRecover(ctx lowerFileContext, call *ast.CallExpr) bool {
+	if call == nil || ctx.semPkg == nil || ctx.semPkg.source == nil {
+		return false
+	}
+	if lit, ok := call.Fun.(*ast.FuncLit); ok {
+		return funcBodyUsesRecover(ctx, lit.Body)
+	}
+	fn := calledFunction(ctx.semPkg.source, call.Fun)
+	if fn == nil {
+		return false
+	}
+	target := functionOriginOrSelf(fn)
+	for _, file := range ctx.semPkg.source.Syntax {
+		for _, decl := range file.Decls {
+			funcDecl, ok := decl.(*ast.FuncDecl)
+			if !ok || funcDecl.Body == nil {
+				continue
+			}
+			declFn, _ := ctx.semPkg.source.TypesInfo.Defs[funcDecl.Name].(*types.Func)
+			if functionOriginOrSelf(declFn) != target {
+				continue
+			}
+			return funcBodyUsesRecover(ctx, funcDecl.Body)
+		}
+	}
+	return false
 }
 
 func (o *LoweringOwner) callUsesOverridePackage(ctx lowerFileContext, expr ast.Expr) bool {

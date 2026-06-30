@@ -84,7 +84,7 @@ export class VMux {
 		}
 		const __goscriptReturn0: boolean = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).HasService(serviceID)
 		has = __goscriptReturn0
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return has
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -101,7 +101,7 @@ export class VMux {
 		}
 		const __goscriptReturn1: boolean = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).HasServiceMethod(serviceID, methodID)
 		has = __goscriptReturn1
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return has
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -119,7 +119,7 @@ export class VMux {
 		const __goscriptReturn3: [boolean, $.GoError] = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).InvokeMethod(serviceID, methodID, strm)
 		done = __goscriptReturn3[0]
 		err = __goscriptReturn3[1]
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return [done, err]
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -136,7 +136,7 @@ export class VMux {
 		}
 		const __goscriptReturn4: $.GoError = await $.pointerValue<Exclude<__goscript_mux.Mux, null>>($.pointerValue<VMux>(v).mx).Register(handler)
 		err = __goscriptReturn4
-		await __defer[Symbol.asyncDispose]()
+		await __defer.dispose()
 		return err
 		throw new globalThis.Error("goscript: unreachable return")
 	}

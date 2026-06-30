@@ -437,21 +437,22 @@ export class File {
 		return [n, err]
 	}
 
-	public ReadAt(b: $.Bytes, off: number): [number, $.GoError] {
+	public ReadAt(b: $.Bytes, off: bigint): [number, $.GoError] {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		if (off < 0) {
+		if (off < 0n) {
 			return [0, ErrInvalid]
 		}
 		if (b === null) {
 			return [0, null]
 		}
 		const buf = $.bytesToUint8Array(b)
+		const position = Number(off)
 		const handle = this.file?.handle
 		if (handle && typeof handle.seekSync === "function") {
 			try {
-				handle.seekSync(off, io.SeekStart)
+				handle.seekSync(position, io.SeekStart)
 				return this.Read(b)
 			} catch (err) {
 				return [0, newHostError(err)]
@@ -463,7 +464,7 @@ export class File {
 		const nodeFS = getNodeFS()
 		if (nodeFS?.readSync && this.fd >= 0) {
 			try {
-				const n = nodeFS.readSync(this.fd, buf, 0, buf.length, off)
+				const n = nodeFS.readSync(this.fd, buf, 0, buf.length, position)
 				if (!(b instanceof Uint8Array) && n > 0) {
 					$.copy(b, buf.subarray(0, n))
 				}
@@ -525,21 +526,22 @@ export class File {
 			: writeFD(this.fd, buf)
 	}
 
-	public WriteAt(b: $.Bytes, off: number): [number, $.GoError] {
+	public WriteAt(b: $.Bytes, off: bigint): [number, $.GoError] {
 		if (this.closed) {
 			return [0, ErrClosed]
 		}
-		if (off < 0) {
+		if (off < 0n) {
 			return [0, ErrInvalid]
 		}
 		if (b === null) {
 			return [0, null]
 		}
 		const buf = $.bytesToUint8Array(b)
+		const position = Number(off)
 		const handle = this.file?.handle
 		if (handle && typeof handle.seekSync === "function") {
 			try {
-				handle.seekSync(off, io.SeekStart)
+				handle.seekSync(position, io.SeekStart)
 				return this.Write(b)
 			} catch (err) {
 				return [0, newHostError(err)]
@@ -551,7 +553,7 @@ export class File {
 		const nodeFS = getNodeFS()
 		if (nodeFS?.writeSync && this.fd >= 0) {
 			try {
-				return [nodeFS.writeSync(this.fd, buf, 0, buf.length, off), null]
+				return [nodeFS.writeSync(this.fd, buf, 0, buf.length, position), null]
 			} catch (err) {
 				return [0, newHostError(err)]
 			}

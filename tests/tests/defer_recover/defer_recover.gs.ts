@@ -6,8 +6,8 @@ import * as $ from "@goscript/builtin/index.js"
 export function safeDivide(a: number, b: number): [number, boolean] {
 	let result: number = 0
 	let ok: boolean = false
+	const __defer = new $.DisposableStack()
 	try {
-		using __defer = new $.DisposableStack()
 		__defer.defer(() => { ((): void => {
 			{
 				let r = $.recover()
@@ -23,9 +23,11 @@ export function safeDivide(a: number, b: number): [number, boolean] {
 		const __goscriptReturn0: [number, boolean] = [Math.trunc(a / b), true]
 		result = __goscriptReturn0[0]
 		ok = __goscriptReturn0[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [result, ok]
+		__defer.dispose()
 	} catch (e) {
+		__defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}
@@ -34,8 +36,8 @@ export function safeDivide(a: number, b: number): [number, boolean] {
 }
 
 export function mustPanic(): void {
+	const __defer = new $.DisposableStack()
 	try {
-		using __defer = new $.DisposableStack()
 		__defer.defer(() => { ((): void => {
 			{
 				let r = $.recover()
@@ -45,7 +47,9 @@ export function mustPanic(): void {
 			}
 		})() })
 		$.panic("boom")
+		__defer.dispose()
 	} catch (e) {
+		__defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}
@@ -53,8 +57,8 @@ export function mustPanic(): void {
 }
 
 export function noPanic(): void {
+	const __defer = new $.DisposableStack()
 	try {
-		using __defer = new $.DisposableStack()
 		__defer.defer(() => { ((): void => {
 			{
 				let r = $.recover()
@@ -66,7 +70,9 @@ export function noPanic(): void {
 			}
 		})() })
 		$.println("noPanic body")
+		__defer.dispose()
 	} catch (e) {
+		__defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}

@@ -297,12 +297,12 @@ describe('os stdio', () => {
     const file = createHostFile('descriptor-file', 7)
     const buf = new Uint8Array(3)
 
-    const [readN, readErr] = file.ReadAt(buf, 5)
+    const [readN, readErr] = file.ReadAt(buf, 5n)
     expect(readN).toBe(3)
     expect(readErr).toBeNull()
     expect(Array.from(buf)).toEqual([31, 32, 33])
 
-    const [writeN, writeErr] = file.WriteAt(new Uint8Array([41, 42]), 8)
+    const [writeN, writeErr] = file.WriteAt(new Uint8Array([41, 42]), 8n)
     expect(writeN).toBe(2)
     expect(writeErr).toBeNull()
     expect(readSync).toHaveBeenCalledTimes(1)

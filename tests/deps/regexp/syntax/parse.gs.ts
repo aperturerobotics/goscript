@@ -1949,8 +1949,8 @@ export async function Parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 
 export async function parse(s: string, flags: Flags): globalThis.Promise<[__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError]> {
 	let err: $.GoError = null as $.GoError
+	const __defer = new $.DisposableStack()
 	try {
-		using __defer = new $.DisposableStack()
 		__defer.defer(() => { ((): void => {
 			{
 				let r = $.recover()
@@ -1986,13 +1986,13 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 				if (__goscriptShadow4 != null) {
 					const __goscriptReturn3: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow4]
 					err = __goscriptReturn3[1]
-					__defer[Symbol.dispose]()
+					__defer.dispose()
 					return [__goscriptReturn3[0], err]
 				}
 			}
 			const __goscriptReturn4: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [literalRegexp(s, $.uint(flags, 16)), null]
 			err = __goscriptReturn4[1]
-			__defer[Symbol.dispose]()
+			__defer.dispose()
 			return [__goscriptReturn4[0], err]
 		}
 
@@ -2018,7 +2018,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn5: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn5[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn5[0], err]
 							}
 						}
@@ -2036,7 +2036,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 								if (err != null) {
 									const __goscriptReturn6: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 									err = __goscriptReturn6[1]
-									__defer[Symbol.dispose]()
+									__defer.dispose()
 									return [__goscriptReturn6[0], err]
 								}
 							}
@@ -2060,7 +2060,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn7: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn7[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn7[0], err]
 							}
 						}
@@ -2106,7 +2106,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn8: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn8[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn8[0], err]
 							}
 						}
@@ -2142,7 +2142,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn9: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn9[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn9[0], err]
 							}
 						}
@@ -2165,7 +2165,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							// Numbers were too big, or max is present and min > max.
 							const __goscriptReturn10: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid repeat count", Expr: $.sliceStringOrBytes(before, undefined, $.len(before) - $.len(after))}), "*syntax.Error")]
 							err = __goscriptReturn10[1]
-							__defer[Symbol.dispose]()
+							__defer.dispose()
 							return [__goscriptReturn10[0], err]
 						}
 						{
@@ -2175,7 +2175,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn11: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn11[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn11[0], err]
 							}
 						}
@@ -2212,7 +2212,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 								{
 									const __goscriptReturn12: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "invalid escape sequence", Expr: $.sliceStringOrBytes(t, undefined, 2)}), "*syntax.Error")]
 									err = __goscriptReturn12[1]
-									__defer[Symbol.dispose]()
+									__defer.dispose()
 									return [__goscriptReturn12[0], err]
 									break
 								}
@@ -2230,7 +2230,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 										if (__goscriptShadow6 != null) {
 											const __goscriptReturn13: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow6]
 											err = __goscriptReturn13[1]
-											__defer[Symbol.dispose]()
+											__defer.dispose()
 											return [__goscriptReturn13[0], err]
 										}
 										p.value.literal($.int(__goscriptShadow5, 32))
@@ -2261,7 +2261,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (__goscriptShadow7 != null) {
 								const __goscriptReturn14: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, __goscriptShadow7]
 								err = __goscriptReturn14[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn14[0], err]
 							}
 							if (r != null) {
@@ -2295,7 +2295,7 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 							if (err != null) {
 								const __goscriptReturn15: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, err]
 								err = __goscriptReturn15[1]
-								__defer[Symbol.dispose]()
+								__defer.dispose()
 								return [__goscriptReturn15[0], err]
 							}
 						}
@@ -2318,14 +2318,16 @@ export async function parse(s: string, flags: Flags): globalThis.Promise<[__gosc
 		if (n != 1) {
 			const __goscriptReturn16: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [null, $.interfaceValue<$.GoError>(new Error({Code: "missing closing )", Expr: s}), "*syntax.Error")]
 			err = __goscriptReturn16[1]
-			__defer[Symbol.dispose]()
+			__defer.dispose()
 			return [__goscriptReturn16[0], err]
 		}
 		const __goscriptReturn17: [__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError] = [$.arrayIndex(p.value.stack!, 0), null]
 		err = __goscriptReturn17[1]
-		__defer[Symbol.dispose]()
+		__defer.dispose()
 		return [__goscriptReturn17[0], err]
+		__defer.dispose()
 	} catch (e) {
+		__defer.disposePanic(e)
 		if (!$.recovered(e)) {
 			throw e
 		}

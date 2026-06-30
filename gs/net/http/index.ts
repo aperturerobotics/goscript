@@ -732,7 +732,7 @@ export class Request {
   public ProtoMinor: number
   public Body: io.ReadCloser | null
   public Header: Header
-  public ContentLength: number
+  public ContentLength: bigint
   public TransferEncoding: $.Slice<string>
   public Close: boolean
   public Host: string
@@ -756,7 +756,7 @@ export class Request {
     this.ProtoMinor = init?.ProtoMinor ?? 1
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
-    this.ContentLength = init?.ContentLength ?? 0
+    this.ContentLength = init?.ContentLength ?? 0n
     this.TransferEncoding = init?.TransferEncoding ?? null
     this.Close = init?.Close ?? false
     this.Host = init?.Host ?? ''
@@ -885,7 +885,7 @@ export class Response {
   public ProtoMinor: number
   public Body: io.ReadCloser | null
   public Header: Header
-  public ContentLength: number
+  public ContentLength: bigint
   public TransferEncoding: $.Slice<string>
   public Close: boolean
   public Uncompressed: boolean
@@ -901,7 +901,7 @@ export class Response {
     this.ProtoMinor = init?.ProtoMinor ?? 1
     this.Body = init?.Body ?? null
     this.Header = init?.Header ?? new Header()
-    this.ContentLength = init?.ContentLength ?? 0
+    this.ContentLength = init?.ContentLength ?? 0n
     this.TransferEncoding = init?.TransferEncoding ?? null
     this.Close = init?.Close ?? false
     this.Uncompressed = init?.Uncompressed ?? false
@@ -1411,7 +1411,7 @@ async function fetchRoundTrip(
         StatusCode: fetched.status,
         Body: bodyReader,
         Header: respHeader,
-        ContentLength: Number(fetched.headers.get('content-length') ?? -1),
+        ContentLength: BigInt(fetched.headers.get('content-length') ?? -1),
         Request: request,
       }),
       null,
@@ -2750,7 +2750,7 @@ export function NewRequestWithContext(
   if (err != null || parsedURL == null) {
     return [null, err]
   }
-  const bodyInfo = requestBodyInfo(body, 0)
+  const bodyInfo = requestBodyInfo(body, 0n)
   return [
     new Request({
       Method: method,
@@ -2893,7 +2893,7 @@ export async function ReadResponse(
     noBody ?
       {
         body: NoBody,
-        contentLength: 0,
+        contentLength: 0n,
         transferEncoding: null,
         error: null,
       }
@@ -3002,7 +3002,7 @@ function parseHTTPBody(
   rawBody: string,
 ): {
   body: io.ReadCloser
-  contentLength: number
+  contentLength: bigint
   transferEncoding: $.Slice<string>
   error: $.GoError
 } {
@@ -3012,14 +3012,14 @@ function parseHTTPBody(
     if (chunked.error != null) {
       return {
         body: NoBody,
-        contentLength: -1,
+        contentLength: -1n,
         transferEncoding: $.arrayToSlice(['chunked']),
         error: chunked.error,
       }
     }
     return {
       body: bodyFromString(chunked.body),
-      contentLength: -1,
+      contentLength: -1n,
       transferEncoding: $.arrayToSlice(['chunked']),
       error: null,
     }
@@ -3033,14 +3033,14 @@ function parseHTTPBody(
     ) {
       return {
         body: NoBody,
-        contentLength: 0,
+        contentLength: 0n,
         transferEncoding: null,
         error: badHTTPMessageError(`bad Content-Length ${contentLength}`),
       }
     }
     return {
       body: bodyFromString(rawBody.slice(0, parsedLength)),
-      contentLength: parsedLength,
+      contentLength: BigInt(parsedLength),
       transferEncoding: null,
       error: null,
     }
@@ -3048,14 +3048,14 @@ function parseHTTPBody(
   if (rawBody === '') {
     return {
       body: NoBody,
-      contentLength: 0,
+      contentLength: 0n,
       transferEncoding: null,
       error: null,
     }
   }
   return {
     body: bodyFromString(rawBody),
-    contentLength: -1,
+    contentLength: -1n,
     transferEncoding: null,
     error: null,
   }
@@ -3308,14 +3308,14 @@ function readCloserForBody(body: io.Reader | null): io.ReadCloser | null {
 
 function requestBodyInfo(
   body: io.Reader | null,
-  unknownLength: number,
-): { Body: io.ReadCloser | null; ContentLength: number } {
+  unknownLength: bigint,
+): { Body: io.ReadCloser | null; ContentLength: bigint } {
   if (body == null) {
-    return { Body: null, ContentLength: 0 }
+    return { Body: null, ContentLength: 0n }
   }
-  const value = $.pointerValueOrNil<any>(body as any)
+  const value = $.pointerValueOrNil<io.Reader>(body)
   if (value === NoBody) {
-    return { Body: NoBody, ContentLength: 0 }
+    return { Body: NoBody, ContentLength: 0n }
   }
   if (
     value instanceof bytes.Buffer ||
@@ -3325,7 +3325,7 @@ function requestBodyInfo(
     const length = value.Len()
     return {
       Body: length === 0 ? NoBody : readCloserForBody(body),
-      ContentLength: length,
+      ContentLength: BigInt(length),
     }
   }
   return { Body: readCloserForBody(body), ContentLength: unknownLength }
