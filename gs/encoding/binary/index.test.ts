@@ -51,23 +51,115 @@ describe('encoding/binary override', () => {
     expect(BigEndian.GoString()).toBe('binary.BigEndian')
   })
 
-  it('returns uint64 as bigint even when the value fits in a float', () => {
-    // Go uint64 is always a JS bigint in GoScript. A small value that fits in
-    // Number.MAX_SAFE_INTEGER must still come back as a bigint, or a later raw
-    // operator mixing it with a wide bigint uint64 throws "Cannot mix BigInt
-    // and other types" (the chunk-index upload crash on staging).
+  it('returns endian uint64 as bigint for small and above-safe values', () => {
+    const cases = [
+      { name: 'small', value: 5n },
+      { name: 'above-safe', value: 1n << 53n },
+      { name: 'wide', value: 1n << 60n },
+    ]
+
+    for (const order of [LittleEndian, BigEndian]) {
+      for (const { name, value } of cases) {
+        const buf = $.makeSlice<number>(8, undefined, 'byte')
+        order.PutUint64(buf, value)
+
+        const decoded = order.Uint64(buf)
+        expect(typeof decoded, `${order.String()} ${name}`).toBe('bigint')
+        expect(decoded, `${order.String()} ${name}`).toBe(value)
+      }
+    }
+
     const small = $.makeSlice<number>(8, undefined, 'byte')
     LittleEndian.PutUint64(small, 5n)
     const wide = $.makeSlice<number>(8, undefined, 'byte')
     LittleEndian.PutUint64(wide, 1n << 60n)
-
     const a = LittleEndian.Uint64(small)
     const b = LittleEndian.Uint64(wide)
-    expect(typeof a).toBe('bigint')
-    expect(typeof b).toBe('bigint')
-    expect(a).toBe(5n)
     // The raw relational operator GoScript emits for uint64 must not throw.
     expect(a < b).toBe(true)
+  })
+
+  it('decodes fixed int64 and uint64 refs as bigint at boundary values', () => {
+    const scalarCases = [
+      { name: 'small int64', typeName: '*int64', encoded: 5n, expected: 5n },
+      {
+        name: 'above-safe int64',
+        typeName: '*int64',
+        encoded: 1n << 53n,
+        expected: 1n << 53n,
+      },
+      {
+        name: 'negative int64',
+        typeName: '*int64',
+        encoded: 0xffffffffffffffffn,
+        expected: -1n,
+      },
+      { name: 'small uint64', typeName: '*uint64', encoded: 5n, expected: 5n },
+      {
+        name: 'above-safe uint64',
+        typeName: '*uint64',
+        encoded: 1n << 63n,
+        expected: 1n << 63n,
+      },
+    ]
+
+    for (const { name, typeName, encoded, expected } of scalarCases) {
+      const buf = $.makeSlice<number>(8, undefined, 'byte')
+      BigEndian.PutUint64(buf, encoded)
+      const ref = $.varRef(0)
+      const target = $.namedValueInterfaceValue<unknown>(ref, typeName, {})
+
+      expect(Decode(buf, BigEndian, target), name).toEqual([8, null])
+      expect(typeof ref.value, name).toBe('bigint')
+      expect(ref.value, name).toBe(expected)
+    }
+
+    const namedCases = [
+      {
+        name: 'named small int64',
+        typeName: '*main.SignedID',
+        typeInfo: {
+          kind: $.TypeKind.Pointer,
+          elemType: {
+            kind: $.TypeKind.Basic,
+            name: 'int64',
+            typeName: 'main.SignedID',
+          },
+        },
+        encoded: 5n,
+        expected: 5n,
+      },
+      {
+        name: 'named above-safe uint64',
+        typeName: '*chunker.Pol',
+        typeInfo: {
+          kind: $.TypeKind.Pointer,
+          elemType: {
+            kind: $.TypeKind.Basic,
+            name: 'uint64',
+            typeName: 'chunker.Pol',
+          },
+        },
+        encoded: 1n << 63n,
+        expected: 1n << 63n,
+      },
+    ]
+
+    for (const { name, typeName, typeInfo, encoded, expected } of namedCases) {
+      const buf = $.makeSlice<number>(8, undefined, 'byte')
+      LittleEndian.PutUint64(buf, encoded)
+      const ref = $.varRef(0)
+      const target = $.namedValueInterfaceValue<unknown>(
+        ref,
+        typeName,
+        {},
+        typeInfo,
+      )
+
+      expect(Decode(buf, LittleEndian, target), name).toEqual([8, null])
+      expect(typeof ref.value, name).toBe('bigint')
+      expect(ref.value, name).toBe(expected)
+    }
   })
 
   it('appends endian integers', () => {

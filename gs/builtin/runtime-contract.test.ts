@@ -19,6 +19,10 @@ import {
   indexAddress,
   indexByteAddress,
   indexRef,
+  int64And,
+  int64Div,
+  int64Mod,
+  int64Or,
   int64AndNot,
   interfaceValue,
   len,
@@ -127,6 +131,60 @@ describe('builtin runtime contract helpers', () => {
       { fd: 1, text: 'value: 3' },
       { fd: 1, text: 'done\n' },
     ])
+  })
+
+  it('returns signed int64 helper results as bigint across mixed operands', () => {
+    const helperCases: Array<{
+      name: string
+      actual: bigint
+      expected: bigint
+    }> = [
+      {
+        name: 'int64Div mixed negative truncates toward zero',
+        actual: int64Div(-7n, 2),
+        expected: -3n,
+      },
+      {
+        name: 'int64Div wraps min int divided by -1',
+        actual: int64Div(-0x8000000000000000n, -1),
+        expected: -0x8000000000000000n,
+      },
+      {
+        name: 'int64Mod mixed negative keeps dividend sign',
+        actual: int64Mod(-7n, 2),
+        expected: -1n,
+      },
+      {
+        name: 'int64Mod wraps min int modulo -1',
+        actual: int64Mod(-0x8000000000000000n, -1),
+        expected: 0n,
+      },
+      {
+        name: 'int64And coerces number mask',
+        actual: int64And(-1n, 0xff),
+        expected: 0xffn,
+      },
+      {
+        name: 'int64And wraps unsigned sign bit to min int',
+        actual: int64And(0x8000000000000000n, -1),
+        expected: -0x8000000000000000n,
+      },
+      {
+        name: 'int64Or coerces number mask',
+        actual: int64Or(-0x8000000000000000n, 0x7f),
+        expected: -0x7fffffffffffff81n,
+      },
+      {
+        name: 'int64Or wraps full signed width',
+        actual: int64Or(0x7fffffffffffffffn, 0x8000000000000000n),
+        expected: -1n,
+      },
+    ]
+
+    for (const { name, actual, expected } of helperCases) {
+      expect(typeof actual, name).toBe('bigint')
+      expect(actual, name).toBe(expected)
+    }
   })
 
   it('exposes numeric, varref, map, and error helpers', () => {
