@@ -1,8 +1,11 @@
 {
   "asyncFunctions": {
+    "IsSorted": true,
     "Search": true,
     "Slice": true,
     "SliceIsSorted": true,
-    "SliceStable": true
+    "SliceStable": true,
+    "Sort": true,
+    "Stable": true
   }
 }

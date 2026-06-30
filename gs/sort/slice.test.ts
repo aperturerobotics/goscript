@@ -6,6 +6,9 @@ import {
   Float64Slice,
   Float64s,
   Float64sAreSorted,
+  type Interface,
+  IsSorted,
+  Sort,
   StringSlice,
   Strings,
   StringsAreSorted,
@@ -44,6 +47,33 @@ describe('sort.Slice override', () => {
         (i, j) => values![i].group < values![j].group,
       ),
     ).toBe(true)
+  })
+
+  it('awaits async Swap/Less in Sort so the data is ordered when it resolves', async () => {
+    // A Go type implementing sort.Interface can do async work (e.g. block I/O)
+    // in Swap/Less, transpiling to async methods. Sort must await them: a sync
+    // Sort would drop the promises and leave the data unsorted. Each Swap yields
+    // a microtask before mutating, so a dropped promise would be observable as a
+    // still-unsorted slice right after Sort returns.
+    const values = [5, 3, 4, 1, 2]
+    const impl: Interface = {
+      Len: () => values.length,
+      Less: async (i, j) => {
+        await Promise.resolve()
+        return values[i] < values[j]
+      },
+      Swap: async (i, j) => {
+        await Promise.resolve()
+        const tmp = values[i]
+        values[i] = values[j]
+        values[j] = tmp
+      },
+    }
+
+    await Sort(impl)
+
+    expect(values).toEqual([1, 2, 3, 4, 5])
+    expect(await IsSorted(impl)).toBe(true)
   })
 
   it('orders NaN before other float64 values', () => {

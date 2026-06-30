@@ -2,11 +2,14 @@ import * as $ from '@goscript/builtin/index.js'
 
 import { compareStrings, lessFloat64 } from './order.js'
 
-// Interface defines the methods required for sorting
+// Interface defines the methods required for sorting.
+// Less and Swap may be async: a Go type implementing sort.Interface can do
+// async work (e.g. block I/O) in Swap/Less, which transpiles to an async
+// method. Sort/Stable/IsSorted await these, mirroring the async Search closure.
 export interface Interface {
-  Len(): number
-  Less(i: number, j: number): boolean
-  Swap(i: number, j: number): void
+  Len(): number | Promise<number>
+  Less(i: number, j: number): boolean | Promise<boolean>
+  Swap(i: number, j: number): void | Promise<void>
 }
 
 // Helper type for slice metadata
@@ -103,30 +106,32 @@ export class StringSlice {
   }
 }
 
-// Sort sorts data in ascending order as determined by the Less method
-export function Sort(data: Interface | null): void {
+// Sort sorts data in ascending order as determined by the Less method.
+// Less and Swap are awaited so an async sort.Interface implementer sorts
+// correctly; the data is fully ordered before Sort resolves.
+export async function Sort(data: Interface | null): Promise<void> {
   const sortData = $.pointerValue(data)
   // Use a simple insertion sort for now - can be optimized later
-  const n = sortData.Len()
+  const n = await sortData.Len()
   for (let i = 1; i < n; i++) {
-    for (let j = i; j > 0 && sortData.Less(j, j - 1); j--) {
-      sortData.Swap(j, j - 1)
+    for (let j = i; j > 0 && (await sortData.Less(j, j - 1)); j--) {
+      await sortData.Swap(j, j - 1)
     }
   }
 }
 
 // Stable sorts data while keeping the original order of equal elements
-export function Stable(data: Interface | null): void {
+export async function Stable(data: Interface | null): Promise<void> {
   // For simplicity, use the same sort - can be improved later
-  Sort(data)
+  await Sort(data)
 }
 
 // IsSorted reports whether data is sorted
-export function IsSorted(data: Interface | null): boolean {
+export async function IsSorted(data: Interface | null): Promise<boolean> {
   const sortData = $.pointerValue(data)
-  const n = sortData.Len()
+  const n = await sortData.Len()
   for (let i = n - 1; i > 0; i--) {
-    if (sortData.Less(i, i - 1)) {
+    if (await sortData.Less(i, i - 1)) {
       return false
     }
   }
