@@ -1,0 +1,8 @@
+signed < true
+signed <= true
+signed > true
+signed >= true
+unsigned < true
+unsigned <= true
+unsigned > true
+unsigned >= true

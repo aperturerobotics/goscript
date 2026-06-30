@@ -7209,6 +7209,20 @@ func isEqualityOperator(op token.Token) bool {
 	return op == token.EQL || op == token.NEQ
 }
 
+func isRelationalOperator(op token.Token) bool {
+	return op == token.LSS || op == token.LEQ || op == token.GTR || op == token.GEQ
+}
+
+func (o *LoweringOwner) lowerNumericComparisonOperands(ctx lowerFileContext, expr *ast.BinaryExpr, left string, right string) (string, string) {
+	leftType := ctx.semPkg.source.TypesInfo.TypeOf(expr.X)
+	rightType := ctx.semPkg.source.TypesInfo.TypeOf(expr.Y)
+	if isNumericType(leftType) && isNumericType(rightType) {
+		left = o.lowerValueForTarget(ctx, expr.X, rightType, left)
+		right = o.lowerValueForTarget(ctx, expr.Y, leftType, right)
+	}
+	return left, right
+}
+
 func isArrayType(typ types.Type) bool {
 	_, ok := types.Unalias(typ).Underlying().(*types.Array)
 	return ok
@@ -7220,10 +7234,7 @@ func (o *LoweringOwner) lowerEqualityOperands(ctx lowerFileContext, expr *ast.Bi
 	if constantComparableType(ctx, expr.X) != "" && constantComparableType(ctx, expr.X) == constantComparableType(ctx, expr.Y) {
 		left = lowerConstantComparableValue(ctx, expr.X, left)
 	}
-	if isNumericType(leftType) && isNumericType(rightType) {
-		left = o.lowerValueForTarget(ctx, expr.X, rightType, left)
-		right = o.lowerValueForTarget(ctx, expr.Y, leftType, right)
-	}
+	left, right = o.lowerNumericComparisonOperands(ctx, expr, left, right)
 	if isStringType(leftType) && isStringType(rightType) {
 		leftLiteral := isStringLiteralExpr(expr.X)
 		rightLiteral := isStringLiteralExpr(expr.Y)
@@ -7427,6 +7438,8 @@ func (o *LoweringOwner) lowerExpr(ctx lowerFileContext, expr ast.Expr) (string, 
 				return value, append(leftDiagnostics, rightDiagnostics...)
 			}
 			left, right = o.lowerEqualityOperands(ctx, typed, left, right)
+		} else if isRelationalOperator(typed.Op) {
+			left, right = o.lowerNumericComparisonOperands(ctx, typed, left, right)
 		}
 		if value, ok := o.lowerWideIntegerBinaryExpr(ctx, typed, left, right); ok {
 			return value, append(leftDiagnostics, rightDiagnostics...)

@@ -748,6 +748,52 @@ func TestCompilePackagesLowersWideIntegerConstantsForUint64Targets(t *testing.T)
 	}
 }
 
+func TestLowerWideRelationalConstants(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/widerel\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package main",
+			"type Signed int64",
+			"type Unsigned uint64",
+			"func signed(s Signed) bool {",
+			"  return s < -9007199254740992 && s <= -9007199254740993 && -9007199254740992 > s && -9007199254740993 >= s",
+			"}",
+			"func unsigned(u Unsigned) bool {",
+			"  return u < 9007199254740993 && u <= 9223372036854775808 && 9007199254740993 > u && 9223372036854775808 >= u",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	content, err := os.ReadFile(filepath.Join(outputDir, "@goscript", "example.test", "widerel", "main.gs.ts"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		`s < -9007199254740992n`,
+		`s <= -9007199254740993n`,
+		`-9007199254740992n > s`,
+		`-9007199254740993n >= s`,
+		`u < 9007199254740993n`,
+		`u <= 9223372036854775808n`,
+		`9007199254740993n > u`,
+		`9223372036854775808n >= u`,
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing lowered wide relational comparison %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesReadsShadowedVarRefStructFieldsOnce(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/shadowvarreffield\n\ngo 1.25.3\n",
