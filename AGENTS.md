@@ -85,6 +85,12 @@ Once the issue is fixed and the compliance test passes you may delete WIP.md wit
 
 NOTE: `./tests/deps/` contains library dependencies compiled by the goscript compiler! do not edit! they will be re-generated when running the tests.
 
+When a compiler change alters generated TypeScript output, run `go test ./compiler`
+before committing so the compliance harness regenerates the `.gs.ts` outputs under
+`tests/tests/` and `tests/deps/`. Inspect the generated diff, then include the
+refreshed `.gs.ts` outputs in the same commit; use `git add -A` from the repo root
+when the generated output set may include additions or removals.
+
 ## Design Patterns & Code Style
 
 ### Core Principles
