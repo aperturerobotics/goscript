@@ -602,6 +602,21 @@ class BufferedChannel<T> implements Channel<T> {
     if (this.closed) {
       throw new Error('send on closed channel')
     }
+    // Sends must hand off to already waiting receivers before using spare
+    // buffer capacity, including through the select fast path.
+    if (this.receivers.length > 0) {
+      const receiverTask = this.receivers.shift()!
+      void completeUnbufferedReceive(receiverTask.resolveReceive, value)
+      return { value: true, ok: true, id }
+    }
+    if (this.receiversWithOk.length > 0) {
+      const receiverTask = this.receiversWithOk.shift()!
+      void completeUnbufferedReceiveWithOk(receiverTask.resolveReceive, {
+        value,
+        ok: true,
+      })
+      return { value: true, ok: true, id }
+    }
     if (this.buffer.length < this.capacity) {
       this.buffer.push(value)
       return { value: true, ok: true, id }

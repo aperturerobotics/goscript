@@ -975,6 +975,47 @@ describe('builtin runtime contract helpers', () => {
     expect(await sendChannel.receive()).toBe(7)
   })
 
+  it('hands selected buffered sends to already waiting receivers', async () => {
+    const directChannel = makeChannel<number>(1, 0, 'both')
+    let directReceived: number | undefined
+    const directReceive = directChannel.receive().then((value) => {
+      directReceived = value
+    })
+
+    await Promise.resolve()
+    await directChannel.send(7)
+    await directReceive
+    expect(directReceived).toBe(7)
+
+    const selectChannel = makeChannel<number>(1, 0, 'both')
+    let selectReceived: number | undefined
+    const selectReceive = selectChannel.receive().then((value) => {
+      selectReceived = value
+    })
+
+    await Promise.resolve()
+    const [sendHasValue, sendValue] = await selectStatement<number, boolean>(
+      [
+        {
+          id: 1,
+          isSend: true,
+          channel: selectChannel,
+          value: 9,
+          onSelected: async () => true,
+        },
+      ],
+      false,
+    )
+
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(sendHasValue).toBe(true)
+    expect(sendValue).toBe(true)
+    expect(selectReceived).toBe(9)
+    expect(len(selectChannel)).toBe(0)
+    await selectReceive
+  })
+
   it('does not resume an unbuffered sender before the waiting receiver accepts the value', async () => {
     const channel = makeChannel<number>(0, 0, 'both')
     let received = 0
