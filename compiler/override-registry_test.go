@@ -343,9 +343,9 @@ func TestCompilePackagesPropagatesOverrideAsyncInterfaceMethods(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"public async Do(req: http.Request | $.VarRef<http.Request> | null): globalThis.Promise<[http.Response | $.VarRef<http.Response> | null, $.GoError]>",
-		"return await $.pointerValue<Exclude<http.RoundTripper, null>>($.pointerValue<client>(c).rt).RoundTrip(req)",
+		"return $.pointerValue<Exclude<http.RoundTripper, null>>($.pointerValue<client>(c).rt).RoundTrip(req)",
 		"export async function Use(c: client | $.VarRef<client> | null, req: http.Request | $.VarRef<http.Request> | null): globalThis.Promise<[http.Response | $.VarRef<http.Response> | null, $.GoError]>",
-		"return await client.prototype.Do.call(c, req)",
+		"return client.prototype.Do.call(c, req)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -572,7 +572,7 @@ func TestCompilePackagesAwaitsIOFSLstatOverride(t *testing.T) {
 	}
 }
 
-func TestCompilePackagesAwaitsIOFSSubOverride(t *testing.T) {
+func TestCompilePackagesReturnsIOFSSubOverrideTailCall(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/iofssub\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
@@ -608,8 +608,8 @@ func TestCompilePackagesAwaitsIOFSSubOverride(t *testing.T) {
 	if !strings.Contains(text, "export async function Use(") {
 		t.Fatalf("fs.Sub caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await fs.Sub(") {
-		t.Fatalf("io/fs Sub override call was not awaited:\n%s", text)
+	if !strings.Contains(text, "return fs.Sub(") {
+		t.Fatalf("io/fs Sub override tail call was not returned:\n%s", text)
 	}
 }
 
@@ -663,7 +663,7 @@ func TestCompilePackagesAwaitsAsyncSlicesSortFuncComparator(t *testing.T) {
 	}
 }
 
-func TestCompilePackagesAwaitsReflectValueCall(t *testing.T) {
+func TestCompilePackagesElidesReflectValueCallTailReturn(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/reflectcallasync\n\ngo 1.25.3\n",
 		"main.go": strings.Join([]string{
@@ -699,14 +699,14 @@ func TestCompilePackagesAwaitsReflectValueCall(t *testing.T) {
 	if !strings.Contains(text, "export async function Use") {
 		t.Fatalf("reflect.Value.Call caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await ") || !strings.Contains(text, ".Call(null)") {
-		t.Fatalf("reflect.Value.Call was not awaited:\n%s", text)
+	if !strings.Contains(text, ".Call(null)") || strings.Contains(text, "return await ") {
+		t.Fatalf("reflect.Value.Call tail return was not elided:\n%s", text)
 	}
 	if !strings.Contains(text, "export async function UseSlice") {
 		t.Fatalf("reflect.Value.CallSlice caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await ") || !strings.Contains(text, ".CallSlice(args)") {
-		t.Fatalf("reflect.Value.CallSlice was not awaited:\n%s", text)
+	if !strings.Contains(text, ".CallSlice(args)") || strings.Contains(text, "return await ") {
+		t.Fatalf("reflect.Value.CallSlice tail return was not elided:\n%s", text)
 	}
 }
 

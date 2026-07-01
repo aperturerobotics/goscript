@@ -5761,6 +5761,7 @@ func (o *LoweringOwner) lowerReturnStmt(ctx lowerFileContext, stmt *ast.ReturnSt
 				expr = "(" + expr + " as " + o.tsTypeFor(ctx, returnType) + ")"
 			}
 		}
+		expr = elideTailReturnAwait(ctx, stmt.Results[0], expr)
 		return "return " + expr, diagnostics
 	}
 	parts := make([]string, 0, len(stmt.Results))
@@ -5938,6 +5939,19 @@ func (o *LoweringOwner) lowerRangeFuncReturnStmt(ctx lowerFileContext, stmt *ast
 		parts = append(parts, expr)
 	}
 	return ctx.rangeBranch.hasReturn + " = true\n" + ctx.rangeBranch.value + " = [" + strings.Join(parts, ", ") + "]\nreturn false", diagnostics
+}
+
+// elideTailReturnAwait drops tail await only after the caller is already known
+// async. Function literal lowering still uses await as evidence that the
+// generated callback itself must become async.
+func elideTailReturnAwait(ctx lowerFileContext, result ast.Expr, expr string) string {
+	if !ctx.asyncFunction || ctx.deferState != nil && ctx.deferState.used {
+		return expr
+	}
+	if _, ok := unwrapParenExpr(result).(*ast.CallExpr); !ok {
+		return expr
+	}
+	return strings.TrimPrefix(expr, "await ")
 }
 
 func singleReturnType(ctx lowerFileContext) types.Type {

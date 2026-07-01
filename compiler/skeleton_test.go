@@ -1084,8 +1084,8 @@ func TestCompilePackagesEmitsShadowedBuiltinCalls(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return await _new!()") {
-		t.Fatalf("shadowed builtin call was not emitted as a callable value:\n%s", text)
+	if !strings.Contains(text, "return _new!()") {
+		t.Fatalf("shadowed builtin call was not emitted as a callable tail value:\n%s", text)
 	}
 }
 
@@ -2445,12 +2445,12 @@ func TestCompilePackagesMarksPackageFunctionVariablesAsync(t *testing.T) {
 	if !strings.Contains(text, "export async function parse(): globalThis.Promise<[number, $.GoError]>") {
 		t.Fatalf("package function variable caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await dep.Parse!(\"turn\")") {
-		t.Fatalf("package function variable call was not awaited:\n%s", text)
+	if !strings.Contains(text, "return dep.Parse!(\"turn\")") {
+		t.Fatalf("package function variable tail call was not returned:\n%s", text)
 	}
 }
 
-func TestCompilePackagesAwaitsImportedAsyncMethodsAndFunctions(t *testing.T) {
+func TestCompilePackagesPropagatesImportedAsyncMethodsAndFunctions(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/importedasync\n\ngo 1.25.3\n",
 		"dep/dep.go": strings.Join([]string{
@@ -2507,14 +2507,14 @@ func TestCompilePackagesAwaitsImportedAsyncMethodsAndFunctions(t *testing.T) {
 	if !strings.Contains(text, "export async function UseMethod") {
 		t.Fatalf("imported async method caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await dep.Host.prototype.Snapshot.call(h)") {
-		t.Fatalf("imported async method call was not awaited:\n%s", text)
+	if !strings.Contains(text, "return dep.Host.prototype.Snapshot.call(h)") {
+		t.Fatalf("imported async method tail call was not returned:\n%s", text)
 	}
 	if !strings.Contains(text, "export async function UseFunction") {
 		t.Fatalf("imported async function caller was not marked async:\n%s", text)
 	}
-	if !strings.Contains(text, "return await dep.Read(h)") {
-		t.Fatalf("imported async function call was not awaited:\n%s", text)
+	if !strings.Contains(text, "return dep.Read(h)") {
+		t.Fatalf("imported async function tail call was not returned:\n%s", text)
 	}
 }
 
@@ -3137,9 +3137,9 @@ func TestCompilePackagesInfersGenericTypeArgsFromNamedArgument(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"await Get({T: { type: \"genericnamedarg.Source\", zero: () => null, methods: {Load: (receiver: any, ...args: any[]) => receiver.Load(...args)} }}, $.markAsStructValue($.cloneStructValue(loader)))",
-		"return await $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [__typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
+		"return $.mustTypeAssert<(() => any | globalThis.Promise<any>) | null>(f, ({ kind: $.TypeKind.Function, params: [], results: [__typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] }] } as $.FunctionTypeInfo))!()",
 		"$.mustTypeAssert<any>(v, { kind: $.TypeKind.Interface, methods: [{ name: \"Load\", args: [], returns: [{ name: \"_r0\", type: __typeArgs?.[\"T\"]?.type ?? { kind: $.TypeKind.Interface, methods: [] } }] }] })",
-		"return await $.pointerValue<Exclude<Source, null>>(src).Load()",
+		"return $.pointerValue<Exclude<Source, null>>(src).Load()",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -3187,7 +3187,7 @@ func TestCompilePackagesAttachesFunctionLiteralTypeInfo(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export type Callback = ((value: number) => string | globalThis.Promise<string>) | null",
-		"export async function call(cb: ((value: number) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {\n\treturn await cb!(1)",
+		"export async function call(cb: ((value: number) => string | globalThis.Promise<string>) | null): globalThis.Promise<string> {\n\treturn cb!(1)",
 		"let zero: Callback | null = null as Callback | null",
 		"let cb: Callback | null = (null as Callback | null)",
 		"$.functionValue((value: number): string => {",
@@ -3831,6 +3831,47 @@ func TestCompilePackagesEmitsAsyncChannelsSelectAndDefer(t *testing.T) {
 	}
 }
 
+func TestCompilePackagesKeepsTailAwaitBeforeDefer(t *testing.T) {
+	moduleDir := writePackageGraphFixture(t, map[string]string{
+		"go.mod": "module example.test/asyncdeferreturn\n\ngo 1.25.3\n",
+		"main.go": strings.Join([]string{
+			"package asyncdeferreturn",
+			"type Worker struct { ch chan int }",
+			"func (w *Worker) Recv() int {",
+			"  return <-w.ch",
+			"}",
+			"func Use(w *Worker) int {",
+			"  defer func() { println(\"done\") }()",
+			"  return w.Recv()",
+			"}",
+			"",
+		}, "\n"),
+	})
+	outputDir := filepath.Join(t.TempDir(), "output")
+	comp, err := NewCompiler(&Config{Dir: moduleDir, OutputPath: outputDir}, nil, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if _, err := comp.CompilePackages(context.Background(), "."); err != nil {
+		t.Fatal(err.Error())
+	}
+	outputFile := filepath.Join(outputDir, "@goscript", "example.test", "asyncdeferreturn", "main.gs.ts")
+	content, err := os.ReadFile(outputFile)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	text := string(content)
+	for _, want := range []string{
+		"using __defer = new $.DisposableStack()",
+		"return await Worker.prototype.Recv.call(w)",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("missing %q in generated output:\n%s", want, text)
+		}
+	}
+}
+
 func TestCompilePackagesPropagatesAsyncGenericInterfaceMethods(t *testing.T) {
 	moduleDir := writePackageGraphFixture(t, map[string]string{
 		"go.mod": "module example.test/genericasynciface\n\ngo 1.25.3\n",
@@ -3926,7 +3967,7 @@ func TestCompilePackagesPropagatesAsyncAnonymousInterfaceMethods(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"export async function Use(ctx: context.Context | null, w: any, old: Snapshot): globalThis.Promise<[Snapshot, $.GoError]>",
-		"return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
+		"return $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -3981,7 +4022,7 @@ func TestCompilePackagesPropagatesAsyncThroughInstantiatedNamedInterface(t *test
 	text := string(content)
 	for _, want := range []string{
 		"export async function Use(ctx: context.Context | null, w: any, old: Snapshot): globalThis.Promise<[Snapshot, $.GoError]>",
-		"return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
+		"return $.pointerValue<any>(w).WaitValueChange(ctx, old, null)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -4023,8 +4064,8 @@ func TestCompilePackagesAwaitsUnmarkedAnonymousInterfaceMethodInsideAsyncCaller(
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return await $.pointerValue<any>(w).WaitValueChange(ctx, old, null)") {
-		t.Fatalf("anonymous interface method call inside async caller was not awaited:\n%s", text)
+	if !strings.Contains(text, "return $.pointerValue<any>(w).WaitValueChange(ctx, old, null)") {
+		t.Fatalf("anonymous interface method tail call inside async caller was not returned:\n%s", text)
 	}
 }
 
@@ -4736,9 +4777,9 @@ func TestCompilePackagesPropagatesImmediateFuncLitAsync(t *testing.T) {
 	text := string(content)
 	for _, want := range []string{
 		"public async lookup(): globalThis.Promise<[number, $.GoError]>",
-		"return await resolver.prototype.lookup.call($.pointerValue<resolver>(r).parent)",
+		"return resolver.prototype.lookup.call($.pointerValue<resolver>(r).parent)",
 		"export async function use(r: resolver | $.VarRef<resolver> | null): globalThis.Promise<[number, $.GoError]>",
-		"return await resolver.prototype.lookup.call(r)",
+		"return resolver.prototype.lookup.call(r)",
 	} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %q in generated output:\n%s", want, text)
@@ -5160,7 +5201,7 @@ func TestCompilePackagesLowersSortSearchCallbackAsAsyncCompatible(t *testing.T) 
 	}
 	text := string(content)
 	for _, want := range []string{
-		"return await sort.Search(",
+		"return sort.Search(",
 		"$.functionValue(async (i: number): globalThis.Promise<boolean> => {",
 		"let item = await $.pointerValue<Exclude<Items, null>>(items).Get(i)",
 	} {
@@ -5349,7 +5390,7 @@ func TestCompilePackagesNormalizesWideIntegerReturnTargets(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	text := string(content)
-	if !strings.Contains(text, "return await $.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64()") {
+	if !strings.Contains(text, "return $.pointerValue<Exclude<hash.Hash64, null>>(h).Sum64()") {
 		t.Fatalf("missing uint64 return passthrough:\n%s", text)
 	}
 }
