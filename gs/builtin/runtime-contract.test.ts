@@ -936,6 +936,45 @@ describe('builtin runtime contract helpers', () => {
     expect(await chanRecvWithOk(channel)).toEqual({ value: 0, ok: false })
   })
 
+  it('preserves ready buffered select send and receive behavior', async () => {
+    const recvChannel = makeChannel<number>(1, 0, 'both')
+    await recvChannel.send(41)
+
+    const [recvHasValue, recvValue] = await selectStatement<number, number>(
+      [
+        {
+          id: 0,
+          isSend: false,
+          channel: recvChannel,
+          onSelected: async (result) => result.value + 1,
+        },
+      ],
+      false,
+    )
+
+    expect(recvHasValue).toBe(true)
+    expect(recvValue).toBe(42)
+    expect(len(recvChannel)).toBe(0)
+
+    const sendChannel = makeChannel<number>(1, 0, 'both')
+    const [sendHasValue, sendValue] = await selectStatement<number, boolean>(
+      [
+        {
+          id: 1,
+          isSend: true,
+          channel: sendChannel,
+          value: 7,
+          onSelected: async () => true,
+        },
+      ],
+      false,
+    )
+
+    expect(sendHasValue).toBe(true)
+    expect(sendValue).toBe(true)
+    expect(await sendChannel.receive()).toBe(7)
+  })
+
   it('does not resume an unbuffered sender before the waiting receiver accepts the value', async () => {
     const channel = makeChannel<number>(0, 0, 'both')
     let received = 0

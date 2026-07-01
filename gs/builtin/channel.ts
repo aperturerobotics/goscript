@@ -103,6 +103,18 @@ export interface Channel<T> {
   ): Promise<SelectResult<boolean>>
 
   /**
+   * Attempts a ready select receive without allocating a promise.
+   * Returns undefined when the operation would block.
+   */
+  trySelectReceive(id: number): SelectResult<T> | undefined
+
+  /**
+   * Attempts a ready select send without allocating a promise.
+   * Returns undefined when the operation would block.
+   */
+  trySelectSend(value: T, id: number): SelectResult<boolean> | undefined
+
+  /**
    * Checks if the channel has data ready to be received without blocking.
    * Used for non-blocking select operations.
    */
@@ -205,10 +217,15 @@ export async function selectStatement<T, V = void>(
     // Add check for channel existence
     if (selectedCase.channel) {
       if (selectedCase.isSend) {
-        const result = await selectedCase.channel.selectSend(
-          selectedCase.value,
-          selectedCase.id,
-        )
+        const result =
+          selectedCase.channel.trySelectSend(
+            selectedCase.value,
+            selectedCase.id,
+          ) ??
+          (await selectedCase.channel.selectSend(
+            selectedCase.value,
+            selectedCase.id,
+          ))
         if (selectedCase.onSelected) {
           const handlerResult = await selectedCase.onSelected(
             result as SelectResult<T>,
@@ -216,7 +233,9 @@ export async function selectStatement<T, V = void>(
           return selectHandlerResult<V>(handlerResult)
         }
       } else {
-        const result = await selectedCase.channel.selectReceive(selectedCase.id)
+        const result =
+          selectedCase.channel.trySelectReceive(selectedCase.id) ??
+          (await selectedCase.channel.selectReceive(selectedCase.id))
         if (selectedCase.onSelected) {
           const handlerResult = await selectedCase.onSelected(result)
           return selectHandlerResult<V>(handlerResult)
@@ -499,6 +518,29 @@ class BufferedChannel<T> implements Channel<T> {
     })
   }
 
+  trySelectReceive(id: number): SelectResult<T> | undefined {
+    if (this.buffer.length > 0) {
+      const value = this.buffer.shift()!
+      if (this.senders.length > 0) {
+        const senderTask = this.senders.shift()!
+        this.buffer.push(senderTask.value)
+        queueMicrotask(() => senderTask.resolveSend())
+      }
+      return { value, ok: true, id }
+    }
+
+    if (this.senders.length > 0) {
+      const senderTask = this.senders.shift()!
+      queueMicrotask(() => senderTask.resolveSend())
+      return { value: senderTask.value, ok: true, id }
+    }
+
+    if (this.closed) {
+      return { value: this.zeroValue, ok: false, id }
+    }
+    return undefined
+  }
+
   async selectReceive(
     id: number,
     signal?: AbortSignal,
@@ -554,6 +596,17 @@ class BufferedChannel<T> implements Channel<T> {
       signal?.addEventListener('abort', onAbort, { once: true })
       this.receiversWithOk.push(task)
     })
+  }
+
+  trySelectSend(value: T, id: number): SelectResult<boolean> | undefined {
+    if (this.closed) {
+      throw new Error('send on closed channel')
+    }
+    if (this.buffer.length < this.capacity) {
+      this.buffer.push(value)
+      return { value: true, ok: true, id }
+    }
+    return undefined
   }
 
   async selectSend(
@@ -709,6 +762,8 @@ export interface ChannelRef<T> {
     signal?: AbortSignal,
   ): Promise<SelectResult<boolean>>
   selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>>
+  trySelectReceive(id: number): SelectResult<T> | undefined
+  trySelectSend(value: T, id: number): SelectResult<boolean> | undefined
   len(): number
   cap(): number
 }
@@ -758,6 +813,14 @@ export class BidirectionalChannelRef<T> implements ChannelRef<T> {
     return this.channel.selectReceive(id, signal)
   }
 
+  trySelectReceive(id: number): SelectResult<T> | undefined {
+    return this.channel.trySelectReceive(id)
+  }
+
+  trySelectSend(value: T, id: number): SelectResult<boolean> | undefined {
+    return this.channel.trySelectSend(value, id)
+  }
+
   len(): number {
     return this.channel.len()
   }
@@ -795,6 +858,14 @@ export class SendOnlyChannelRef<T> implements ChannelRef<T> {
     signal?: AbortSignal,
   ): Promise<SelectResult<boolean>> {
     return this.channel.selectSend(value, id, signal)
+  }
+
+  trySelectReceive(_id: number): SelectResult<T> | undefined {
+    throw new Error('Cannot receive from send-only channel')
+  }
+
+  trySelectSend(value: T, id: number): SelectResult<boolean> | undefined {
+    return this.channel.trySelectSend(value, id)
   }
 
   // Disallow receive operations
@@ -846,6 +917,14 @@ export class ReceiveOnlyChannelRef<T> implements ChannelRef<T> {
 
   selectReceive(id: number, signal?: AbortSignal): Promise<SelectResult<T>> {
     return this.channel.selectReceive(id, signal)
+  }
+
+  trySelectReceive(id: number): SelectResult<T> | undefined {
+    return this.channel.trySelectReceive(id)
+  }
+
+  trySelectSend(_value: T, _id: number): SelectResult<boolean> | undefined {
+    throw new Error('Cannot send to receive-only channel')
   }
 
   // Disallow send operations
