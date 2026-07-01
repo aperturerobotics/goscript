@@ -26,5 +26,5 @@ export async function Wait(): globalThis.Promise<$.GoError> {
 }
 
 export async function Run(): globalThis.Promise<$.GoError> {
-	return await Hook!()
+	return Hook!()
 }

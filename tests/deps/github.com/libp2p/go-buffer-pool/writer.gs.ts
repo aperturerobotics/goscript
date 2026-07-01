@@ -110,30 +110,30 @@ export class Writer {
 		let w: Writer | $.VarRef<Writer> | null = this
 		if ($.pointerValue<Writer>(w).bufw == null) {
 			if ($.len(b) >= 4096) {
-				return await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(w).W).Write(b)
+				return $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<Writer>(w).W).Write(b)
 			}
 			$.pointerValue<Writer>(w).bufw = $.mustTypeAssert<bufio.Writer | $.VarRef<bufio.Writer> | null>(await bufioWriterPool.value.Get(), { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" })
 			bufio.Writer.prototype.Reset.call($.pointerValue<Writer>(w).bufw, $.pointerValue<Writer>(w).W)
 		}
-		return await bufio.Writer.prototype.Write.call($.pointerValue<Writer>(w).bufw, b)
+		return bufio.Writer.prototype.Write.call($.pointerValue<Writer>(w).bufw, b)
 	}
 
 	public async WriteByte(b: number): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
 		await Writer.prototype.ensureBuffer.call(w)
-		return await bufio.Writer.prototype.WriteByte.call($.pointerValue<Writer>(w).bufw, $.uint(b, 8))
+		return bufio.Writer.prototype.WriteByte.call($.pointerValue<Writer>(w).bufw, $.uint(b, 8))
 	}
 
 	public async WriteRune(r: number): globalThis.Promise<[number, $.GoError]> {
 		const w: Writer | $.VarRef<Writer> | null = this
 		await Writer.prototype.ensureBuffer.call(w)
-		return await bufio.Writer.prototype.WriteRune.call($.pointerValue<Writer>(w).bufw, $.int(r, 32))
+		return bufio.Writer.prototype.WriteRune.call($.pointerValue<Writer>(w).bufw, $.int(r, 32))
 	}
 
 	public async WriteString(s: string): globalThis.Promise<[number, $.GoError]> {
 		const w: Writer | $.VarRef<Writer> | null = this
 		await Writer.prototype.ensureBuffer.call(w)
-		return await bufio.Writer.prototype.WriteString.call($.pointerValue<Writer>(w).bufw, s)
+		return bufio.Writer.prototype.WriteString.call($.pointerValue<Writer>(w).bufw, s)
 	}
 
 	public async ensureBuffer(): globalThis.Promise<void> {

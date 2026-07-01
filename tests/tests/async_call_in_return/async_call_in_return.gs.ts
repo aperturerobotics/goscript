@@ -18,7 +18,7 @@ export async function getFromCache(key: string): globalThis.Promise<[any, boolea
 }
 
 export async function getFromCacheInline(key: string): globalThis.Promise<[any, boolean]> {
-	return await cache.value.Load(key)
+	return cache.value.Load(key)
 }
 
 export async function main(): globalThis.Promise<void> {

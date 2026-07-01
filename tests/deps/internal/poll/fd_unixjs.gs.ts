@@ -63,7 +63,7 @@ export class SysFile {
 		// If the descriptor is indeed closed, using a loop would race
 		// with some other goroutine opening a new descriptor.
 		// (The Linux kernel guarantees that it is closed on an EINTR error.)
-		return await __goscript_hook_unix.CloseFunc!(fd)
+		return __goscript_hook_unix.CloseFunc!(fd)
 	}
 
 	public init(): void {

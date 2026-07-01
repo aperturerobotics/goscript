@@ -20,7 +20,7 @@ export function newOpener(ch: $.Channel<$.GoError> | null): ((_p0: Callback) => 
 }
 
 export async function use(op: ((_p0: Callback) => $.GoError | globalThis.Promise<$.GoError>) | null, cb: (() => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-	return await op!(cb)
+	return op!(cb)
 }
 
 export async function main(): globalThis.Promise<void> {

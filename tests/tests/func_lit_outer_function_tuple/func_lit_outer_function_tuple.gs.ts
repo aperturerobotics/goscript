@@ -25,7 +25,7 @@ export function open(path: string): [string, $.GoError] {
 
 export async function run(update: (() => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	let err = await (async (): globalThis.Promise<$.GoError> => {
-		return await update!()
+		return update!()
 	})()
 	if (err != null) {
 		return err

@@ -46,7 +46,7 @@ export function setDefaultMulticastSockopts(s: number): $.GoError {
 
 export async function setReadBuffer(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, bytes: number): globalThis.Promise<$.GoError> {
 	if ($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD != null) {
-		return await __goscript_net_fake.fakeNetFD.prototype.setReadBuffer.call($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD, bytes)
+		return __goscript_net_fake.fakeNetFD.prototype.setReadBuffer.call($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD, bytes)
 	}
 	return $.namedValueInterfaceValue<$.GoError>(syscall.ENOPROTOOPT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" })
 }
@@ -64,7 +64,7 @@ export function setKeepAlive(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_
 
 export async function setLinger(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, sec: number): globalThis.Promise<$.GoError> {
 	if ($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD != null) {
-		return await __goscript_net_fake.fakeNetFD.prototype.setLinger.call($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD, sec)
+		return __goscript_net_fake.fakeNetFD.prototype.setLinger.call($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD, sec)
 	}
 	return $.namedValueInterfaceValue<$.GoError>(syscall.ENOPROTOOPT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" })
 }

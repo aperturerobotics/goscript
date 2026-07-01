@@ -368,12 +368,12 @@ export class yamuxConn {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const c: yamuxConn | $.VarRef<yamuxConn> | null = this
-		return await yamux2.Session.prototype.Close.call(yamuxConn.prototype.yamux.call(c))
+		return yamux2.Session.prototype.Close.call(yamuxConn.prototype.yamux.call(c))
 	}
 
 	public async IsClosed(): globalThis.Promise<boolean> {
 		const c: yamuxConn | $.VarRef<yamuxConn> | null = this
-		return await yamux2.Session.prototype.IsClosed.call(yamuxConn.prototype.yamux.call(c))
+		return yamux2.Session.prototype.IsClosed.call(yamuxConn.prototype.yamux.call(c))
 	}
 
 	public async OpenStream(ctx: context.Context | null): globalThis.Promise<[__goscript_muxed.MuxedStream | null, $.GoError]> {

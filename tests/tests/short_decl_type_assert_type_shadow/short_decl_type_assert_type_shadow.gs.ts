@@ -49,7 +49,7 @@ export async function use(v: any): globalThis.Promise<string> {
 	if (!ok) {
 		return "bad"
 	}
-	return await $.pointerValue<Exclude<dumper, null>>(__goscriptShadow0).Dump()
+	return $.pointerValue<Exclude<dumper, null>>(__goscriptShadow0).Dump()
 }
 
 export async function main(): globalThis.Promise<void> {

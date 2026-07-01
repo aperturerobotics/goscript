@@ -1479,14 +1479,14 @@ export async function genericReadFrom(c: __goscript_tcpsock.TCPConn | $.VarRef<_
 	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	// Use wrapper to hide existing r.ReadFrom from io.Copy.
-	return await io.Copy($.interfaceValue<io.Writer | null>($.markAsStructValue(new tcpConnWithoutReadFrom({TCPConn: c})), "net.tcpConnWithoutReadFrom"), $.pointerValueOrNil(r)!)
+	return io.Copy($.interfaceValue<io.Writer | null>($.markAsStructValue(new tcpConnWithoutReadFrom({TCPConn: c})), "net.tcpConnWithoutReadFrom"), $.pointerValueOrNil(r)!)
 }
 
 export async function genericWriteTo(c: __goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
 	let n: bigint = 0n
 	let err: $.GoError = null as $.GoError
 	// Use wrapper to hide existing w.WriteTo from io.Copy.
-	return await io.Copy($.pointerValueOrNil(w)!, $.interfaceValue<io.Reader | null>($.markAsStructValue(new tcpConnWithoutWriteTo({TCPConn: c})), "net.tcpConnWithoutWriteTo"))
+	return io.Copy($.pointerValueOrNil(w)!, $.interfaceValue<io.Reader | null>($.markAsStructValue(new tcpConnWithoutWriteTo({TCPConn: c})), "net.tcpConnWithoutWriteTo"))
 }
 
 export let threadLimit: $.Channel<{}> | null = null as $.Channel<{}> | null
@@ -1520,7 +1520,7 @@ export async function acquireThread(ctx: context.Context | null): globalThis.Pro
 			isSend: false,
 			channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 			onSelected: async (__goscriptSelect0Result) => {
-				return await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
+				return $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 			}
 		}
 	], false)
@@ -1551,7 +1551,7 @@ export async function Buffers_WriteTo(v: $.VarRef<Buffers> | null, w: io.Writer 
 	{
 		let [wv, ok] = $.typeAssertTuple<buffersWriter | null>(w, "net.buffersWriter")
 		if (ok) {
-			return await $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
+			return $.pointerValue<Exclude<buffersWriter, null>>(wv).writeBuffers(v)
 		}
 	}
 	for (let __goscriptRangeTarget0 = $.pointerValue<Buffers>(v), __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {

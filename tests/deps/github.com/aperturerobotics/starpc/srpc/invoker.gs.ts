@@ -56,7 +56,7 @@ export async function InvokerFunc_InvokeMethod(f: InvokerFunc | null, serviceID:
 	if (f == null) {
 		return [false, null]
 	}
-	return await f!(serviceID, methodID, strm)
+	return f!(serviceID, methodID, strm)
 }
 
 let __goscriptBlank0: Invoker | null = $.namedValueInterfaceValue<Invoker | null>($.namedFunction(null, "srpc.InvokerFunc", ({ kind: $.TypeKind.Function, name: "srpc.InvokerFunc", params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "srpc.Stream"], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo)), "srpc.InvokerFunc", {InvokeMethod: (receiver: any, ...args: any[]) => (InvokerFunc_InvokeMethod as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, ({ kind: $.TypeKind.Function, name: "srpc.InvokerFunc", params: [{ kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }, "srpc.Stream"], results: [{ kind: $.TypeKind.Basic, name: "bool" }, "error"] } as $.FunctionTypeInfo))

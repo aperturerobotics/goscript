@@ -92,7 +92,7 @@ export async function NewMuxedConn(conn: net.Conn | null, outbound: boolean, yam
 }
 
 export async function NewMuxedConnWithRwc(ctx: context.Context | null, rwc: io.ReadWriteCloser | null, outbound: boolean, yamuxConf: yamux.Config | $.VarRef<yamux.Config> | null): globalThis.Promise<[__goscript_muxed.MuxedConn | null, $.GoError]> {
-	return await NewMuxedConn($.interfaceValue<net.Conn | null>(await __goscript_rwc_conn.NewRwcConn(ctx, rwc, null, null, 10), "*srpc.RwcConn"), outbound, yamuxConf)
+	return NewMuxedConn($.interfaceValue<net.Conn | null>(await __goscript_rwc_conn.NewRwcConn(ctx, rwc, null, null, 10), "*srpc.RwcConn"), outbound, yamuxConf)
 }
 
 export async function NewClientWithConn(conn: net.Conn | null, outbound: boolean, yamuxConf: yamux.Config | $.VarRef<yamux.Config> | null): globalThis.Promise<[__goscript_client.Client | null, $.GoError]> {

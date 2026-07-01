@@ -953,7 +953,7 @@ export class dictWriter {
 		const w: dictWriter | $.VarRef<dictWriter> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		return await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<dictWriter>(w).w).Write(b)
+		return $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<dictWriter>(w).w).Write(b)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -1003,14 +1003,14 @@ export class Writer {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		return await $.pointerValue<Writer>(w).d.close()
+		return $.pointerValue<Writer>(w).d.close()
 	}
 
 	public async Flush(): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
 		// For more about flushing:
 		// https://www.bolet.org/~pornin/deflate-flush.html
-		return await $.pointerValue<Writer>(w).d.syncFlush()
+		return $.pointerValue<Writer>(w).d.syncFlush()
 	}
 
 	public async Reset(dst: io.Writer | null): globalThis.Promise<void> {
@@ -1035,7 +1035,7 @@ export class Writer {
 		const w: Writer | $.VarRef<Writer> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		return await $.pointerValue<Writer>(w).d.write(data)
+		return $.pointerValue<Writer>(w).d.write(data)
 	}
 
 	static __typeInfo = $.registerStructType(

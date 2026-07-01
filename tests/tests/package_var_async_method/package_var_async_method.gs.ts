@@ -13,7 +13,7 @@ export function __goscript_set_cache(__goscriptValue: sync.Map): void {
 }
 
 export async function getValueFromCache(key: string): globalThis.Promise<[any, boolean]> {
-	return await cache.value.Load(key)
+	return cache.value.Load(key)
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -837,7 +837,7 @@ export class Writer {
 			n = Writer.prototype.Available.call(b)
 			if (n < utf8.UTFMax) {
 				// Can only happen if buffer is silly small.
-				return await Writer.prototype.WriteString.call(b, String.fromCodePoint(r))
+				return Writer.prototype.WriteString.call(b, String.fromCodePoint(r))
 			}
 		}
 		size = utf8.EncodeRune($.goSlice($.pointerValue<Writer>(b).buf, $.pointerValue<Writer>(b).n, undefined), $.int(r, 32))

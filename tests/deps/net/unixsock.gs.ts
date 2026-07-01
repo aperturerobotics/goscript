@@ -432,7 +432,7 @@ export class UnixConn {
 			}
 			sa = $.interfaceValue<syscall.Sockaddr | null>(new syscall.SockaddrUnix({Name: $.pointerValue<UnixAddr>(addr).Name}), "*syscall.SockaddrUnix")
 		}
-		return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UnixConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
+		return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UnixConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
 	}
 
 	public async writeTo(b: $.Slice<number>, addr: UnixAddr | $.VarRef<UnixAddr> | null): globalThis.Promise<[number, $.GoError]> {
@@ -447,7 +447,7 @@ export class UnixConn {
 			return [0, $.namedValueInterfaceValue<$.GoError>(syscall.EAFNOSUPPORT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" })]
 		}
 		let sa: syscall.SockaddrUnix | $.VarRef<syscall.SockaddrUnix> | null = new syscall.SockaddrUnix({Name: $.pointerValue<UnixAddr>(addr).Name})
-		return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UnixConn>(c).conn.fd).fakeNetFD).writeTo(b, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrUnix"))
+		return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UnixConn>(c).conn.fd).fakeNetFD).writeTo(b, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrUnix"))
 	}
 
 	public async Close(): globalThis.Promise<any> {
@@ -631,7 +631,7 @@ export class UnixListener {
 		if (!UnixListener.prototype.ok.call(l)) {
 			return $.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" })
 		}
-		return await __goscript_fd_fake.netFD.prototype.SetDeadline.call($.pointerValue<UnixListener>(l).fd, $.markAsStructValue($.cloneStructValue(t)))
+		return __goscript_fd_fake.netFD.prototype.SetDeadline.call($.pointerValue<UnixListener>(l).fd, $.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public SetUnlinkOnClose(unlink: boolean): void {
@@ -666,7 +666,7 @@ export class UnixListener {
 				syscall.Unlink($.pointerValue<UnixListener>(ln).path)
 			}
 		}, ({ kind: $.TypeKind.Function, params: [], results: [] } as $.FunctionTypeInfo)))
-		return await __goscript_fd_fake.netFD.prototype.Close.call($.pointerValue<UnixListener>(ln).fd)
+		return __goscript_fd_fake.netFD.prototype.Close.call($.pointerValue<UnixListener>(ln).fd)
 	}
 
 	public file(): [os.File | $.VarRef<os.File> | null, $.GoError] {
@@ -717,7 +717,7 @@ export function newUnixConn(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_f
 }
 
 export async function DialUnix(network: string, laddr: UnixAddr | $.VarRef<UnixAddr> | null, raddr: UnixAddr | $.VarRef<UnixAddr> | null): globalThis.Promise<[UnixConn | $.VarRef<UnixConn> | null, $.GoError]> {
-	return await dialUnix(context.Background(), null, network, laddr, raddr)
+	return dialUnix(context.Background(), null, network, laddr, raddr)
 }
 
 export async function dialUnix(ctx: context.Context | null, dialer: __goscript_dial.Dialer | $.VarRef<__goscript_dial.Dialer> | null, network: string, laddr: UnixAddr | $.VarRef<UnixAddr> | null, raddr: UnixAddr | $.VarRef<UnixAddr> | null): globalThis.Promise<[UnixConn | $.VarRef<UnixConn> | null, $.GoError]> {

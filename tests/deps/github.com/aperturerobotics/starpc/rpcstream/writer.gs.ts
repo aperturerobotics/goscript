@@ -46,7 +46,7 @@ export class RpcStreamWriter {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const r: RpcStreamWriter | $.VarRef<RpcStreamWriter> | null = this
-		return await $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>($.pointerValue<RpcStreamWriter>(r).RpcStream).CloseSend()
+		return $.pointerValue<Exclude<__goscript_rpcstream.RpcStream, null>>($.pointerValue<RpcStreamWriter>(r).RpcStream).CloseSend()
 	}
 
 	public async Write(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {

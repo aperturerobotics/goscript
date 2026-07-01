@@ -159,11 +159,11 @@ export class netFD {
 	public async Close(): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.Close.call($.pointerValue<netFD>(fd).fakeNetFD)
+			return __goscript_net_fake.fakeNetFD.prototype.Close.call($.pointerValue<netFD>(fd).fakeNetFD)
 		}
 		// TODO Replace with runtime.AddCleanup.
 		runtime.SetFinalizer($.interfaceValue<any>(fd, "*net.netFD"), null)
-		return await $.pointerValue<netFD>(fd).pfd.Close()
+		return $.pointerValue<netFD>(fd).pfd.Close()
 	}
 
 	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
@@ -171,7 +171,7 @@ export class netFD {
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.Read.call($.pointerValue<netFD>(fd).fakeNetFD, p)
+			return __goscript_net_fake.fakeNetFD.prototype.Read.call($.pointerValue<netFD>(fd).fakeNetFD, p)
 		}
 		let __goscriptTuple0: any = await $.pointerValue<netFD>(fd).pfd.Read(p)
 		n = __goscriptTuple0[0]
@@ -183,25 +183,25 @@ export class netFD {
 	public async SetDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.SetDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
+			return __goscript_net_fake.fakeNetFD.prototype.SetDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
 		}
-		return await $.pointerValue<netFD>(fd).pfd.SetDeadline($.markAsStructValue($.cloneStructValue(t)))
+		return $.pointerValue<netFD>(fd).pfd.SetDeadline($.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async SetReadDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.SetReadDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
+			return __goscript_net_fake.fakeNetFD.prototype.SetReadDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
 		}
-		return await $.pointerValue<netFD>(fd).pfd.SetReadDeadline($.markAsStructValue($.cloneStructValue(t)))
+		return $.pointerValue<netFD>(fd).pfd.SetReadDeadline($.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async SetWriteDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.SetWriteDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
+			return __goscript_net_fake.fakeNetFD.prototype.SetWriteDeadline.call($.pointerValue<netFD>(fd).fakeNetFD, $.markAsStructValue($.cloneStructValue(t)))
 		}
-		return await $.pointerValue<netFD>(fd).pfd.SetWriteDeadline($.markAsStructValue($.cloneStructValue(t)))
+		return $.pointerValue<netFD>(fd).pfd.SetWriteDeadline($.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async Write(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
@@ -209,7 +209,7 @@ export class netFD {
 		let nn: number = 0
 		let err: $.GoError = null as $.GoError
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.Write.call($.pointerValue<netFD>(fd).fakeNetFD, p)
+			return __goscript_net_fake.fakeNetFD.prototype.Write.call($.pointerValue<netFD>(fd).fakeNetFD, p)
 		}
 		let __goscriptTuple1: any = await $.pointerValue<netFD>(fd).pfd.Write(p)
 		nn = __goscriptTuple1[0]
@@ -223,7 +223,7 @@ export class netFD {
 		let netfd: netFD | $.VarRef<netFD> | null = null as netFD | $.VarRef<netFD> | null
 		let err: $.GoError = null as $.GoError
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.accept.call($.pointerValue<netFD>(fd).fakeNetFD, $.pointerValue<netFD>(fd).laddr)
+			return __goscript_net_fake.fakeNetFD.prototype.accept.call($.pointerValue<netFD>(fd).fakeNetFD, $.pointerValue<netFD>(fd).laddr)
 		}
 		let __goscriptTuple2: any = await $.pointerValue<netFD>(fd).pfd.Accept()
 		let d = __goscriptTuple2[0]
@@ -301,7 +301,7 @@ export class netFD {
 	public async closeRead(): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.closeRead.call($.pointerValue<netFD>(fd).fakeNetFD)
+			return __goscript_net_fake.fakeNetFD.prototype.closeRead.call($.pointerValue<netFD>(fd).fakeNetFD)
 		}
 		return os.NewSyscallError("closeRead", $.namedValueInterfaceValue<$.GoError>(syscall.ENOTSUP, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
@@ -309,7 +309,7 @@ export class netFD {
 	public async closeWrite(): globalThis.Promise<$.GoError> {
 		const fd: netFD | $.VarRef<netFD> | null = this
 		if ($.pointerValue<netFD>(fd).fakeNetFD != null) {
-			return await __goscript_net_fake.fakeNetFD.prototype.closeWrite.call($.pointerValue<netFD>(fd).fakeNetFD)
+			return __goscript_net_fake.fakeNetFD.prototype.closeWrite.call($.pointerValue<netFD>(fd).fakeNetFD)
 		}
 		return os.NewSyscallError("closeRead", $.namedValueInterfaceValue<$.GoError>(syscall.ENOTSUP, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}

@@ -270,7 +270,7 @@ export class RwcConn {
 	public async Close(): globalThis.Promise<$.GoError> {
 		const p: RwcConn | $.VarRef<RwcConn> | null = this
 		await $.pointerValue<RwcConn>(p).ctxCancel!()
-		return await $.pointerValue<Exclude<io.ReadWriteCloser, null>>($.pointerValue<RwcConn>(p).rwc).Close()
+		return $.pointerValue<Exclude<io.ReadWriteCloser, null>>($.pointerValue<RwcConn>(p).rwc).Close()
 	}
 
 	public LocalAddr(): net.Addr | null {

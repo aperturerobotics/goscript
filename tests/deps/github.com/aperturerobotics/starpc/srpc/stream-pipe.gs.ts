@@ -131,7 +131,7 @@ export class pipeStream {
 					if (!ok) {
 						return io.EOF
 					}
-					return await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
+					return $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
 				}
 			}
 		], false)

@@ -87,7 +87,7 @@ export class MsgStream {
 
 	public async CloseSend(): globalThis.Promise<$.GoError> {
 		const r: MsgStream | $.VarRef<MsgStream> | null = this
-		return await $.pointerValue<Exclude<MsgStreamRw, null>>($.pointerValue<MsgStream>(r).rw).WriteCallData(null, false, true, null)
+		return $.pointerValue<Exclude<MsgStreamRw, null>>($.pointerValue<MsgStream>(r).rw).WriteCallData(null, false, true, null)
 	}
 
 	public Context(): context.Context | null {
@@ -103,7 +103,7 @@ export class MsgStream {
 		if (err != null) {
 			return err
 		}
-		return await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
+		return $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
 	}
 
 	public async MsgSend(msg: __goscript_message.Message): globalThis.Promise<$.GoError> {
@@ -122,7 +122,7 @@ export class MsgStream {
 			return err
 		}
 
-		return await $.pointerValue<Exclude<MsgStreamRw, null>>($.pointerValue<MsgStream>(r).rw).WriteCallData(msgData, $.len(msgData) == 0, false, null)
+		return $.pointerValue<Exclude<MsgStreamRw, null>>($.pointerValue<MsgStream>(r).rw).WriteCallData(msgData, $.len(msgData) == 0, false, null)
 	}
 
 	static __typeInfo = $.registerStructType(

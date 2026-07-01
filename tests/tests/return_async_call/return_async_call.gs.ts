@@ -15,7 +15,7 @@ export async function AsyncFunction(): globalThis.Promise<string> {
 }
 
 export async function SyncWrapper(): globalThis.Promise<string> {
-	return await AsyncFunction()
+	return AsyncFunction()
 }
 
 export async function AnotherAsyncFunction(ctx: context.Context | null): globalThis.Promise<[string, $.GoError]> {
@@ -24,7 +24,7 @@ export async function AnotherAsyncFunction(ctx: context.Context | null): globalT
 }
 
 export async function WrapperWithError(ctx: context.Context | null): globalThis.Promise<[string, $.GoError]> {
-	return await AnotherAsyncFunction(ctx)
+	return AnotherAsyncFunction(ctx)
 }
 
 export async function main(): globalThis.Promise<void> {

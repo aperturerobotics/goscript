@@ -28,7 +28,7 @@ export function NewPacketDataHandler(handler: PacketHandler): ((data: $.Slice<nu
 				return err
 			}
 		}
-		return await handler!(pkt)
+		return handler!(pkt)
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: ["error"] } as $.FunctionTypeInfo))
 }
 

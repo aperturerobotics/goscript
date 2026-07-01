@@ -191,7 +191,7 @@ export class IPAddr {
 		if (a == null) {
 			return [null, null]
 		}
-		return await __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<IPAddr>(a).IP as __goscript_ip.IP), 0, $.pointerValue<IPAddr>(a).Zone)
+		return __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<IPAddr>(a).IP as __goscript_ip.IP), 0, $.pointerValue<IPAddr>(a).Zone)
 	}
 
 	public toLocal(net: string): __goscript_sockaddr_posix.sockaddr | null {
@@ -423,7 +423,7 @@ export class IPConn {
 		if (err != null) {
 			return [0, 0, err]
 		}
-		return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<IPConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
+		return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<IPConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
 	}
 
 	public async writeTo(b: $.Slice<number>, addr: IPAddr | $.VarRef<IPAddr> | null): globalThis.Promise<[number, $.GoError]> {
@@ -438,7 +438,7 @@ export class IPConn {
 		if (err != null) {
 			return [0, err]
 		}
-		return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<IPConn>(c).conn.fd).fakeNetFD).writeTo(b, sa)
+		return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<IPConn>(c).conn.fd).fakeNetFD).writeTo(b, sa)
 	}
 
 	public async Close(): globalThis.Promise<any> {
@@ -537,7 +537,7 @@ export function newIPConn(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_
 }
 
 export async function DialIP(network: string, laddr: IPAddr | $.VarRef<IPAddr> | null, raddr: IPAddr | $.VarRef<IPAddr> | null): globalThis.Promise<[IPConn | $.VarRef<IPConn> | null, $.GoError]> {
-	return await dialIP(context.Background(), null, network, laddr, raddr)
+	return dialIP(context.Background(), null, network, laddr, raddr)
 }
 
 export async function dialIP(ctx: context.Context | null, dialer: __goscript_dial.Dialer | $.VarRef<__goscript_dial.Dialer> | null, network: string, laddr: IPAddr | $.VarRef<IPAddr> | null, raddr: IPAddr | $.VarRef<IPAddr> | null): globalThis.Promise<[IPConn | $.VarRef<IPConn> | null, $.GoError]> {

@@ -59,17 +59,17 @@ export function __goscript_set_testHookDialTCP(__goscriptValue: ((ctx: context.C
 
 export var testHookLookupIP: ((ctx: context.Context | null, fn: ((_p0: context.Context | null, _p1: string, _p2: string) => [$.Slice<__goscript_iprawsock.IPAddr>, $.GoError] | globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]>) | null, network: string, host: string) => [$.Slice<__goscript_iprawsock.IPAddr>, $.GoError] | globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]>) | null
 
-export async function __goscript_init_testHookLookupIP(): globalThis.Promise<void> {
+export function __goscript_init_testHookLookupIP(): void {
 	if (((testHookLookupIP) as any) === undefined) {
 		testHookLookupIP = $.functionValue(async (ctx: context.Context | null, fn: ((_p0: context.Context | null, _p1: string, _p2: string) => [$.Slice<__goscript_iprawsock.IPAddr>, $.GoError] | globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]>) | null, network: string, host: string): globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]> => {
-	return await fn!(ctx, network, host)
+	return fn!(ctx, network, host)
 }, ({ kind: $.TypeKind.Function, params: ["context.Context", ({ kind: $.TypeKind.Function, params: ["context.Context", { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Slice, elemType: "net.IPAddr" }, "error"] } as $.FunctionTypeInfo), { kind: $.TypeKind.Basic, name: "string" }, { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Slice, elemType: "net.IPAddr" }, "error"] } as $.FunctionTypeInfo))
 	}
 }
 
 export function __goscript_get_testHookLookupIP(): ((ctx: context.Context | null, fn: ((_p0: context.Context | null, _p1: string, _p2: string) => [$.Slice<__goscript_iprawsock.IPAddr>, $.GoError] | globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]>) | null, network: string, host: string) => [$.Slice<__goscript_iprawsock.IPAddr>, $.GoError] | globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]>) | null {
 	if (((testHookLookupIP) as any) === undefined) {
-		throw new Error("goscript package variable testHookLookupIP read before initialization")
+		__goscript_init_testHookLookupIP()
 	}
 	return testHookLookupIP
 }
@@ -124,5 +124,3 @@ export let testHookStepTime: (() => void) | null = $.functionValue((): void => {
 export function __goscript_set_testHookStepTime(__goscriptValue: (() => void) | null): void {
 	testHookStepTime = __goscriptValue
 }
-
-await __goscript_init_testHookLookupIP()

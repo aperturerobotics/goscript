@@ -83,7 +83,7 @@ export class digest {
 
 	public async MarshalBinary(): globalThis.Promise<[$.Slice<number>, $.GoError]> {
 		const d: digest | $.VarRef<digest> | null = this
-		return await digest.prototype.AppendBinary.call(d, $.makeSlice<number>(0, 12, "byte"))
+		return digest.prototype.AppendBinary.call(d, $.makeSlice<number>(0, 12, "byte"))
 	}
 
 	public Reset(): void {
@@ -303,7 +303,7 @@ export async function New(tab: $.VarRef<Table> | null): globalThis.Promise<hash.
 }
 
 export async function NewIEEE(): globalThis.Promise<hash.Hash32 | null> {
-	return await New(__goscript_get_IEEETable())
+	return New(__goscript_get_IEEETable())
 }
 
 export async function update(crc: number, tab: $.VarRef<Table> | null, p: $.Slice<number>, checkInitIEEE: boolean): globalThis.Promise<number> {

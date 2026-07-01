@@ -223,7 +223,7 @@ export class Buffer {
 		if (n <= $.len($.pointerValue<Buffer>(b).bootstrap)) {
 			return $.goSlice($.pointerValue<Buffer>(b).bootstrap, undefined, n)
 		}
-		return await __goscript_pool.BufferPool.prototype.Get.call(Buffer.prototype.getPool.call(b), n)
+		return __goscript_pool.BufferPool.prototype.Get.call(Buffer.prototype.getPool.call(b), n)
 	}
 
 	public getPool(): __goscript_pool.BufferPool | $.VarRef<__goscript_pool.BufferPool> | null {

@@ -214,7 +214,7 @@ export class UDPAddr {
 		if (a == null) {
 			return [null, null]
 		}
-		return await __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<UDPAddr>(a).IP as __goscript_ip.IP), $.pointerValue<UDPAddr>(a).Port, $.pointerValue<UDPAddr>(a).Zone)
+		return __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<UDPAddr>(a).IP as __goscript_ip.IP), $.pointerValue<UDPAddr>(a).Port, $.pointerValue<UDPAddr>(a).Zone)
 	}
 
 	public toLocal(net: string): __goscript_sockaddr_posix.sockaddr | null {
@@ -366,7 +366,7 @@ export class UDPConn {
 		// of the returned *UDPAddr and thereby prevent an allocation.
 		// See https://blog.filippo.io/efficient-go-apis-with-the-inliner/.
 		// The real work is done by readFromUDP, below.
-		return await UDPConn.prototype.readFromUDP.call(c, b, new UDPAddr())
+		return UDPConn.prototype.readFromUDP.call(c, b, new UDPAddr())
 	}
 
 	public async ReadFromUDPAddrPort(b: $.Slice<number>): globalThis.Promise<[number, netip.AddrPort, $.GoError]> {
@@ -659,7 +659,7 @@ export class UDPConn {
 		if (err != null) {
 			return [0, 0, err]
 		}
-		return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
+		return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsg(b, oob, sa)
 	}
 
 	public async writeMsgAddrPort(b: $.Slice<number>, oob: $.Slice<number>, addr: netip.AddrPort): globalThis.Promise<[number, number, $.GoError]> {
@@ -687,7 +687,7 @@ export class UDPConn {
 					}
 					sap = sa
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsgInet4(b, oob, sap)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsgInet4(b, oob, sap)
 				break
 			}
 			case syscall.AF_INET6:
@@ -702,7 +702,7 @@ export class UDPConn {
 					}
 					sap = sa
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsgInet6(b, oob, sap)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeMsgInet6(b, oob, sap)
 				break
 			}
 			default:
@@ -732,7 +732,7 @@ export class UDPConn {
 				if (err != null) {
 					return [0, err]
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet4(b, sa)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet4(b, sa)
 				break
 			}
 			case syscall.AF_INET6:
@@ -743,7 +743,7 @@ export class UDPConn {
 				if (err != null) {
 					return [0, err]
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet6(b, sa)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet6(b, sa)
 				break
 			}
 			default:
@@ -773,7 +773,7 @@ export class UDPConn {
 				if (err != null) {
 					return [0, err]
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet4(b, sa)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet4(b, sa)
 				break
 			}
 			case syscall.AF_INET6:
@@ -784,7 +784,7 @@ export class UDPConn {
 				if (err != null) {
 					return [0, err]
 				}
-				return await $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet6(b, sa)
+				return $.pointerValue<__goscript_net_fake.fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<UDPConn>(c).conn.fd).fakeNetFD).writeToInet6(b, sa)
 				break
 			}
 			default:
@@ -890,7 +890,7 @@ export function newUDPConn(fd: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd
 }
 
 export async function DialUDP(network: string, laddr: UDPAddr | $.VarRef<UDPAddr> | null, raddr: UDPAddr | $.VarRef<UDPAddr> | null): globalThis.Promise<[UDPConn | $.VarRef<UDPConn> | null, $.GoError]> {
-	return await dialUDP(context.Background(), null, network, laddr, raddr)
+	return dialUDP(context.Background(), null, network, laddr, raddr)
 }
 
 export async function dialUDP(ctx: context.Context | null, dialer: __goscript_dial.Dialer | $.VarRef<__goscript_dial.Dialer> | null, network: string, laddr: UDPAddr | $.VarRef<UDPAddr> | null, raddr: UDPAddr | $.VarRef<UDPAddr> | null): globalThis.Promise<[UDPConn | $.VarRef<UDPConn> | null, $.GoError]> {

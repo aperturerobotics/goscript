@@ -164,14 +164,14 @@ export async function processWithCallback(input: string, processor: ((data: stri
 	// Test case 3: Function parameter with return values
 	// This should generate: processor!(input)
 	// But currently generates: processor(input) - missing !
-	return await processor!(input)
+	return processor!(input)
 }
 
 export async function maybeProcess(input: string, processor: ((data: string) => [string, $.GoError] | globalThis.Promise<[string, $.GoError]>) | null): globalThis.Promise<[string, $.GoError]> {
 	if (processor == null) {
 		return ["nil processor", null]
 	}
-	return await processor!(input)
+	return processor!(input)
 }
 
 export async function main(): globalThis.Promise<void> {

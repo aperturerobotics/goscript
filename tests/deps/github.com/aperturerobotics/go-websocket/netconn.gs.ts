@@ -201,7 +201,7 @@ export class netConn {
 		await $.pointerValue<netConn>(nc).writeCancel!()
 		time.Timer.prototype.Stop.call($.pointerValue<time.Timer>($.pointerValue<netConn>(nc).readTimer))
 		await $.pointerValue<netConn>(nc).readCancel!()
-		return await __goscript_ws_js.Conn.prototype.Close.call($.pointerValue<netConn>(nc).c, 1000, "")
+		return __goscript_ws_js.Conn.prototype.Close.call($.pointerValue<netConn>(nc).c, 1000, "")
 	}
 
 	public LocalAddr(): net.Addr | null {

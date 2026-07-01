@@ -298,7 +298,7 @@ export function __goscript_set_asyncWrites(__goscriptValue: sync.Map): void {
 }
 
 export async function copyInterfaces(dst: io.Writer | null, src: io.Reader | null): globalThis.Promise<[bigint, $.GoError]> {
-	return await io.Copy($.pointerValueOrNil(dst)!, $.pointerValueOrNil(src)!)
+	return io.Copy($.pointerValueOrNil(dst)!, $.pointerValueOrNil(src)!)
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -1944,7 +1944,7 @@ export function literalRegexp(s: string, flags: Flags): __goscript_regexp.Regexp
 }
 
 export async function Parse(s: string, flags: Flags): globalThis.Promise<[__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError]> {
-	return await parse(s, $.uint(flags, 16))
+	return parse(s, $.uint(flags, 16))
 }
 
 export async function parse(s: string, flags: Flags): globalThis.Promise<[__goscript_regexp.Regexp | $.VarRef<__goscript_regexp.Regexp> | null, $.GoError]> {

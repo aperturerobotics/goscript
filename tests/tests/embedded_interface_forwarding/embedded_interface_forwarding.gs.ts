@@ -93,7 +93,7 @@ export class Counter {
 }
 
 export async function call(adder: Adder | null): globalThis.Promise<number> {
-	return await $.pointerValue<Exclude<Adder, null>>(adder).Add(4)
+	return $.pointerValue<Exclude<Adder, null>>(adder).Add(4)
 }
 
 export async function main(): globalThis.Promise<void> {

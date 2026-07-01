@@ -787,7 +787,7 @@ export class checksumReader {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const r: checksumReader | $.VarRef<checksumReader> | null = this
-		return await $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<checksumReader>(r).rc).Close()
+		return $.pointerValue<Exclude<io.ReadCloser, null>>($.pointerValue<checksumReader>(r).rc).Close()
 	}
 
 	public async Read(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {

@@ -210,12 +210,12 @@ export class MorphismHolder {
 
 	public async apply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return await $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(h).morphism!(s))).Stats()
+		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(h).morphism!(s))).Stats()
 	}
 
 	public async cloneApply(s: Shape | null): globalThis.Promise<number> {
 		const h: MorphismHolder | $.VarRef<MorphismHolder> | null = this
-		return await $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s))).Stats()
+		return $.pointerValue<Exclude<Shape, null>>((await $.pointerValue<MorphismHolder>(cloneMorphism($.pointerValue<MorphismHolder>(h).morphism)).morphism!(s))).Stats()
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -276,7 +276,7 @@ export async function walk(fs: Filesystem | null, path: string, info: FileInfo |
 
 	// We need to convert our FileInfo to os.FileInfo for filepath.WalkFunc
 	// For this test, we'll use a simpler approach with our own WalkFunc
-	return await walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
+	return walkWithCustomFunc(fs, path, info, $.functionValue((p: string, i: FileInfo | null, e: $.GoError): $.GoError => {
 		// This simulates the issue by calling filepath.WalkFunc indirectly
 		return null
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }, "main.FileInfo", "error"], results: ["error"] } as $.FunctionTypeInfo)))
@@ -315,7 +315,7 @@ export async function walkWithCustomFunc(fs: Filesystem | null, path: string, in
 export async function processFiles(pattern: string, fn: ((_p0: string) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
 	// Test case 4: Anonymous function type parameter (for comparison)
 	// This should also have ! operator when called
-	return await fn!(pattern)
+	return fn!(pattern)
 }
 
 export async function multiCallback(walkFn: ((path: string, info: FileInfo | null, err: $.GoError) => $.GoError | globalThis.Promise<$.GoError>) | null, processFn: ((_p0: string) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
@@ -327,15 +327,15 @@ export async function multiCallback(walkFn: ((path: string, info: FileInfo | nul
 			return err
 		}
 	}
-	return await processFn!("test")
+	return processFn!("test")
 }
 
 export async function indexedCallback(cbs: $.Slice<((_p0: string) => boolean | globalThis.Promise<boolean>) | null>, value: string): globalThis.Promise<boolean> {
-	return await $.arrayIndex(cbs!, 0)!(value)
+	return $.arrayIndex(cbs!, 0)!(value)
 }
 
 export async function useMorphism(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null, s: Shape | null): globalThis.Promise<number> {
-	return await $.pointerValue<Exclude<Shape, null>>((await m!(s))).Stats()
+	return $.pointerValue<Exclude<Shape, null>>((await m!(s))).Stats()
 }
 
 export async function newMorphismHolder(m: ((_p0: Shape | null) => Shape | null | globalThis.Promise<Shape | null>) | null): globalThis.Promise<MorphismHolder | $.VarRef<MorphismHolder> | null> {

@@ -231,7 +231,7 @@ export class TCPAddr {
 		if (a == null) {
 			return [null, null]
 		}
-		return await __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<TCPAddr>(a).IP as __goscript_ip.IP), $.pointerValue<TCPAddr>(a).Port, $.pointerValue<TCPAddr>(a).Zone)
+		return __goscript_ipsock_posix.ipToSockaddr(family, ($.pointerValue<TCPAddr>(a).IP as __goscript_ip.IP), $.pointerValue<TCPAddr>(a).Port, $.pointerValue<TCPAddr>(a).Zone)
 	}
 
 	public toLocal(net: string): __goscript_sockaddr_posix.sockaddr | null {
@@ -446,7 +446,7 @@ export class TCPConn {
 				return [n, err]
 			}
 		}
-		return await __goscript_net.genericReadFrom(c, r)
+		return __goscript_net.genericReadFrom(c, r)
 	}
 
 	public async writeTo(w: io.Writer | null): globalThis.Promise<[bigint, $.GoError]> {
@@ -457,7 +457,7 @@ export class TCPConn {
 				return [n, err]
 			}
 		}
-		return await __goscript_net.genericWriteTo(c, w)
+		return __goscript_net.genericWriteTo(c, w)
 	}
 
 	public async Close(): globalThis.Promise<any> {
@@ -695,7 +695,7 @@ export class TCPListener {
 		if (!TCPListener.prototype.ok.call(l)) {
 			return $.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" })
 		}
-		return await __goscript_fd_fake.netFD.prototype.SetDeadline.call($.pointerValue<TCPListener>(l).fd, $.markAsStructValue($.cloneStructValue(t)))
+		return __goscript_fd_fake.netFD.prototype.SetDeadline.call($.pointerValue<TCPListener>(l).fd, $.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public SyscallConn(): [syscall.RawConn | null, $.GoError] {
@@ -719,7 +719,7 @@ export class TCPListener {
 
 	public async close(): globalThis.Promise<$.GoError> {
 		const ln: TCPListener | $.VarRef<TCPListener> | null = this
-		return await __goscript_fd_fake.netFD.prototype.Close.call($.pointerValue<TCPListener>(ln).fd)
+		return __goscript_fd_fake.netFD.prototype.Close.call($.pointerValue<TCPListener>(ln).fd)
 	}
 
 	public file(): [os.File | $.VarRef<os.File> | null, $.GoError] {
@@ -798,7 +798,7 @@ export async function newTCPConn(fd: __goscript_fd_fake.netFD | $.VarRef<__goscr
 }
 
 export async function DialTCP(network: string, laddr: TCPAddr | $.VarRef<TCPAddr> | null, raddr: TCPAddr | $.VarRef<TCPAddr> | null): globalThis.Promise<[TCPConn | $.VarRef<TCPConn> | null, $.GoError]> {
-	return await dialTCP(context.Background(), null, network, laddr, raddr)
+	return dialTCP(context.Background(), null, network, laddr, raddr)
 }
 
 export async function dialTCP(ctx: context.Context | null, dialer: __goscript_dial.Dialer | $.VarRef<__goscript_dial.Dialer> | null, network: string, laddr: TCPAddr | $.VarRef<TCPAddr> | null, raddr: TCPAddr | $.VarRef<TCPAddr> | null): globalThis.Promise<[TCPConn | $.VarRef<TCPConn> | null, $.GoError]> {

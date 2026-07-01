@@ -25,5 +25,5 @@ export function __goscript_set_hook(__goscriptValue: (() => number | globalThis.
 }
 
 export async function read(): globalThis.Promise<number> {
-	return await __goscript_get_hook()!()
+	return __goscript_get_hook()!()
 }

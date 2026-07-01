@@ -403,7 +403,7 @@ export class commonRPC {
 			return __goscript_errors.ErrCompleted
 		}
 
-		return await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<commonRPC>(c).writer).WritePacket(__goscript_packet.NewCallCancelPacket())
+		return $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<commonRPC>(c).writer).WritePacket(__goscript_packet.NewCallCancelPacket())
 	}
 
 	public async WriteCallData(data: $.Slice<number>, dataIsZero: boolean, complete: boolean, err: $.GoError): globalThis.Promise<$.GoError> {
@@ -424,7 +424,7 @@ export class commonRPC {
 		}
 
 		let outPkt: __goscript_rpcproto_pb.Packet | $.VarRef<__goscript_rpcproto_pb.Packet> | null = __goscript_packet.NewCallDataPacket(data, ($.len(data) == 0) && dataIsZero, complete, err)
-		return await $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<commonRPC>(c).writer).WritePacket(outPkt)
+		return $.pointerValue<Exclude<__goscript_writer.PacketWriter, null>>($.pointerValue<commonRPC>(c).writer).WritePacket(outPkt)
 	}
 
 	public async beginLocalCompletion(): globalThis.Promise<void> {

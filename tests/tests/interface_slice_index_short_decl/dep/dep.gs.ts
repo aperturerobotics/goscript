@@ -17,5 +17,5 @@ export async function ToKey(v: Ref | null): globalThis.Promise<any> {
 	if (v == null) {
 		return null
 	}
-	return await $.pointerValue<Exclude<Ref, null>>(v).Key()
+	return $.pointerValue<Exclude<Ref, null>>(v).Key()
 }

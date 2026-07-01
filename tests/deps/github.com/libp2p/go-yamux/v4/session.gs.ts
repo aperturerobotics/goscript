@@ -534,7 +534,7 @@ export class Session {
 
 	public async Addr(): globalThis.Promise<net.Addr | null> {
 		const s: Session | $.VarRef<Session> | null = this
-		return await Session.prototype.LocalAddr.call(s)
+		return Session.prototype.LocalAddr.call(s)
 	}
 
 	public async Close(): globalThis.Promise<$.GoError> {
@@ -573,7 +573,7 @@ export class Session {
 
 	public async GoAway(): globalThis.Promise<$.GoError> {
 		const s: Session | $.VarRef<Session> | null = this
-		return await Session.prototype.sendMsg.call(s, Session.prototype.goAway.call(s, $.uint(0, 32)), null, null)
+		return Session.prototype.sendMsg.call(s, Session.prototype.goAway.call(s, $.uint(0, 32)), null, null)
 	}
 
 	public async IsClosed(): globalThis.Promise<boolean> {
@@ -609,7 +609,7 @@ export class Session {
 		if (!ok) {
 			return $.interfaceValue<net.Addr | null>(new __goscript_addr.yamuxAddr({Addr: "local"}), "*yamux.yamuxAddr")
 		}
-		return await $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).LocalAddr()
+		return $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).LocalAddr()
 	}
 
 	public async NumStreams(): globalThis.Promise<number> {
@@ -747,7 +747,7 @@ export class Session {
 			let activePing: __goscript_ping.ping | $.VarRef<__goscript_ping.ping> | null = $.pointerValue<Session>(s).activePing
 			if (activePing != null) {
 				$.pointerValue<Session>(s).pingLock.Unlock()
-				return await __goscript_ping.ping.prototype.wait.call(activePing)
+				return __goscript_ping.ping.prototype.wait.call(activePing)
 			}
 		}
 
@@ -870,7 +870,7 @@ export class Session {
 		if (!ok) {
 			return $.interfaceValue<net.Addr | null>(new __goscript_addr.yamuxAddr({Addr: "remote"}), "*yamux.yamuxAddr")
 		}
-		return await $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).RemoteAddr()
+		return $.pointerValue<Exclude<__goscript_addr.hasAddr, null>>(addr).RemoteAddr()
 	}
 
 	public async closeStream(id: number): globalThis.Promise<void> {
@@ -1161,7 +1161,7 @@ export class Session {
 		// Reject immediately if we are doing a go away
 		if ($.int(atomic.LoadInt32($.pointerValue<Session>(s)._fields.localGoAway), 32) == $.int(1, 32)) {
 			let hdr = __goscript__const.encode($.uint(1, 8), $.uint(8, 16), $.uint(id, 32), $.uint(0, 32))
-			return await Session.prototype.sendMsg.call(s, hdr, null, null)
+			return Session.prototype.sendMsg.call(s, hdr, null, null)
 		}
 
 		// Allocate a new stream
@@ -1373,7 +1373,7 @@ export class Session {
 				// If over half of the deadline has elapsed, extend it.
 				if ($.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.int64Div($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout, 2)))).After($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))) {
 					lastWriteDeadline = $.markAsStructValue($.cloneStructValue($.markAsStructValue($.cloneStructValue(now)).Add($.pointerValue<__goscript_mux.Config>($.pointerValue<Session>(s).config).ConnectionWriteTimeout)))
-					return await $.pointerValue<Exclude<net.Conn, null>>($.pointerValue<Session>(s).conn).SetWriteDeadline($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))
+					return $.pointerValue<Exclude<net.Conn, null>>($.pointerValue<Session>(s).conn).SetWriteDeadline($.markAsStructValue($.cloneStructValue(lastWriteDeadline)))
 				}
 				return null
 			}, ({ kind: $.TypeKind.Function, params: [], results: ["error"] } as $.FunctionTypeInfo))

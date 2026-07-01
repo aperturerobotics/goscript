@@ -46,7 +46,7 @@ export class oneByteReader {
 		if ($.len(p) == 0) {
 			return [0, null]
 		}
-		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<oneByteReader>(r).r).Read($.goSlice(p, 0, 1))
+		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<oneByteReader>(r).r).Read($.goSlice(p, 0, 1))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -86,7 +86,7 @@ export class halfReader {
 
 	public async Read(p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const r: halfReader | $.VarRef<halfReader> | null = this
-		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<halfReader>(r).r).Read($.goSlice(p, 0, Math.trunc(($.len(p) + 1) / 2)))
+		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<halfReader>(r).r).Read($.goSlice(p, 0, Math.trunc(($.len(p) + 1) / 2)))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -216,7 +216,7 @@ export class timeoutReader {
 		if ($.pointerValue<timeoutReader>(r).count == 2) {
 			return [0, ErrTimeout]
 		}
-		return await $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<timeoutReader>(r).r).Read(p)
+		return $.pointerValue<Exclude<io.Reader, null>>($.pointerValue<timeoutReader>(r).r).Read(p)
 	}
 
 	static __typeInfo = $.registerStructType(

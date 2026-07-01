@@ -196,7 +196,7 @@ export class Entry {
 		let formatter = $.pointerValue<__goscript_logger.Logger>($.pointerValue<Entry>(entry).Logger).Formatter
 		$.pointerValue<__goscript_logger.Logger>($.pointerValue<Entry>(entry).Logger).mu.Unlock()
 
-		return await $.pointerValue<Exclude<__goscript_formatter.Formatter, null>>(formatter).Format(entry)
+		return $.pointerValue<Exclude<__goscript_formatter.Formatter, null>>(formatter).Format(entry)
 	}
 
 	public async Debug(args: $.Slice<any>): globalThis.Promise<void> {
@@ -398,7 +398,7 @@ export class Entry {
 
 	public async WithField(key: string, value: any): globalThis.Promise<Entry | $.VarRef<Entry> | null> {
 		const entry: Entry | $.VarRef<Entry> | null = this
-		return await Entry.prototype.WithFields.call(entry, new globalThis.Map<string, any>([[key, value]]))
+		return Entry.prototype.WithFields.call(entry, new globalThis.Map<string, any>([[key, value]]))
 	}
 
 	public async WithFields(fields: __goscript_logrus.Fields): globalThis.Promise<Entry | $.VarRef<Entry> | null> {
@@ -442,7 +442,7 @@ export class Entry {
 
 	public async Writer(): globalThis.Promise<io.PipeWriter | $.VarRef<io.PipeWriter> | null> {
 		const entry: Entry | $.VarRef<Entry> | null = this
-		return await Entry.prototype.WriterLevel.call(entry, $.uint(4, 32))
+		return Entry.prototype.WriterLevel.call(entry, $.uint(4, 32))
 	}
 
 	public async WriterLevel(level: __goscript_logrus.Level): globalThis.Promise<io.PipeWriter | $.VarRef<io.PipeWriter> | null> {

@@ -139,20 +139,20 @@ export class ServerRPC {
 				case $.typeAssert<__goscript_rpcproto_pb.Packet_CallStart | $.VarRef<__goscript_rpcproto_pb.Packet_CallStart> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallStart" }).ok:
 					{
 						let b: __goscript_rpcproto_pb.Packet_CallStart | $.VarRef<__goscript_rpcproto_pb.Packet_CallStart> | null = $.typeAssert<__goscript_rpcproto_pb.Packet_CallStart | $.VarRef<__goscript_rpcproto_pb.Packet_CallStart> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallStart" }).value
-						return await ServerRPC.prototype.HandleCallStart.call(r, $.pointerValue<__goscript_rpcproto_pb.Packet_CallStart>(b).CallStart)
+						return ServerRPC.prototype.HandleCallStart.call(r, $.pointerValue<__goscript_rpcproto_pb.Packet_CallStart>(b).CallStart)
 					}
 					break
 				case $.typeAssert<__goscript_rpcproto_pb.Packet_CallData | $.VarRef<__goscript_rpcproto_pb.Packet_CallData> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallData" }).ok:
 					{
 						let b: __goscript_rpcproto_pb.Packet_CallData | $.VarRef<__goscript_rpcproto_pb.Packet_CallData> | null = $.typeAssert<__goscript_rpcproto_pb.Packet_CallData | $.VarRef<__goscript_rpcproto_pb.Packet_CallData> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallData" }).value
-						return await $.pointerValue<ServerRPC>(r).commonRPC.HandleCallData($.pointerValue<__goscript_rpcproto_pb.Packet_CallData>(b).CallData)
+						return $.pointerValue<ServerRPC>(r).commonRPC.HandleCallData($.pointerValue<__goscript_rpcproto_pb.Packet_CallData>(b).CallData)
 					}
 					break
 				case $.typeAssert<__goscript_rpcproto_pb.Packet_CallCancel | $.VarRef<__goscript_rpcproto_pb.Packet_CallCancel> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallCancel" }).ok:
 					{
 						let b: __goscript_rpcproto_pb.Packet_CallCancel | $.VarRef<__goscript_rpcproto_pb.Packet_CallCancel> | null = $.typeAssert<__goscript_rpcproto_pb.Packet_CallCancel | $.VarRef<__goscript_rpcproto_pb.Packet_CallCancel> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "srpc.Packet_CallCancel" }).value
 						if ($.pointerValue<__goscript_rpcproto_pb.Packet_CallCancel>(b).CallCancel) {
-							return await $.pointerValue<ServerRPC>(r).commonRPC.HandleCallCancel()
+							return $.pointerValue<ServerRPC>(r).commonRPC.HandleCallCancel()
 						}
 						return null
 					}
@@ -177,7 +177,7 @@ export class ServerRPC {
 				return err
 			}
 		}
-		return await ServerRPC.prototype.HandlePacket.call(r, msg)
+		return ServerRPC.prototype.HandlePacket.call(r, msg)
 	}
 
 	public async invokeRPC(serviceID: string, methodID: string): globalThis.Promise<void> {

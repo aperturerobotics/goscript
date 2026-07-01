@@ -145,7 +145,7 @@ export class mux {
 		$.pointerValue<mux>(m).rmtx.RUnlock()
 
 		if (handler != null) {
-			return await $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).InvokeMethod(serviceID, methodID, strm)
+			return $.pointerValue<Exclude<__goscript_handler.Handler, null>>(handler).InvokeMethod(serviceID, methodID, strm)
 		}
 
 		for (let __goscriptRangeTarget0 = $.pointerValue<mux>(m).fallback, __rangeIndex = 0; __rangeIndex < $.len(__goscriptRangeTarget0); __rangeIndex++) {

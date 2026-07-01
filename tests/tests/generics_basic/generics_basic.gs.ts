@@ -259,7 +259,7 @@ export function NewMapper(__typeArgs: $.GenericTypeArgs | undefined): Mapper | $
 }
 
 export async function Apply(__typeArgs: $.GenericTypeArgs | undefined, value: any, fn: ((_p0: any) => any | globalThis.Promise<any>) | null): globalThis.Promise<any> {
-	return await fn!(value)
+	return fn!(value)
 }
 
 export async function main(): globalThis.Promise<void> {

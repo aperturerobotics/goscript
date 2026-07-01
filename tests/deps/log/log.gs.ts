@@ -124,7 +124,7 @@ export class Logger {
 
 	public async Output(calldepth: number, s: string): globalThis.Promise<$.GoError> {
 		const l: Logger | $.VarRef<Logger> | null = this
-		return await Logger.prototype.output.call(l, $.uint(0, 64), calldepth + 1, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
+		return Logger.prototype.output.call(l, $.uint(0, 64), calldepth + 1, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
 			return $.appendSlice(b, $.stringToBytes(s))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
@@ -435,7 +435,7 @@ export function SetPrefix(prefix: string): void {
 }
 
 export async function Writer(): globalThis.Promise<io.Writer | null> {
-	return await Logger.prototype.Writer.call(std)
+	return Logger.prototype.Writer.call(std)
 }
 
 export async function Print(v: $.Slice<any>): globalThis.Promise<void> {
@@ -502,7 +502,7 @@ export async function Panicln(v: $.Slice<any>): globalThis.Promise<void> {
 }
 
 export async function Output(calldepth: number, s: string): globalThis.Promise<$.GoError> {
-	return await Logger.prototype.output.call(std, $.uint(0, 64), calldepth + 1, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
+	return Logger.prototype.output.call(std, $.uint(0, 64), calldepth + 1, $.functionValue((b: $.Slice<number>): $.Slice<number> => {
 		return $.appendSlice(b, $.stringToBytes(s))
 	}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 }

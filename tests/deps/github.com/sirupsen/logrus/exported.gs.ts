@@ -94,23 +94,23 @@ export async function AddHook(hook: __goscript_hooks.Hook | null): globalThis.Pr
 }
 
 export async function WithError(err: $.GoError): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
-	return await __goscript_logger.Logger.prototype.WithField.call(__goscript_get_std(), __goscript_entry.ErrorKey, (err as any))
+	return __goscript_logger.Logger.prototype.WithField.call(__goscript_get_std(), __goscript_entry.ErrorKey, (err as any))
 }
 
 export async function WithContext(ctx: context.Context | null): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
-	return await __goscript_logger.Logger.prototype.WithContext.call(__goscript_get_std(), ctx)
+	return __goscript_logger.Logger.prototype.WithContext.call(__goscript_get_std(), ctx)
 }
 
 export async function WithField(key: string, value: any): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
-	return await __goscript_logger.Logger.prototype.WithField.call(__goscript_get_std(), key, value)
+	return __goscript_logger.Logger.prototype.WithField.call(__goscript_get_std(), key, value)
 }
 
 export async function WithFields(fields: __goscript_logrus.Fields): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
-	return await __goscript_logger.Logger.prototype.WithFields.call(__goscript_get_std(), fields)
+	return __goscript_logger.Logger.prototype.WithFields.call(__goscript_get_std(), fields)
 }
 
 export async function WithTime(t: time.Time): globalThis.Promise<__goscript_entry.Entry | $.VarRef<__goscript_entry.Entry> | null> {
-	return await __goscript_logger.Logger.prototype.WithTime.call(__goscript_get_std(), $.markAsStructValue($.cloneStructValue(t)))
+	return __goscript_logger.Logger.prototype.WithTime.call(__goscript_get_std(), $.markAsStructValue($.cloneStructValue(t)))
 }
 
 export async function Trace(args: $.Slice<any>): globalThis.Promise<void> {

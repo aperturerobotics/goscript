@@ -111,7 +111,7 @@ export async function internetSocket(ctx: context.Context | null, net: string, l
 		}
 	}
 	let [family, ipv6only] = await favoriteAddrFamily(net, laddr, raddr, mode)
-	return await __goscript_net_fake.socket(ctx, net, family, sotype, proto, ipv6only, laddr, raddr, ctrlCtxFn)
+	return __goscript_net_fake.socket(ctx, net, family, sotype, proto, ipv6only, laddr, raddr, ctrlCtxFn)
 }
 
 export function ipToSockaddrInet4(ip: __goscript_ip.IP, port: number): [syscall.SockaddrInet4, $.GoError] {

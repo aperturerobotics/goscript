@@ -66,7 +66,7 @@ export class PrefixInvoker {
 			serviceID = strippedID
 		}
 
-		return await $.pointerValue<Exclude<__goscript_invoker.Invoker, null>>($.pointerValue<PrefixInvoker>(i).inv).InvokeMethod(serviceID, methodID, strm)
+		return $.pointerValue<Exclude<__goscript_invoker.Invoker, null>>($.pointerValue<PrefixInvoker>(i).inv).InvokeMethod(serviceID, methodID, strm)
 	}
 
 	static __typeInfo = $.registerStructType(

@@ -370,7 +370,7 @@ export class fakeNetFD {
 		if ($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD == null) {
 			return [0, os.NewSyscallError("write", $.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))]
 		}
-		return await packetQueue.prototype.write.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD).queue, $.pointerValue<fakeNetFD>(ffd).writeDeadline.Load(), p, $.mustTypeAssert<__goscript_sockaddr_posix.sockaddr | null>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).laddr, "net.sockaddr"))
+		return packetQueue.prototype.write.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD).queue, $.pointerValue<fakeNetFD>(ffd).writeDeadline.Load(), p, $.mustTypeAssert<__goscript_sockaddr_posix.sockaddr | null>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).laddr, "net.sockaddr"))
 	}
 
 	public async accept(laddr: __goscript_net.Addr | null): globalThis.Promise<[__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null, $.GoError]> {
@@ -512,7 +512,7 @@ export class fakeNetFD {
 					default:
 						{
 							let addr: any = __goscriptTypeSwitchValue
-							return await validate!(addr)
+							return validate!(addr)
 						}
 						break
 				}
@@ -618,12 +618,12 @@ export class fakeNetFD {
 				switch (true) {
 					case $.typeAssert<__goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "net.TCPAddr" }).ok:
 						{
-							return await validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_tcpsock.TCPAddr({IP: (ip as __goscript_ip.IP), Port: port, Zone: zone}), "*net.TCPAddr"))
+							return validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_tcpsock.TCPAddr({IP: (ip as __goscript_ip.IP), Port: port, Zone: zone}), "*net.TCPAddr"))
 						}
 						break
 					case $.typeAssert<__goscript_udpsock.UDPAddr | $.VarRef<__goscript_udpsock.UDPAddr> | null>(__goscriptTypeSwitchValue, { kind: $.TypeKind.Pointer, elemType: "net.UDPAddr" }).ok:
 						{
-							return await validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_udpsock.UDPAddr({IP: (ip as __goscript_ip.IP), Port: port, Zone: zone}), "*net.UDPAddr"))
+							return validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_udpsock.UDPAddr({IP: (ip as __goscript_ip.IP), Port: port, Zone: zone}), "*net.UDPAddr"))
 						}
 						break
 					default:
@@ -641,9 +641,9 @@ export class fakeNetFD {
 			case "tcp6":
 			{
 				if (addr == null) {
-					return await assignIP!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_tcpsock.TCPAddr(), "*net.TCPAddr"))
+					return assignIP!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_tcpsock.TCPAddr(), "*net.TCPAddr"))
 				}
-				return await assignIP!(addr)
+				return assignIP!(addr)
 				break
 			}
 			case "udp":
@@ -651,9 +651,9 @@ export class fakeNetFD {
 			case "udp6":
 			{
 				if (addr == null) {
-					return await assignIP!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_udpsock.UDPAddr(), "*net.UDPAddr"))
+					return assignIP!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_udpsock.UDPAddr(), "*net.UDPAddr"))
 				}
-				return await assignIP!(addr)
+				return assignIP!(addr)
 				break
 			}
 			case "unix":
@@ -667,9 +667,9 @@ export class fakeNetFD {
 					return $.interfaceValue<$.GoError>((await (async () => { const __goscriptLiteralField12 = await $.pointerValue<Exclude<__goscript_sockaddr_posix.sockaddr, null>>(addr).String(); return new __goscript_net.AddrError({Err: ("non-Unix address for " + $.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net) + " network", Addr: __goscriptLiteralField12}) })()), "*net.AddrError")
 				}
 				if (uaddr == null) {
-					return await validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_unixsock.UnixAddr({Net: $.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net}), "*net.UnixAddr"))
+					return validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_unixsock.UnixAddr({Net: $.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net}), "*net.UnixAddr"))
 				}
-				return await validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_unixsock.UnixAddr({Net: $.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net, Name: $.pointerValue<__goscript_unixsock.UnixAddr>(uaddr).Name}), "*net.UnixAddr"))
+				return validate!($.interfaceValue<__goscript_sockaddr_posix.sockaddr | null>(new __goscript_unixsock.UnixAddr({Net: $.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net, Name: $.pointerValue<__goscript_unixsock.UnixAddr>(uaddr).Name}), "*net.UnixAddr"))
 				break
 			}
 			default:
@@ -683,7 +683,7 @@ export class fakeNetFD {
 
 	public async closeRead(): globalThis.Promise<$.GoError> {
 		const ffd: fakeNetFD | $.VarRef<fakeNetFD> | null = this
-		return await packetQueue.prototype.closeRead.call($.pointerValue<fakeNetFD>(ffd).queue)
+		return packetQueue.prototype.closeRead.call($.pointerValue<fakeNetFD>(ffd).queue)
 	}
 
 	public async closeWrite(): globalThis.Promise<$.GoError> {
@@ -691,7 +691,7 @@ export class fakeNetFD {
 		if ($.pointerValue<fakeNetFD>(ffd).peer == null) {
 			return os.NewSyscallError("closeWrite", $.namedValueInterfaceValue<$.GoError>(syscall.ENOTCONN, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 		}
-		return await packetQueue.prototype.closeWrite.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).peer).fakeNetFD).queue)
+		return packetQueue.prototype.closeWrite.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).peer).fakeNetFD).queue)
 	}
 
 	public dup(): [os.File | $.VarRef<os.File> | null, $.GoError] {
@@ -862,7 +862,7 @@ export class fakeNetFD {
 		if (sa4 != null) {
 			sa = $.interfaceValue<syscall.Sockaddr | null>(sa4, "*syscall.SockaddrInet4")
 		}
-		return await fakeNetFD.prototype.writeMsg.call(ffd, p, oob, sa)
+		return fakeNetFD.prototype.writeMsg.call(ffd, p, oob, sa)
 	}
 
 	public async writeMsgInet6(p: $.Slice<number>, oob: $.Slice<number>, sa6: syscall.SockaddrInet6 | $.VarRef<syscall.SockaddrInet6> | null): globalThis.Promise<[number, number, $.GoError]> {
@@ -874,7 +874,7 @@ export class fakeNetFD {
 		if (sa6 != null) {
 			sa = $.interfaceValue<syscall.Sockaddr | null>(sa6, "*syscall.SockaddrInet6")
 		}
-		return await fakeNetFD.prototype.writeMsg.call(ffd, p, oob, sa)
+		return fakeNetFD.prototype.writeMsg.call(ffd, p, oob, sa)
 	}
 
 	public async writeTo(p: $.Slice<number>, sa: syscall.Sockaddr | null): globalThis.Promise<[number, $.GoError]> {
@@ -911,21 +911,21 @@ export class fakeNetFD {
 		if (($.len($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net) >= 3) && ($.stringEqual($.sliceStringOrBytes($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).net, undefined, 3), "udp"))) {
 			block = false
 		}
-		return await packetQueue.prototype.send.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD).queue, $.pointerValue<fakeNetFD>(ffd).writeDeadline.Load(), p, $.mustTypeAssert<__goscript_sockaddr_posix.sockaddr | null>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).laddr, "net.sockaddr"), block)
+		return packetQueue.prototype.send.call($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(peer).fakeNetFD).queue, $.pointerValue<fakeNetFD>(ffd).writeDeadline.Load(), p, $.mustTypeAssert<__goscript_sockaddr_posix.sockaddr | null>($.pointerValue<__goscript_fd_fake.netFD>($.pointerValue<fakeNetFD>(ffd).fd).laddr, "net.sockaddr"), block)
 	}
 
 	public async writeToInet4(p: $.Slice<number>, sa: syscall.SockaddrInet4 | $.VarRef<syscall.SockaddrInet4> | null): globalThis.Promise<[number, $.GoError]> {
 		const ffd: fakeNetFD | $.VarRef<fakeNetFD> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		return await fakeNetFD.prototype.writeTo.call(ffd, p, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrInet4"))
+		return fakeNetFD.prototype.writeTo.call(ffd, p, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrInet4"))
 	}
 
 	public async writeToInet6(p: $.Slice<number>, sa: syscall.SockaddrInet6 | $.VarRef<syscall.SockaddrInet6> | null): globalThis.Promise<[number, $.GoError]> {
 		const ffd: fakeNetFD | $.VarRef<fakeNetFD> | null = this
 		let n: number = 0
 		let err: $.GoError = null as $.GoError
-		return await fakeNetFD.prototype.writeTo.call(ffd, p, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrInet6"))
+		return fakeNetFD.prototype.writeTo.call(ffd, p, $.interfaceValue<syscall.Sockaddr | null>(sa, "*syscall.SockaddrInet6"))
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -2049,24 +2049,24 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 	}, ({ kind: $.TypeKind.Function, params: ["error"], results: ["error"] } as $.FunctionTypeInfo))
 
 	if ($.pointerValue<__goscript_fd_fake.netFD>(fd).isConnected) {
-		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EISCONN, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+		return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EISCONN, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 	if (await $.pointerValue<Exclude<context.Context, null>>(ctx).Err() != null) {
-		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ETIMEDOUT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+		return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ETIMEDOUT, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 
 	$.pointerValue<__goscript_fd_fake.netFD>(fd).raddr = (await matchIPFamily($.pointerValue<__goscript_fd_fake.netFD>(fd).family, raddr) as __goscript_net.Addr | null)
 	{
 		let err = await validateResolvedAddr($.pointerValue<__goscript_fd_fake.netFD>(fd).net, $.pointerValue<__goscript_fd_fake.netFD>(fd).family, $.mustTypeAssert<__goscript_sockaddr_posix.sockaddr | null>($.pointerValue<__goscript_fd_fake.netFD>(fd).raddr, "net.sockaddr"))
 		if (err != null) {
-			return await wrapErr!(err)
+			return wrapErr!(err)
 		}
 	}
 
 	{
 		let err = await fakeNetFD.prototype.assignFakeAddr.call($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD, laddr)
 		if (err != null) {
-			return await wrapErr!(err)
+			return wrapErr!(err)
 		}
 	}
 	$.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD).queue = await newPacketQueue(65535)
@@ -2083,7 +2083,7 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 					{
 						let [, dup] = await sockets.value.LoadOrStore($.interfaceValue<any>($.markAsStructValue($.cloneStructValue($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(fd).fakeNetFD).fakeAddr)), "net.fakeSockAddr"), $.interfaceValue<any>(fd, "*net.netFD"))
 						if (dup) {
-							return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EADDRINUSE, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+							return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EADDRINUSE, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 						}
 					}
 				}
@@ -2099,7 +2099,7 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 		}
 		default:
 		{
-			return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+			return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EINVAL, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 			break
 		}
 	}
@@ -2107,14 +2107,14 @@ export async function fakeConnect(ctx: context.Context | null, fd: __goscript_fd
 	let fa = $.markAsStructValue($.cloneStructValue(await fakeAddr(raddr)))
 	let [lni, ok] = await sockets.value.Load($.interfaceValue<any>($.markAsStructValue($.cloneStructValue(fa)), "net.fakeSockAddr"))
 	if (!ok) {
-		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ECONNREFUSED, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+		return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ECONNREFUSED, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 	let ln: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null = $.mustTypeAssert<__goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null>(lni, { kind: $.TypeKind.Pointer, elemType: "net.netFD" })
 	if ($.pointerValue<__goscript_fd_fake.netFD>(ln).sotype != $.pointerValue<__goscript_fd_fake.netFD>(fd).sotype) {
-		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EPROTOTYPE, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+		return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.EPROTOTYPE, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 	if ($.pointerValue<fakeNetFD>($.pointerValue<__goscript_fd_fake.netFD>(ln).fakeNetFD).incoming == null) {
-		return await wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ECONNREFUSED, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
+		return wrapErr!($.namedValueInterfaceValue<$.GoError>(syscall.ECONNREFUSED, "syscall.Errno", {"Error": syscall.Errno_Error}, { kind: $.TypeKind.Basic, name: "uintptr", typeName: "syscall.Errno" }))
 	}
 
 	let peer: __goscript_fd_fake.netFD | $.VarRef<__goscript_fd_fake.netFD> | null = new __goscript_fd_fake.netFD({family: $.pointerValue<__goscript_fd_fake.netFD>(ln).family, sotype: $.pointerValue<__goscript_fd_fake.netFD>(ln).sotype, net: $.pointerValue<__goscript_fd_fake.netFD>(ln).net, laddr: $.pointerValue<__goscript_fd_fake.netFD>(ln).laddr, raddr: $.pointerValue<__goscript_fd_fake.netFD>(fd).laddr, isConnected: true})

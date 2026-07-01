@@ -26,5 +26,5 @@ import "./muxed-conn.gs.ts"
 
 export async function NewWebSocketConn(ctx: context.Context | null, conn: websocket.Conn | $.VarRef<websocket.Conn> | null, isServer: boolean, yamuxConf: yamux.Config | $.VarRef<yamux.Config> | null): globalThis.Promise<[__goscript_muxed.MuxedConn | null, $.GoError]> {
 	let nc = await websocket.NetConn(ctx, conn, websocket.MessageBinary)
-	return await __goscript_muxed_conn.NewMuxedConn(nc, !isServer, yamuxConf)
+	return __goscript_muxed_conn.NewMuxedConn(nc, !isServer, yamuxConf)
 }

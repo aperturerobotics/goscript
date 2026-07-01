@@ -839,17 +839,17 @@ export class FD {
 
 	public async SetDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: FD | $.VarRef<FD> | null = this
-		return await __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 114 + 119)
+		return __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 114 + 119)
 	}
 
 	public async SetReadDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: FD | $.VarRef<FD> | null = this
-		return await __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 114)
+		return __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 114)
 	}
 
 	public async SetWriteDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const fd: FD | $.VarRef<FD> | null = this
-		return await __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 119)
+		return __goscript_fd_poll_js.setDeadlineImpl(fd, $.markAsStructValue($.cloneStructValue(t)), 119)
 	}
 
 	public async Shutdown(how: number): globalThis.Promise<$.GoError> {
@@ -1168,7 +1168,7 @@ export class FD {
 	public async decref(): globalThis.Promise<$.GoError> {
 		const fd: FD | $.VarRef<FD> | null = this
 		if ($.pointerValue<FD>(fd).fdmu.decref()) {
-			return await FD.prototype.destroy.call(fd)
+			return FD.prototype.destroy.call(fd)
 		}
 		return null
 	}
@@ -1292,7 +1292,7 @@ export async function DupCloseOnExec(fd: number): globalThis.Promise<[number, st
 			}
 		}
 	}
-	return await __goscript_fd_unixjs.dupCloseOnExecOld(fd)
+	return __goscript_fd_unixjs.dupCloseOnExecOld(fd)
 }
 
 export async function ignoringEINTRIO(fn: ((fd: number, p: $.Slice<number>) => [number, $.GoError] | globalThis.Promise<[number, $.GoError]>) | null, fd: number, p: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {

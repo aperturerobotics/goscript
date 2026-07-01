@@ -602,12 +602,12 @@ export class Logger {
 
 	public async Writer(): globalThis.Promise<io.PipeWriter | $.VarRef<io.PipeWriter> | null> {
 		const logger: Logger | $.VarRef<Logger> | null = this
-		return await Logger.prototype.WriterLevel.call(logger, $.uint(4, 32))
+		return Logger.prototype.WriterLevel.call(logger, $.uint(4, 32))
 	}
 
 	public async WriterLevel(level: __goscript_logrus.Level): globalThis.Promise<io.PipeWriter | $.VarRef<io.PipeWriter> | null> {
 		const logger: Logger | $.VarRef<Logger> | null = this
-		return await __goscript_entry.Entry.prototype.WriterLevel.call(__goscript_entry.NewEntry(logger), $.uint(level, 32))
+		return __goscript_entry.Entry.prototype.WriterLevel.call(__goscript_entry.NewEntry(logger), $.uint(level, 32))
 	}
 
 	public async hooksForLevel(level: __goscript_logrus.Level): globalThis.Promise<$.Slice<__goscript_hooks.Hook | null>> {

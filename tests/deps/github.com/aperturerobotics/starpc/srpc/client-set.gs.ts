@@ -49,8 +49,8 @@ export class ClientSet {
 
 	public async ExecCall(ctx: context.Context | null, service: string, method: string, _in: __goscript_message.Message, out: __goscript_message.Message): globalThis.Promise<$.GoError> {
 		const c: ClientSet | $.VarRef<ClientSet> | null = this
-		return await ClientSet.prototype.execCall.call(c, ctx, $.functionValue(async (client: __goscript_client.Client | null): globalThis.Promise<$.GoError> => {
-			return await $.pointerValue<Exclude<__goscript_client.Client, null>>(client).ExecCall(ctx, service, method, _in, out)
+		return ClientSet.prototype.execCall.call(c, ctx, $.functionValue(async (client: __goscript_client.Client | null): globalThis.Promise<$.GoError> => {
+			return $.pointerValue<Exclude<__goscript_client.Client, null>>(client).ExecCall(ctx, service, method, _in, out)
 		}, ({ kind: $.TypeKind.Function, params: ["srpc.Client"], results: ["error"] } as $.FunctionTypeInfo)))
 	}
 

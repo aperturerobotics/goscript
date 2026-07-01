@@ -40,7 +40,7 @@ export function ZeroArrayLiteral(__typeArgs: $.GenericTypeArgs | undefined): any
 }
 
 export async function CallString(__typeArgs: $.GenericTypeArgs | undefined, v: any): globalThis.Promise<string> {
-	return await $.callGenericMethod(__typeArgs, "T", "String", v)
+	return $.callGenericMethod(__typeArgs, "T", "String", v)
 }
 
 export function Sum<T>(__typeArgs: $.GenericTypeArgs | undefined, vals: $.Slice<T>): any {

@@ -297,9 +297,9 @@ export async function addrList_forResolve(addrs: addrList, network: string, addr
 		}
 	}
 	if (want6) {
-		return await addrList_first(addrs, isNotIPv4)
+		return addrList_first(addrs, isNotIPv4)
 	}
-	return await addrList_first(addrs, isIPv4)
+	return addrList_first(addrs, isIPv4)
 }
 
 export async function addrList_first(addrs: addrList, strategy: ((_p0: __goscript_net.Addr | null) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<__goscript_net.Addr | null> {
@@ -369,19 +369,19 @@ export async function SplitHostPort(hostport: string): globalThis.Promise<[strin
 	// The port starts after the last colon.
 	let i = bytealg.LastIndexByteString(hostport, $.uint(58, 8))
 	if (i < 0) {
-		return await addrErr!(hostport, "missing port in address")
+		return addrErr!(hostport, "missing port in address")
 	}
 
 	if ($.uint($.indexStringOrBytes(hostport, 0), 8) == $.uint(91, 8)) {
 		// Expect the first ']' just before the last ':'.
 		let end = bytealg.IndexByteString(hostport, $.uint(93, 8))
 		if (end < 0) {
-			return await addrErr!(hostport, "missing ']' in address")
+			return addrErr!(hostport, "missing ']' in address")
 		}
 		switch (end + 1) {
 			case $.len(hostport):
 			{
-				return await addrErr!(hostport, "missing port in address")
+				return addrErr!(hostport, "missing port in address")
 				break
 			}
 			case i:
@@ -391,9 +391,9 @@ export async function SplitHostPort(hostport: string): globalThis.Promise<[strin
 			default:
 			{
 				if ($.uint($.indexStringOrBytes(hostport, end + 1), 8) == $.uint(58, 8)) {
-					return await addrErr!(hostport, "too many colons in address")
+					return addrErr!(hostport, "too many colons in address")
 				}
-				return await addrErr!(hostport, "missing port in address")
+				return addrErr!(hostport, "missing port in address")
 				break
 			}
 		}
@@ -405,14 +405,14 @@ export async function SplitHostPort(hostport: string): globalThis.Promise<[strin
 	} else {
 		host = $.sliceStringOrBytes(hostport, undefined, i)
 		if (bytealg.IndexByteString(host, $.uint(58, 8)) >= 0) {
-			return await addrErr!(hostport, "too many colons in address")
+			return addrErr!(hostport, "too many colons in address")
 		}
 	}
 	if (bytealg.IndexByteString($.sliceStringOrBytes(hostport, j, undefined), $.uint(91, 8)) >= 0) {
-		return await addrErr!(hostport, "unexpected '[' in address")
+		return addrErr!(hostport, "unexpected '[' in address")
 	}
 	if (bytealg.IndexByteString($.sliceStringOrBytes(hostport, k, undefined), $.uint(93, 8)) >= 0) {
-		return await addrErr!(hostport, "unexpected ']' in address")
+		return addrErr!(hostport, "unexpected ']' in address")
 	}
 
 	port = $.sliceStringOrBytes(hostport, i + 1, undefined)

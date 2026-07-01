@@ -220,7 +220,7 @@ export function header_Length(h: header): number {
 }
 
 export async function header_String(h: header): globalThis.Promise<string> {
-	return await fmt.Sprintf("Vsn:%d Type:%d Flags:%d StreamID:%d Length:%d", $.namedValueInterfaceValue<any>(header_Version(h), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" }), $.namedValueInterfaceValue<any>(header_MsgType(h), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" }), $.namedValueInterfaceValue<any>(header_Flags(h), "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.namedValueInterfaceValue<any>(header_StreamID(h), "uint32", {}, { kind: $.TypeKind.Basic, name: "uint32" }), $.namedValueInterfaceValue<any>(header_Length(h), "uint32", {}, { kind: $.TypeKind.Basic, name: "uint32" }))
+	return fmt.Sprintf("Vsn:%d Type:%d Flags:%d StreamID:%d Length:%d", $.namedValueInterfaceValue<any>(header_Version(h), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" }), $.namedValueInterfaceValue<any>(header_MsgType(h), "uint8", {}, { kind: $.TypeKind.Basic, name: "uint8" }), $.namedValueInterfaceValue<any>(header_Flags(h), "uint16", {}, { kind: $.TypeKind.Basic, name: "uint16" }), $.namedValueInterfaceValue<any>(header_StreamID(h), "uint32", {}, { kind: $.TypeKind.Basic, name: "uint32" }), $.namedValueInterfaceValue<any>(header_Length(h), "uint32", {}, { kind: $.TypeKind.Basic, name: "uint32" }))
 }
 
 export function encode(msgType: number, flags: number, streamID: number, length: number): header {

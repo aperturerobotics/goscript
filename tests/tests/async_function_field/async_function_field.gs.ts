@@ -61,11 +61,11 @@ export function __goscript_set_defaultLoader(__goscriptValue: loader | $.VarRef<
 }
 
 export async function lookup(key: string): globalThis.Promise<[any, boolean]> {
-	return await $.pointerValue<loader>(defaultLoader).load!(key)
+	return $.pointerValue<loader>(defaultLoader).load!(key)
 }
 
 export async function lookupViaGetter(key: string): globalThis.Promise<[any, boolean]> {
-	return await loader.prototype.getLoad.call(defaultLoader)!(key)
+	return loader.prototype.getLoad.call(defaultLoader)!(key)
 }
 
 export async function main(): globalThis.Promise<void> {

@@ -104,7 +104,7 @@ export class Packet {
 		if (!ok) {
 			return false
 		}
-		return await Packet.prototype.EqualVT.call(_this, that)
+		return Packet.prototype.EqualVT.call(_this, that)
 	}
 
 	public async EqualVT(that: Packet | $.VarRef<Packet> | null): globalThis.Promise<boolean> {
@@ -306,7 +306,7 @@ export class Packet {
 	public async MarshalToVT(dAtA: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const m: Packet | $.VarRef<Packet> | null = this
 		let size = await Packet.prototype.SizeVT.call(m)
-		return await Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
+		return Packet.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
 	}
 
 	public async MarshalVT(): globalThis.Promise<[$.Slice<number>, $.GoError]> {

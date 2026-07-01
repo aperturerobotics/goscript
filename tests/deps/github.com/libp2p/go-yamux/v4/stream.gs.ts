@@ -219,7 +219,7 @@ export class Stream {
 	public async Close(): globalThis.Promise<$.GoError> {
 		const s: Stream | $.VarRef<Stream> | null = this
 		await Stream.prototype.CloseRead.call(s)
-		return await Stream.prototype.CloseWrite.call(s)
+		return Stream.prototype.CloseWrite.call(s)
 	}
 
 	public async CloseRead(): globalThis.Promise<$.GoError> {
@@ -304,7 +304,7 @@ export class Stream {
 
 	public async LocalAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Stream | $.VarRef<Stream> | null = this
-		return await __goscript_session.Session.prototype.LocalAddr.call($.pointerValue<Stream>(s).session)
+		return __goscript_session.Session.prototype.LocalAddr.call($.pointerValue<Stream>(s).session)
 	}
 
 	public async Read(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
@@ -391,7 +391,7 @@ export class Stream {
 
 	public async RemoteAddr(): globalThis.Promise<net.Addr | null> {
 		const s: Stream | $.VarRef<Stream> | null = this
-		return await __goscript_session.Session.prototype.RemoteAddr.call($.pointerValue<Stream>(s).session)
+		return __goscript_session.Session.prototype.RemoteAddr.call($.pointerValue<Stream>(s).session)
 	}
 
 	public async Reset(): globalThis.Promise<$.GoError> {
@@ -621,7 +621,7 @@ export class Stream {
 		let flags = $.uint(await Stream.prototype.sendFlags.call(s), 16)
 		flags = flags | ($.uint(4, 16))
 		let hdr = __goscript__const.encode($.uint(1, 8), $.uint(flags, 16), $.uint($.pointerValue<Stream>(s).id, 32), $.uint(0, 32))
-		return await __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, null)
+		return __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, null)
 	}
 
 	public async sendFlags(): globalThis.Promise<number> {
@@ -650,7 +650,7 @@ export class Stream {
 	public async sendReset(): globalThis.Promise<$.GoError> {
 		const s: Stream | $.VarRef<Stream> | null = this
 		let hdr = __goscript__const.encode($.uint(1, 8), $.uint(8, 16), $.uint($.pointerValue<Stream>(s).id, 32), $.uint(0, 32))
-		return await __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, null)
+		return __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, null)
 	}
 
 	public async sendWindowUpdate(deadline: $.Channel<{}> | null): globalThis.Promise<$.GoError> {
@@ -692,7 +692,7 @@ export class Stream {
 
 		$.pointerValue<Stream>(s).epochStart = $.markAsStructValue($.cloneStructValue(now))
 		let hdr = __goscript__const.encode($.uint(1, 8), $.uint(flags, 16), $.uint($.pointerValue<Stream>(s).id, 32), $.uint(delta, 32))
-		return await __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, deadline)
+		return __goscript_session.Session.prototype.sendMsg.call($.pointerValue<Stream>(s).session, hdr, null, deadline)
 	}
 
 	public async write(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {

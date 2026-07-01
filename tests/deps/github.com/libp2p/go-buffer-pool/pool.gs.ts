@@ -145,7 +145,7 @@ export function __goscript_set_GlobalPool(__goscriptValue: BufferPool | $.VarRef
 }
 
 export async function Get(length: number): globalThis.Promise<$.Slice<number>> {
-	return await BufferPool.prototype.Get.call(GlobalPool, length)
+	return BufferPool.prototype.Get.call(GlobalPool, length)
 }
 
 export async function Put(slice: $.Slice<number>): globalThis.Promise<void> {

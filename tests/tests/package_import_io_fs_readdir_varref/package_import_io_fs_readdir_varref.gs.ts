@@ -37,7 +37,7 @@ export class openOnlyFS {
 
 	public async Open(name: string): globalThis.Promise<[fs.File | null, $.GoError]> {
 		const o = this
-		return await fstest.MapFS_Open(o.fsys, name)
+		return fstest.MapFS_Open(o.fsys, name)
 	}
 
 	static __typeInfo = $.registerStructType(

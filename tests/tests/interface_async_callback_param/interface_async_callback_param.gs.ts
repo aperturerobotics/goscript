@@ -26,7 +26,7 @@ export class listScanner {
 	}
 
 	public async Scan(fn: ((_p0: number) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-		return await fn!(7)
+		return fn!(7)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -49,7 +49,7 @@ $.registerInterfaceType(
 );
 
 export async function run(s: scanner | null): globalThis.Promise<$.GoError> {
-	return await $.pointerValue<Exclude<scanner, null>>(s).Scan($.functionValue((v: number): $.GoError => {
+	return $.pointerValue<Exclude<scanner, null>>(s).Scan($.functionValue((v: number): $.GoError => {
 		if (v != 7) {
 			return errors.New("wrong value")
 		}

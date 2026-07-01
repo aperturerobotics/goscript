@@ -22,7 +22,7 @@ import "./compat.gs.ts"
 import "./locked.gs.ts"
 
 export async function WatchBroadcast(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, (null as ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null))
+	return WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, (null as ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null))
 }
 
 export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null, equal: ((a: any, b: any) => boolean | globalThis.Promise<boolean>) | null): globalThis.Promise<$.GoError> {
@@ -46,7 +46,7 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 				isSend: false,
 				channel: await $.pointerValue<Exclude<context.Context, null>>(ctx).Done(),
 				onSelected: async (__goscriptSelect0Result) => {
-					return await $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
+					return $.pointerValue<Exclude<context.Context, null>>(ctx).Err()
 				}
 			},
 			{
@@ -82,5 +82,5 @@ export async function WatchBroadcastWithEqual(__typeArgs: $.GenericTypeArgs | un
 }
 
 export async function WatchBroadcastVT(__typeArgs: $.GenericTypeArgs | undefined, ctx: context.Context | null, bcast: __goscript_broadcast.Broadcast | $.VarRef<__goscript_broadcast.Broadcast> | null, snapshot: (() => any | globalThis.Promise<any>) | null, send: ((_p0: any) => $.GoError | globalThis.Promise<$.GoError>) | null): globalThis.Promise<$.GoError> {
-	return await WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, proto.CompareEqualVT({T: __typeArgs?.["T"] ?? { type: { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] }, zero: () => null }}))
+	return WatchBroadcastWithEqual(undefined, ctx, bcast, snapshot, send, proto.CompareEqualVT({T: __typeArgs?.["T"] ?? { type: { kind: $.TypeKind.Interface, methods: [{ name: "EqualVT", args: [{ name: "other", type: { kind: $.TypeKind.Interface, methods: [] } }], returns: [{ name: "_r0", type: { kind: $.TypeKind.Basic, name: "bool" } }] }] }, zero: () => null }}))
 }

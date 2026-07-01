@@ -286,7 +286,7 @@ export class Conn {
 
 	public async CloseNow(): globalThis.Promise<$.GoError> {
 		const c: Conn | $.VarRef<Conn> | null = this
-		return await Conn.prototype.Close.call(c, 1001, "")
+		return Conn.prototype.Close.call(c, 1001, "")
 	}
 
 	public async CloseRead(ctx: context.Context | null): globalThis.Promise<context.Context | null> {
@@ -627,12 +627,12 @@ export class Conn {
 		switch (typ) {
 			case 2:
 			{
-				return await $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).SendBytes(p)
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).SendBytes(p)
 				break
 			}
 			case 1:
 			{
-				return await $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).SendText($.bytesToString(p))
+				return $.markAsStructValue($.cloneStructValue($.pointerValue<Conn>(c).ws)).SendText($.bytesToString(p))
 				break
 			}
 			default:
@@ -905,7 +905,7 @@ export class CloseError {
 
 	public async Error(): globalThis.Promise<string> {
 		const ce = this
-		return await fmt.Sprintf("status = %v and reason = %q", $.namedValueInterfaceValue<any>(ce.Code, "websocket.StatusCode", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.StatusCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }), ce.Reason)
+		return fmt.Sprintf("status = %v and reason = %q", $.namedValueInterfaceValue<any>(ce.Code, "websocket.StatusCode", {String: (receiver: any, ...args: any[]) => (__goscript_stringer.StatusCode_String as any)(($.isVarRef(receiver) ? receiver.value : receiver), ...args)}, { kind: $.TypeKind.Basic, name: "int", typeName: "websocket.StatusCode" }), ce.Reason)
 	}
 
 	static __typeInfo = $.registerStructType(

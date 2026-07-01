@@ -119,7 +119,7 @@ export class PacketReadWriter {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const r: PacketReadWriter | $.VarRef<PacketReadWriter> | null = this
-		return await $.pointerValue<Exclude<io.ReadWriteCloser, null>>($.pointerValue<PacketReadWriter>(r).rw).Close()
+		return $.pointerValue<Exclude<io.ReadWriteCloser, null>>($.pointerValue<PacketReadWriter>(r).rw).Close()
 	}
 
 	public async ReadPump(cb: ((data: $.Slice<number>) => $.GoError | globalThis.Promise<$.GoError>) | null, closed: ((closeErr: $.GoError) => void) | null): globalThis.Promise<void> {

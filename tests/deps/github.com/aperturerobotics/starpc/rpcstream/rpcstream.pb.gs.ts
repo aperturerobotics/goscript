@@ -96,7 +96,7 @@ export class RpcStreamPacket {
 		if (!ok) {
 			return false
 		}
-		return await RpcStreamPacket.prototype.EqualVT.call(_this, that)
+		return RpcStreamPacket.prototype.EqualVT.call(_this, that)
 	}
 
 	public async EqualVT(that: RpcStreamPacket | $.VarRef<RpcStreamPacket> | null): globalThis.Promise<boolean> {
@@ -300,7 +300,7 @@ export class RpcStreamPacket {
 	public async MarshalToVT(dAtA: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
 		const m: RpcStreamPacket | $.VarRef<RpcStreamPacket> | null = this
 		let size = await RpcStreamPacket.prototype.SizeVT.call(m)
-		return await RpcStreamPacket.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
+		return RpcStreamPacket.prototype.MarshalToSizedBufferVT.call(m, $.goSlice(dAtA, undefined, size))
 	}
 
 	public async MarshalVT(): globalThis.Promise<[$.Slice<number>, $.GoError]> {

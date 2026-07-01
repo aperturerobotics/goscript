@@ -483,17 +483,17 @@ export class Regexp {
 
 	public async Match(b: $.Slice<number>): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await Regexp.prototype.doMatch.call(re, null, b, "")
+		return Regexp.prototype.doMatch.call(re, null, b, "")
 	}
 
 	public async MatchReader(r: io.RuneReader | null): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await Regexp.prototype.doMatch.call(re, r, null, "")
+		return Regexp.prototype.doMatch.call(re, r, null, "")
 	}
 
 	public async MatchString(s: string): globalThis.Promise<boolean> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await Regexp.prototype.doMatch.call(re, null, null, s)
+		return Regexp.prototype.doMatch.call(re, null, null, s)
 	}
 
 	public NumSubexp(): number {
@@ -519,14 +519,14 @@ export class Regexp {
 
 	public async ReplaceAllFunc(src: $.Slice<number>, repl: ((_p0: $.Slice<number>) => $.Slice<number> | globalThis.Promise<$.Slice<number>>) | null): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
+		return Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue(async (dst: $.Slice<number>, match: $.Slice<number>): globalThis.Promise<$.Slice<number>> => {
 			return $.appendSlice(dst, await repl!($.goSlice(src, $.arrayIndex(match!, 0), $.arrayIndex(match!, 1))))
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
 
 	public async ReplaceAllLiteral(src: $.Slice<number>, repl: $.Slice<number>): globalThis.Promise<$.Slice<number>> {
 		const re: Regexp | $.VarRef<Regexp> | null = this
-		return await Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
+		return Regexp.prototype.replaceAll.call(re, src, "", 2, $.functionValue((dst: $.Slice<number>, match: $.Slice<number>): $.Slice<number> => {
 			return $.appendSlice(dst, repl)
 		}, ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }, { kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "int" } }], results: [{ kind: $.TypeKind.Slice, elemType: { kind: $.TypeKind.Basic, name: "uint8" } }] } as $.FunctionTypeInfo)))
 	}
@@ -749,10 +749,10 @@ export class Regexp {
 		}
 
 		if ($.pointerValue<Regexp>(re).onepass != null) {
-			return await Regexp.prototype.doOnePass.call(re, r, b, s, pos, ncap, dstCap)
+			return Regexp.prototype.doOnePass.call(re, r, b, s, pos, ncap, dstCap)
 		}
 		if ((r == null) && (($.len(b) + $.len(s)) < $.pointerValue<Regexp>(re).maxBitStateLen)) {
-			return await Regexp.prototype.backtrack.call(re, b, s, pos, ncap, dstCap)
+			return Regexp.prototype.backtrack.call(re, b, s, pos, ncap, dstCap)
 		}
 
 		let m: __goscript_exec.machine | $.VarRef<__goscript_exec.machine> | null = await Regexp.prototype.get.call(re)
@@ -1588,11 +1588,11 @@ export const endOfText: number = -1
 export const startSize: number = 10
 
 export async function Compile(expr: string): globalThis.Promise<[Regexp | $.VarRef<Regexp> | null, $.GoError]> {
-	return await compile(expr, $.uint(syntax.Perl, 16), false)
+	return compile(expr, $.uint(syntax.Perl, 16), false)
 }
 
 export async function CompilePOSIX(expr: string): globalThis.Promise<[Regexp | $.VarRef<Regexp> | null, $.GoError]> {
-	return await compile(expr, $.uint(syntax.POSIX, 16), true)
+	return compile(expr, $.uint(syntax.POSIX, 16), true)
 }
 
 export async function compile(expr: string, mode: syntax.Flags, longest: boolean): globalThis.Promise<[Regexp | $.VarRef<Regexp> | null, $.GoError]> {

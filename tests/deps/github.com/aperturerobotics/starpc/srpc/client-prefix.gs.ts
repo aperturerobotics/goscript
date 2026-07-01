@@ -69,7 +69,7 @@ export class PrefixClient {
 		if (err != null) {
 			return err
 		}
-		return await $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<PrefixClient>(i).client).ExecCall(ctx, service, method, _in, out)
+		return $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<PrefixClient>(i).client).ExecCall(ctx, service, method, _in, out)
 	}
 
 	public async NewStream(ctx: context.Context | null, service: string, method: string, firstMsg: __goscript_message.Message): globalThis.Promise<[__goscript_stream.Stream | null, $.GoError]> {
@@ -80,7 +80,7 @@ export class PrefixClient {
 		if (err != null) {
 			return [null, err]
 		}
-		return await $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<PrefixClient>(i).client).NewStream(ctx, service, method, firstMsg)
+		return $.pointerValue<Exclude<__goscript_client.Client, null>>($.pointerValue<PrefixClient>(i).client).NewStream(ctx, service, method, firstMsg)
 	}
 
 	public stripCheckServiceIDPrefix(service: string): [string, $.GoError] {

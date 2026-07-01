@@ -317,7 +317,7 @@ export async function foreachField(x: string, fn: ((field: string) => $.GoError 
 	while ($.len(x) > 0) {
 		let sp = bytealg.IndexByteString(x, $.uint(32, 8))
 		if (sp == -1) {
-			return await fn!(x)
+			return fn!(x)
 		}
 		{
 			let field = trimSpace($.sliceStringOrBytes(x, undefined, sp))

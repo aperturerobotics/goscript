@@ -190,17 +190,17 @@ export class yamuxStream {
 
 	public async Close(): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.Close.call(yamuxStream.prototype.yamux.call(s))
+		return yamux2.Stream.prototype.Close.call(yamuxStream.prototype.yamux.call(s))
 	}
 
 	public async CloseRead(): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.CloseRead.call(yamuxStream.prototype.yamux.call(s))
+		return yamux2.Stream.prototype.CloseRead.call(yamuxStream.prototype.yamux.call(s))
 	}
 
 	public async CloseWrite(): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.CloseWrite.call(yamuxStream.prototype.yamux.call(s))
+		return yamux2.Stream.prototype.CloseWrite.call(yamuxStream.prototype.yamux.call(s))
 	}
 
 	public async Read(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {
@@ -214,22 +214,22 @@ export class yamuxStream {
 
 	public async Reset(): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.Reset.call(yamuxStream.prototype.yamux.call(s))
+		return yamux2.Stream.prototype.Reset.call(yamuxStream.prototype.yamux.call(s))
 	}
 
 	public async SetDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.SetDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
+		return yamux2.Stream.prototype.SetDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async SetReadDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.SetReadDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
+		return yamux2.Stream.prototype.SetReadDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async SetWriteDeadline(t: time.Time): globalThis.Promise<$.GoError> {
 		const s: yamuxStream | $.VarRef<yamuxStream> | null = this
-		return await yamux2.Stream.prototype.SetWriteDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
+		return yamux2.Stream.prototype.SetWriteDeadline.call(yamuxStream.prototype.yamux.call(s), $.markAsStructValue($.cloneStructValue(t)))
 	}
 
 	public async Write(b: $.Slice<number>): globalThis.Promise<[number, $.GoError]> {

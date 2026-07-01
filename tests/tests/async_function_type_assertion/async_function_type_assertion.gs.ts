@@ -45,7 +45,7 @@ export class Worker {
 }
 
 export async function callLookup(fn: ((_p0: string) => number | globalThis.Promise<number>) | null, network: string): globalThis.Promise<number> {
-	return await fn!(network)
+	return fn!(network)
 }
 
 export function syncLookup(network: string): number {
@@ -73,7 +73,7 @@ export async function main(): globalThis.Promise<void> {
 	$.println("call:", await callLookup($.functionValue(((__receiver) => (network: string) => __receiver.lookup(network))($.pointerValue<Worker>(worker)), ({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo)), "tcp"))
 
 	let hook: ((fn: ((_p0: string) => number | globalThis.Promise<number>) | null, network: string) => number | globalThis.Promise<number>) | null = $.functionValue(async (fn: ((_p0: string) => number | globalThis.Promise<number>) | null, network: string): globalThis.Promise<number> => {
-		return await fn!(network)
+		return fn!(network)
 	}, ({ kind: $.TypeKind.Function, params: [({ kind: $.TypeKind.Function, params: [{ kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo), { kind: $.TypeKind.Basic, name: "string" }], results: [{ kind: $.TypeKind.Basic, name: "int" }] } as $.FunctionTypeInfo))
 	$.println("hook:", await hook!(syncLookup, "ip"))
 	$.pointerValue<Worker>(worker).ch!.close()

@@ -273,7 +273,7 @@ export class Resolver {
 				return [$.arrayToSlice<string>([host]), null]
 			}
 		}
-		return await Resolver.prototype.lookupHost.call(r, ctx, host)
+		return Resolver.prototype.lookupHost.call(r, ctx, host)
 	}
 
 	public async LookupIP(ctx: context.Context | null, network: string, host: string): globalThis.Promise<[$.Slice<__goscript_ip.IP>, $.GoError]> {
@@ -316,7 +316,7 @@ export class Resolver {
 
 	public async LookupIPAddr(ctx: context.Context | null, host: string): globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.lookupIPAddr.call(r, ctx, "ip", host)
+		return Resolver.prototype.lookupIPAddr.call(r, ctx, "ip", host)
 	}
 
 	public async LookupMX(ctx: context.Context | null, name: string): globalThis.Promise<[$.Slice<__goscript_dnsclient.MX | $.VarRef<__goscript_dnsclient.MX> | null>, $.GoError]> {
@@ -473,7 +473,7 @@ export class Resolver {
 
 	public async LookupTXT(ctx: context.Context | null, name: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.lookupTXT.call(r, ctx, name)
+		return Resolver.prototype.lookupTXT.call(r, ctx, name)
 	}
 
 	public async dial(ctx: context.Context | null, network: string, server: string): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
@@ -1304,7 +1304,7 @@ export class Resolver {
 		if (order == 0) {
 			return __goscript_cgo_stub.cgoLookupPTR(ctx, addr)
 		}
-		return await Resolver.prototype.goLookupPTR.call(r, ctx, addr, order, __goscriptShadow32)
+		return Resolver.prototype.goLookupPTR.call(r, ctx, addr, order, __goscriptShadow32)
 	}
 
 	public async lookupCNAME(ctx: context.Context | null, name: string): globalThis.Promise<[string, $.GoError]> {
@@ -1320,7 +1320,7 @@ export class Resolver {
 				}
 			}
 		}
-		return await Resolver.prototype.goLookupCNAME.call(r, ctx, name, order, __goscriptShadow33)
+		return Resolver.prototype.goLookupCNAME.call(r, ctx, name, order, __goscriptShadow33)
 	}
 
 	public async lookupHost(ctx: context.Context | null, host: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
@@ -1333,7 +1333,7 @@ export class Resolver {
 		if (order == 0) {
 			return __goscript_cgo_stub.cgoLookupHost(ctx, host)
 		}
-		return await Resolver.prototype.goLookupHostOrder.call(r, ctx, host, order, __goscriptShadow34)
+		return Resolver.prototype.goLookupHostOrder.call(r, ctx, host, order, __goscriptShadow34)
 	}
 
 	public async lookupIP(ctx: context.Context | null, network: string, host: string): globalThis.Promise<[$.Slice<__goscript_iprawsock.IPAddr>, $.GoError]> {
@@ -1454,12 +1454,12 @@ export class Resolver {
 
 	public async lookupMX(ctx: context.Context | null, name: string): globalThis.Promise<[$.Slice<__goscript_dnsclient.MX | $.VarRef<__goscript_dnsclient.MX> | null>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.goLookupMX.call(r, ctx, name)
+		return Resolver.prototype.goLookupMX.call(r, ctx, name)
 	}
 
 	public async lookupNS(ctx: context.Context | null, name: string): globalThis.Promise<[$.Slice<__goscript_dnsclient.NS | $.VarRef<__goscript_dnsclient.NS> | null>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.goLookupNS.call(r, ctx, name)
+		return Resolver.prototype.goLookupNS.call(r, ctx, name)
 	}
 
 	public async lookupPort(ctx: context.Context | null, network: string, service: string): globalThis.Promise<[number, $.GoError]> {
@@ -1478,17 +1478,17 @@ export class Resolver {
 			}
 			return [port, err]
 		}
-		return await __goscript_port_unix.goLookupPort(network, service)
+		return __goscript_port_unix.goLookupPort(network, service)
 	}
 
 	public async lookupSRV(ctx: context.Context | null, service: string, proto: string, name: string): globalThis.Promise<[string, $.Slice<__goscript_dnsclient.SRV | $.VarRef<__goscript_dnsclient.SRV> | null>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.goLookupSRV.call(r, ctx, service, proto, name)
+		return Resolver.prototype.goLookupSRV.call(r, ctx, service, proto, name)
 	}
 
 	public async lookupTXT(ctx: context.Context | null, name: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
 		const r: Resolver | $.VarRef<Resolver> | null = this
-		return await Resolver.prototype.goLookupTXT.call(r, ctx, name)
+		return Resolver.prototype.goLookupTXT.call(r, ctx, name)
 	}
 
 	public preferGo(): boolean {
@@ -1734,7 +1734,7 @@ export class onlyValuesCtx {
 				isSend: false,
 				channel: null,
 				onSelected: async (__goscriptSelect1Result) => {
-					return await $.pointerValue<Exclude<context.Context, null>>($.pointerValue<onlyValuesCtx>(ovc).lookupValues).Value(key)
+					return $.pointerValue<Exclude<context.Context, null>>($.pointerValue<onlyValuesCtx>(ovc).lookupValues).Value(key)
 				}
 			}
 		], true)
@@ -1824,21 +1824,21 @@ export async function lookupPortMap(network: string, service: string): globalThi
 					return [p, null]
 				}
 			}
-			return await lookupPortMapWithNetwork("udp", "ip", service)
+			return lookupPortMapWithNetwork("udp", "ip", service)
 			break
 		}
 		case "tcp":
 		case "tcp4":
 		case "tcp6":
 		{
-			return await lookupPortMapWithNetwork("tcp", "tcp", service)
+			return lookupPortMapWithNetwork("tcp", "tcp", service)
 			break
 		}
 		case "udp":
 		case "udp4":
 		case "udp6":
 		{
-			return await lookupPortMapWithNetwork("udp", "udp", service)
+			return lookupPortMapWithNetwork("udp", "udp", service)
 			break
 		}
 	}
@@ -1888,7 +1888,7 @@ export function __goscript_set_DefaultResolver(__goscriptValue: Resolver | $.Var
 export async function LookupHost(host: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
 	let addrs: $.Slice<string> = null as $.Slice<string>
 	let err: $.GoError = null as $.GoError
-	return await Resolver.prototype.LookupHost.call(DefaultResolver, context.Background(), host)
+	return Resolver.prototype.LookupHost.call(DefaultResolver, context.Background(), host)
 }
 
 export async function LookupIP(host: string): globalThis.Promise<[$.Slice<__goscript_ip.IP>, $.GoError]> {
@@ -1935,38 +1935,38 @@ export function ipAddrsEface(addrs: $.Slice<__goscript_iprawsock.IPAddr>): $.Sli
 export async function LookupPort(network: string, service: string): globalThis.Promise<[number, $.GoError]> {
 	let port: number = 0
 	let err: $.GoError = null as $.GoError
-	return await Resolver.prototype.LookupPort.call(DefaultResolver, context.Background(), network, service)
+	return Resolver.prototype.LookupPort.call(DefaultResolver, context.Background(), network, service)
 }
 
 export async function LookupCNAME(host: string): globalThis.Promise<[string, $.GoError]> {
 	let cname: string = ""
 	let err: $.GoError = null as $.GoError
-	return await Resolver.prototype.LookupCNAME.call(DefaultResolver, context.Background(), host)
+	return Resolver.prototype.LookupCNAME.call(DefaultResolver, context.Background(), host)
 }
 
 export async function LookupSRV(service: string, proto: string, name: string): globalThis.Promise<[string, $.Slice<__goscript_dnsclient.SRV | $.VarRef<__goscript_dnsclient.SRV> | null>, $.GoError]> {
 	let cname: string = ""
 	let addrs: $.Slice<__goscript_dnsclient.SRV | $.VarRef<__goscript_dnsclient.SRV> | null> = null as $.Slice<__goscript_dnsclient.SRV | $.VarRef<__goscript_dnsclient.SRV> | null>
 	let err: $.GoError = null as $.GoError
-	return await Resolver.prototype.LookupSRV.call(DefaultResolver, context.Background(), service, proto, name)
+	return Resolver.prototype.LookupSRV.call(DefaultResolver, context.Background(), service, proto, name)
 }
 
 export async function LookupMX(name: string): globalThis.Promise<[$.Slice<__goscript_dnsclient.MX | $.VarRef<__goscript_dnsclient.MX> | null>, $.GoError]> {
-	return await Resolver.prototype.LookupMX.call(DefaultResolver, context.Background(), name)
+	return Resolver.prototype.LookupMX.call(DefaultResolver, context.Background(), name)
 }
 
 export async function LookupNS(name: string): globalThis.Promise<[$.Slice<__goscript_dnsclient.NS | $.VarRef<__goscript_dnsclient.NS> | null>, $.GoError]> {
-	return await Resolver.prototype.LookupNS.call(DefaultResolver, context.Background(), name)
+	return Resolver.prototype.LookupNS.call(DefaultResolver, context.Background(), name)
 }
 
 export async function LookupTXT(name: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
-	return await Resolver.prototype.lookupTXT.call(DefaultResolver, context.Background(), name)
+	return Resolver.prototype.lookupTXT.call(DefaultResolver, context.Background(), name)
 }
 
 export async function LookupAddr(addr: string): globalThis.Promise<[$.Slice<string>, $.GoError]> {
 	let names: $.Slice<string> = null as $.Slice<string>
 	let err: $.GoError = null as $.GoError
-	return await Resolver.prototype.LookupAddr.call(DefaultResolver, context.Background(), addr)
+	return Resolver.prototype.LookupAddr.call(DefaultResolver, context.Background(), addr)
 }
 
 export let errMalformedDNSRecordsDetail: string = "DNS response contained records which contain invalid names"

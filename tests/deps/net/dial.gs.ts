@@ -344,7 +344,7 @@ export class Dialer {
 
 	public async Dial(network: string, address: string): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
 		const d: Dialer | $.VarRef<Dialer> | null = this
-		return await Dialer.prototype.DialContext.call(d, context.Background(), network, address)
+		return Dialer.prototype.DialContext.call(d, context.Background(), network, address)
 	}
 
 	public async DialContext(ctx: context.Context | null, network: string, address: string): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
@@ -642,14 +642,14 @@ export class sysDialer {
 
 	public async dialMPTCP(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, raddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null): globalThis.Promise<[__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError]> {
 		const sd: sysDialer | $.VarRef<sysDialer> | null = this
-		return await sysDialer.prototype.dialTCP.call(sd, ctx, laddr, raddr)
+		return sysDialer.prototype.dialTCP.call(sd, ctx, laddr, raddr)
 	}
 
 	public async dialParallel(ctx: context.Context | null, primaries: __goscript_ipsock.addrList, fallbacks: __goscript_ipsock.addrList): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
 		const sd: sysDialer | $.VarRef<sysDialer> | null = this
 		await using __defer = new $.AsyncDisposableStack()
 		if ($.len((fallbacks as __goscript_ipsock.addrList)) == 0) {
-			return await sysDialer.prototype.dialSerial.call(sd, ctx, (primaries as __goscript_ipsock.addrList))
+			return sysDialer.prototype.dialSerial.call(sd, ctx, (primaries as __goscript_ipsock.addrList))
 		}
 
 		let returned: $.Channel<{}> | null = $.makeChannel<{}>(0, {}, "both")
@@ -1018,16 +1018,16 @@ export class sysDialer {
 		{
 			let h: ((ctx: context.Context | null, net: string, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, raddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null) => [__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError] | globalThis.Promise<[__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError]>) | null = $.pointerValue<sysDialer>(sd).testHookDialTCP
 			if (h != null) {
-				return await h!(ctx, $.pointerValue<sysDialer>(sd).network, laddr, raddr)
+				return h!(ctx, $.pointerValue<sysDialer>(sd).network, laddr, raddr)
 			}
 		}
 		{
 			let h: ((ctx: context.Context | null, net: string, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, raddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null) => [__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError] | globalThis.Promise<[__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError]>) | null = __goscript_hook.testHookDialTCP
 			if (h != null) {
-				return await h!(ctx, $.pointerValue<sysDialer>(sd).network, laddr, raddr)
+				return h!(ctx, $.pointerValue<sysDialer>(sd).network, laddr, raddr)
 			}
 		}
-		return await sysDialer.prototype.doDialTCP.call(sd, ctx, laddr, raddr)
+		return sysDialer.prototype.doDialTCP.call(sd, ctx, laddr, raddr)
 	}
 
 	public async dialUDP(ctx: context.Context | null, laddr: __goscript_udpsock.UDPAddr | $.VarRef<__goscript_udpsock.UDPAddr> | null, raddr: __goscript_udpsock.UDPAddr | $.VarRef<__goscript_udpsock.UDPAddr> | null): globalThis.Promise<[__goscript_udpsock.UDPConn | $.VarRef<__goscript_udpsock.UDPConn> | null, $.GoError]> {
@@ -1066,7 +1066,7 @@ export class sysDialer {
 
 	public async doDialTCP(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, raddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null): globalThis.Promise<[__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError]> {
 		const sd: sysDialer | $.VarRef<sysDialer> | null = this
-		return await sysDialer.prototype.doDialTCPProto.call(sd, ctx, laddr, raddr, 0)
+		return sysDialer.prototype.doDialTCPProto.call(sd, ctx, laddr, raddr, 0)
 	}
 
 	public async doDialTCPProto(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, raddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, proto: number): globalThis.Promise<[__goscript_tcpsock.TCPConn | $.VarRef<__goscript_tcpsock.TCPConn> | null, $.GoError]> {
@@ -1450,7 +1450,7 @@ export class sysListener {
 
 	public async listenMPTCP(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null): globalThis.Promise<[__goscript_tcpsock.TCPListener | $.VarRef<__goscript_tcpsock.TCPListener> | null, $.GoError]> {
 		const sl: sysListener | $.VarRef<sysListener> | null = this
-		return await sysListener.prototype.listenTCP.call(sl, ctx, laddr)
+		return sysListener.prototype.listenTCP.call(sl, ctx, laddr)
 	}
 
 	public async listenMulticastUDP(ctx: context.Context | null, ifi: __goscript__interface.Interface | $.VarRef<__goscript__interface.Interface> | null, gaddr: __goscript_udpsock.UDPAddr | $.VarRef<__goscript_udpsock.UDPAddr> | null): globalThis.Promise<[__goscript_udpsock.UDPConn | $.VarRef<__goscript_udpsock.UDPConn> | null, $.GoError]> {
@@ -1493,7 +1493,7 @@ export class sysListener {
 
 	public async listenTCP(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null): globalThis.Promise<[__goscript_tcpsock.TCPListener | $.VarRef<__goscript_tcpsock.TCPListener> | null, $.GoError]> {
 		const sl: sysListener | $.VarRef<sysListener> | null = this
-		return await sysListener.prototype.listenTCPProto.call(sl, ctx, laddr, 0)
+		return sysListener.prototype.listenTCPProto.call(sl, ctx, laddr, 0)
 	}
 
 	public async listenTCPProto(ctx: context.Context | null, laddr: __goscript_tcpsock.TCPAddr | $.VarRef<__goscript_tcpsock.TCPAddr> | null, proto: number): globalThis.Promise<[__goscript_tcpsock.TCPListener | $.VarRef<__goscript_tcpsock.TCPListener> | null, $.GoError]> {
@@ -1785,20 +1785,20 @@ export async function parseNetwork(ctx: context.Context | null, network: string,
 
 export async function Dial(network: string, address: string): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
 	let d: $.VarRef<Dialer> = $.varRef($.markAsStructValue(new Dialer()))
-	return await d.value.Dial(network, address)
+	return d.value.Dial(network, address)
 }
 
 export async function DialTimeout(network: string, address: string, timeout: time.Duration): globalThis.Promise<[__goscript_net.Conn | null, $.GoError]> {
 	let d = $.varRef($.markAsStructValue(new Dialer({Timeout: timeout})))
-	return await d.value.Dial(network, address)
+	return d.value.Dial(network, address)
 }
 
 export async function Listen(network: string, address: string): globalThis.Promise<[__goscript_net.Listener | null, $.GoError]> {
 	let lc: $.VarRef<ListenConfig> = $.varRef($.markAsStructValue(new ListenConfig()))
-	return await lc.value.Listen(context.Background(), network, address)
+	return lc.value.Listen(context.Background(), network, address)
 }
 
 export async function ListenPacket(network: string, address: string): globalThis.Promise<[__goscript_net.PacketConn | null, $.GoError]> {
 	let lc: $.VarRef<ListenConfig> = $.varRef($.markAsStructValue(new ListenConfig()))
-	return await lc.value.ListenPacket(context.Background(), network, address)
+	return lc.value.ListenPacket(context.Background(), network, address)
 }

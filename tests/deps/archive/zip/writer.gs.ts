@@ -135,7 +135,7 @@ export class Writer {
 
 	public async AddFS(fsys: fs.FS | null): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		return await fs.WalkDir($.pointerValueOrNil(fsys)!, ".", $.functionValue(async (name: string, d: fs.DirEntry | null, err: $.GoError): globalThis.Promise<$.GoError> => {
+		return fs.WalkDir($.pointerValueOrNil(fsys)!, ".", $.functionValue(async (name: string, d: fs.DirEntry | null, err: $.GoError): globalThis.Promise<$.GoError> => {
 			await using __defer = new $.AsyncDisposableStack()
 			if (err != null) {
 				return err
@@ -343,7 +343,7 @@ export class Writer {
 			}
 		}
 
-		return await bufio.Writer.prototype.Flush.call($.mustTypeAssert<bufio.Writer | $.VarRef<bufio.Writer> | null>($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }))
+		return bufio.Writer.prototype.Flush.call($.mustTypeAssert<bufio.Writer | $.VarRef<bufio.Writer> | null>($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }))
 	}
 
 	public async Copy(f: __goscript_reader.File | $.VarRef<__goscript_reader.File> | null): globalThis.Promise<$.GoError> {
@@ -369,7 +369,7 @@ export class Writer {
 	public async Create(name: string): globalThis.Promise<[io.Writer | null, $.GoError]> {
 		const w: Writer | $.VarRef<Writer> | null = this
 		let __goscriptShadow1: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null = new __goscript_struct.FileHeader({Name: name, Method: $.uint(8, 16)})
-		return await Writer.prototype.CreateHeader.call(w, __goscriptShadow1)
+		return Writer.prototype.CreateHeader.call(w, __goscriptShadow1)
 	}
 
 	public async CreateHeader(fh: __goscript_struct.FileHeader | $.VarRef<__goscript_struct.FileHeader> | null): globalThis.Promise<[io.Writer | null, $.GoError]> {
@@ -528,7 +528,7 @@ export class Writer {
 
 	public async Flush(): globalThis.Promise<$.GoError> {
 		const w: Writer | $.VarRef<Writer> | null = this
-		return await bufio.Writer.prototype.Flush.call($.mustTypeAssert<bufio.Writer | $.VarRef<bufio.Writer> | null>($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }))
+		return bufio.Writer.prototype.Flush.call($.mustTypeAssert<bufio.Writer | $.VarRef<bufio.Writer> | null>($.pointerValue<countWriter>($.pointerValue<Writer>(w).cw).w, { kind: $.TypeKind.Pointer, elemType: "bufio.Writer" }))
 	}
 
 	public RegisterCompressor(method: number, comp: __goscript_register.Compressor | null): void {
@@ -798,10 +798,10 @@ export class fileWriter {
 			return [0, errors.New("zip: write to closed file")]
 		}
 		if ($.pointerValue<header>($.pointerValue<fileWriter>(w).header).raw) {
-			return await $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<fileWriter>(w).zipw).Write(p)
+			return $.pointerValue<Exclude<io.Writer, null>>($.pointerValue<fileWriter>(w).zipw).Write(p)
 		}
 		await $.pointerValue<Exclude<hash.Hash32, null>>($.pointerValue<fileWriter>(w).crc32).Write(p)
-		return await countWriter.prototype.Write.call($.pointerValue<fileWriter>(w).rawCount, p)
+		return countWriter.prototype.Write.call($.pointerValue<fileWriter>(w).rawCount, p)
 	}
 
 	public async close(): globalThis.Promise<$.GoError> {
@@ -811,7 +811,7 @@ export class fileWriter {
 		}
 		$.pointerValue<fileWriter>(w).closed = true
 		if ($.pointerValue<header>($.pointerValue<fileWriter>(w).header).raw) {
-			return await fileWriter.prototype.writeDataDescriptor.call(w)
+			return fileWriter.prototype.writeDataDescriptor.call(w)
 		}
 		{
 			let err = await $.pointerValue<Exclude<io.WriteCloser, null>>($.pointerValue<fileWriter>(w).comp).Close()
@@ -835,7 +835,7 @@ export class fileWriter {
 			$.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize = $.uint($.uint($.pointerValue<__goscript_struct.FileHeader>(fh).UncompressedSize64, 32), 32)
 		}
 
-		return await fileWriter.prototype.writeDataDescriptor.call(w)
+		return fileWriter.prototype.writeDataDescriptor.call(w)
 	}
 
 	public async writeDataDescriptor(): globalThis.Promise<$.GoError> {

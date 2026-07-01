@@ -376,7 +376,7 @@ export class memoryRpcStream {
 			if ($.len(data) == 0) {
 				continue
 			}
-			return await $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
+			return $.pointerValue<Exclude<protobuf_go_lite.Message, null>>(msg).UnmarshalVT(data)
 		}
 		throw new globalThis.Error("goscript: unreachable return")
 	}
@@ -389,7 +389,7 @@ export class memoryRpcStream {
 		if (err != null) {
 			return err
 		}
-		return await memoryRpcStream.prototype.Send.call(m, new rpcstream.RpcStreamPacket({Body: $.interfaceValue<any>(new rpcstream.RpcStreamPacket_Data({Data: data}), "*rpcstream.RpcStreamPacket_Data")}))
+		return memoryRpcStream.prototype.Send.call(m, new rpcstream.RpcStreamPacket({Body: $.interfaceValue<any>(new rpcstream.RpcStreamPacket_Data({Data: data}), "*rpcstream.RpcStreamPacket_Data")}))
 	}
 
 	public async Recv(): globalThis.Promise<[rpcstream.RpcStreamPacket | $.VarRef<rpcstream.RpcStreamPacket> | null, $.GoError]> {
@@ -536,7 +536,7 @@ export class memoryRpcContext {
 
 	public async Value(key: any): globalThis.Promise<any> {
 		const m: memoryRpcContext | $.VarRef<memoryRpcContext> | null = this
-		return await $.pointerValue<Exclude<context.Context, null>>(context.Background()).Value(key)
+		return $.pointerValue<Exclude<context.Context, null>>(context.Background()).Value(key)
 	}
 
 	static __typeInfo = $.registerStructType(
@@ -549,7 +549,7 @@ export class memoryRpcContext {
 }
 
 export async function closeEmbedded(strm: embeddedStream): globalThis.Promise<$.GoError> {
-	return await $.pointerValue<Exclude<srpc.Stream, null>>(strm.Stream).CloseSend()
+	return $.pointerValue<Exclude<srpc.Stream, null>>(strm.Stream).CloseSend()
 }
 
 export async function recvOne(__typeArgs: $.GenericTypeArgs | undefined, strm: srpc.StreamRecv | null): globalThis.Promise<$.GoError> {
