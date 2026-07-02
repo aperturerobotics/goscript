@@ -722,6 +722,20 @@ export function sortSlice<T extends string | number | bigint>(
     return // Nothing to sort for nil slice
   }
 
+  // SliceProxy targets are arrays too, so handle metadata-backed slices before
+  // the plain Array path. Sorting the sparse proxy target would leave backing
+  // storage unchanged.
+  if (isSliceProxy(s)) {
+    const proxy = s as SliceProxy<T>
+    const meta = proxy.__meta__
+    const section = meta.backing.slice(meta.offset, meta.offset + meta.length)
+    section.sort(ascendingOrdered)
+    for (let i = 0; i < section.length; i++) {
+      meta.backing[meta.offset + i] = section[i]
+    }
+    return
+  }
+
   if (Array.isArray(s)) {
     s.sort(ascendingOrdered)
     return
@@ -729,19 +743,6 @@ export function sortSlice<T extends string | number | bigint>(
 
   if (s instanceof Uint8Array) {
     s.sort()
-    return
-  }
-
-  // Handle SliceProxy case - sort the backing array in-place within the slice bounds
-  if (isSliceProxy(s)) {
-    const proxy = s as SliceProxy<T>
-    const meta = proxy.__meta__
-    const section = meta.backing.slice(meta.offset, meta.offset + meta.length)
-    section.sort(ascendingOrdered)
-    // Copy sorted section back to the backing array
-    for (let i = 0; i < section.length; i++) {
-      meta.backing[meta.offset + i] = section[i]
-    }
     return
   }
 }

@@ -170,6 +170,21 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
         return meta
       }
 
+      if (
+        prop === 'slice' ||
+        prop === 'map' ||
+        prop === 'filter' ||
+        prop === 'reduce' ||
+        prop === 'forEach' ||
+        prop === Symbol.iterator
+      ) {
+        const backingSlice = meta.backing.slice(
+          meta.offset,
+          meta.offset + meta.length,
+        )
+        return Reflect.get(backingSlice, prop).bind(backingSlice)
+      }
+
       return Reflect.get(target, prop)
     },
 
@@ -204,11 +219,8 @@ function sliceProxyFromBacking<T>(
 ): SliceProxy<T> {
   const proxyTargetArray = (target ?? new Array<T>(length)) as SliceProxy<T>
   proxyTargetArray.length = length
-  if (target === undefined) {
-    for (let i = 0; i < length; i++) {
-      proxyTargetArray[i] = backing[offset + i]
-    }
-  }
+  // The proxy handler reads indexes from the backing array, so a fresh target
+  // stays sparse until writes create owned elements.
   proxyTargetArray.__meta__ = { backing, offset, length, capacity }
   return wrapSliceProxy(proxyTargetArray)
 }

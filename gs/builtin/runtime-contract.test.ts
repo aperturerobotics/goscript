@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   append,
+  appendSlice,
   bytesToUint8Array,
   type Bytes,
   byte,
@@ -19,6 +20,7 @@ import {
   indexAddress,
   indexByteAddress,
   indexRef,
+  isSliceProxy,
   int64And,
   int64Div,
   int64Mod,
@@ -538,6 +540,42 @@ describe('builtin runtime contract helpers', () => {
     expect(bytesToUint8Array(headerBytes.value)).toEqual(
       new Uint8Array([97, 98, 99]),
     )
+  })
+
+  it('keeps large appended slice proxy targets sparse while preserving reads', () => {
+    const sliceLength = 65_576
+    const backing = Array.from(
+      { length: sliceLength },
+      (_, index) => (index * 17) & 0xff,
+    )
+
+    const appended = appendSlice<number>(null, backing)
+
+    expect(len(appended)).toBe(sliceLength)
+    expect(cap(appended)).toBe(sliceLength)
+    expect(appended![0]).toBe(0)
+    expect(appended![1024]).toBe((1024 * 17) & 0xff)
+    expect(appended![sliceLength - 1]).toBe(((sliceLength - 1) * 17) & 0xff)
+    expect([
+      ...(goSlice(appended, sliceLength - 6, sliceLength) ?? []),
+    ]).toEqual(backing.slice(sliceLength - 6))
+
+    if (!isSliceProxy(appended)) {
+      throw new Error(
+        'appendSlice(null, large backing) should return a slice proxy',
+      )
+    }
+    const proxyTarget = appended.__meta__.target
+    if (proxyTarget === undefined) {
+      throw new Error(
+        'appendSlice(null, large backing) should expose a proxy target',
+      )
+    }
+    const ownNumericKeys = Object.keys(proxyTarget).filter((key) => {
+      const numericKey = Number(key)
+      return Number.isInteger(numericKey) && numericKey >= 0
+    })
+    expect(ownNumericKeys).toHaveLength(0)
   })
 
   it('exposes stable synthetic slice index addresses', () => {
