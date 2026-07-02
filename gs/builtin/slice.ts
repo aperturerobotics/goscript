@@ -32,7 +32,6 @@ type GoStringValue = string | GoBinaryString
 type GoStringBytes = GoStringValue | Slice<number> | Uint8Array
 const goBinaryStringPrefix = '\uFDD0goscript-bytes:'
 
-
 function isGoStringValue(value: unknown): value is GoStringValue {
   return typeof value === 'string' || value instanceof GoBinaryString
 }
@@ -152,8 +151,8 @@ function outOfRangeIndex(index: number, length: number): never {
 function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
   const meta = proxy.__meta__
   meta.target = proxy
-  const handler = {
-    get(target: any, prop: string | symbol): any {
+  const handler: ProxyHandler<SliceProxy<T>> = {
+    get(target, prop, receiver) {
       const index = sliceIndexProperty(prop)
       if (index >= 0) {
         if (index < meta.length) {
@@ -170,6 +169,10 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
         return meta
       }
 
+      if (prop === 'sort') {
+        return sliceProxySortMethod(meta, receiver as SliceProxy<T>)
+      }
+
       if (
         prop === 'slice' ||
         prop === 'map' ||
@@ -178,22 +181,18 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
         prop === 'forEach' ||
         prop === Symbol.iterator
       ) {
-        const backingSlice = meta.backing.slice(
-          meta.offset,
-          meta.offset + meta.length,
-        )
-        return Reflect.get(backingSlice, prop).bind(backingSlice)
+        return sliceProxyBackingMethod(meta, prop)
       }
 
       return Reflect.get(target, prop)
     },
 
-    set(target: any, prop: string | symbol, value: any): boolean {
+    set(target, prop, value): boolean {
       const index = sliceIndexProperty(prop)
       if (index >= 0) {
         if (index < meta.length) {
           meta.backing[meta.offset + index] = value
-          target[index] = value // Also update the proxy target for consistency
+          target[index] = value
           return true
         }
         outOfRangeIndex(index, meta.length)
@@ -208,6 +207,37 @@ function wrapSliceProxy<T>(proxy: SliceProxy<T>): SliceProxy<T> {
   }
 
   return new Proxy(proxy, handler) as SliceProxy<T>
+}
+
+function sliceProxyBackingMethod<T>(
+  meta: GoSliceObject<T>,
+  prop: string | symbol,
+): unknown {
+  const backingSlice = meta.backing.slice(
+    meta.offset,
+    meta.offset + meta.length,
+  )
+  const method = Reflect.get(backingSlice, prop)
+  if (typeof method === 'function') {
+    return method.bind(backingSlice)
+  }
+  return method
+}
+
+// SliceProxy sort mutates only the backing window because sparse proxy targets
+// have no numeric own properties for Array.prototype.sort to enumerate.
+function sliceProxySortMethod<T>(
+  meta: GoSliceObject<T>,
+  receiver: SliceProxy<T>,
+): (compareFn?: (left: T, right: T) => number) => SliceProxy<T> {
+  return (compareFn) => {
+    const values = meta.backing.slice(meta.offset, meta.offset + meta.length)
+    values.sort(compareFn)
+    for (let i = 0; i < values.length; i++) {
+      meta.backing[meta.offset + i] = values[i]
+    }
+    return receiver
+  }
 }
 
 function sliceProxyFromBacking<T>(
@@ -282,9 +312,7 @@ export function sliceToArrayPointer<T>(
     if (slice instanceof Uint8Array) {
       return varRef(goSlice(slice, 0, length) as Uint8Array)
     }
-    return varRef(
-      goSlice(slice as Slice<T>, 0, length) as Uint8Array,
-    )
+    return varRef(goSlice(slice as Slice<T>, 0, length) as Uint8Array)
   }
   if (slice instanceof Uint8Array) {
     return varRef(goSlice(slice, 0, length) as T[])
@@ -511,8 +539,8 @@ export function goSlice<T>( // T can be number for Uint8Array case
   high = normalizeSliceIndex(high)
   max = normalizeSliceIndex(max)
 
-  const handler = {
-    get(target: any, prop: string | symbol): any {
+  const handler: ProxyHandler<SliceProxy<T>> = {
+    get(target, prop, receiver) {
       const index = sliceIndexProperty(prop)
       if (index >= 0) {
         if (index < target.__meta__.length) {
@@ -531,6 +559,10 @@ export function goSlice<T>( // T can be number for Uint8Array case
         return target.__meta__
       }
 
+      if (prop === 'sort') {
+        return sliceProxySortMethod(target.__meta__, receiver as SliceProxy<T>)
+      }
+
       if (
         prop === 'slice' ||
         prop === 'map' ||
@@ -539,17 +571,13 @@ export function goSlice<T>( // T can be number for Uint8Array case
         prop === 'forEach' ||
         prop === Symbol.iterator
       ) {
-        const backingSlice = target.__meta__.backing.slice(
-          target.__meta__.offset,
-          target.__meta__.offset + target.__meta__.length,
-        )
-        return backingSlice[prop].bind(backingSlice)
+        return sliceProxyBackingMethod(target.__meta__, prop)
       }
 
       return Reflect.get(target, prop)
     },
 
-    set(target: any, prop: string | symbol, value: any): boolean {
+    set(target, prop, value): boolean {
       const index = sliceIndexProperty(prop)
       if (index >= 0) {
         if (index < target.__meta__.length) {
@@ -1335,6 +1363,8 @@ function copyBetweenSlices<T>(
   return count
 }
 
+// copy snapshots the source before writing so overlapping slices follow Go's
+// memmove-style copy semantics.
 function copySliceValues<T>(src: Slice<T>, count: number): T[] {
   const values = new Array<T>(count)
   if (isComplexSlice(src)) {
@@ -1427,7 +1457,9 @@ export function arrayIndex<
     if (index < 0 || index >= length) {
       outOfRangeIndex(index, length)
     }
-    return collection.__meta__.backing[collection.__meta__.offset + index] as ArrayIndexValue<C>
+    return collection.__meta__.backing[
+      collection.__meta__.offset + index
+    ] as ArrayIndexValue<C>
   }
   if (Array.isArray(collection)) {
     if (index < 0 || index >= collection.length) {

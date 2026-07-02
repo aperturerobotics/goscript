@@ -7,6 +7,7 @@ import {
   type Bytes,
   byte,
   cap,
+  copy,
   cloneArrayValue,
   cloneStructValue,
   callGenericMethod,
@@ -576,6 +577,41 @@ describe('builtin runtime contract helpers', () => {
       return Number.isInteger(numericKey) && numericKey >= 0
     })
     expect(ownNumericKeys).toHaveLength(0)
+  })
+
+  it('sorts sparse proxy-backed slices without losing or duplicating elements', () => {
+    const values = appendSlice<string>(null, ['c', 'a', 'd', 'b'])
+
+    if (!isSliceProxy(values)) {
+      throw new Error('appendSlice(null, values) should return a slice proxy')
+    }
+    const target = values.__meta__.target
+    if (target === undefined) {
+      throw new Error('slice proxy should expose a target')
+    }
+    expect(
+      Object.keys(target).filter((key) => Number.isInteger(Number(key))),
+    ).toHaveLength(0)
+
+    const sorted = (values as string[]).sort((left, right) =>
+      left.localeCompare(right),
+    )
+
+    expect(sorted).toBe(values)
+    expect(Array.from(values)).toEqual(['a', 'b', 'c', 'd'])
+    expect(
+      Object.keys(target).filter((key) => Number.isInteger(Number(key))),
+    ).toHaveLength(0)
+  })
+
+  it('copies overlapping slices through a stable source snapshot', () => {
+    const leftShift = appendSlice<number>(null, [1, 2, 3, 4, 5])
+    expect(copy(goSlice(leftShift, 0, 4), goSlice(leftShift, 1, 5))).toBe(4)
+    expect(Array.from(leftShift ?? [])).toEqual([2, 3, 4, 5, 5])
+
+    const rightShift = appendSlice<number>(null, [1, 2, 3, 4, 5])
+    expect(copy(goSlice(rightShift, 1, 5), goSlice(rightShift, 0, 4))).toBe(4)
+    expect(Array.from(rightShift ?? [])).toEqual([1, 1, 2, 3, 4])
   })
 
   it('exposes stable synthetic slice index addresses', () => {

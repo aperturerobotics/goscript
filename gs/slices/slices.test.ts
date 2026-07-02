@@ -81,6 +81,24 @@ describe('slices.SortStableFunc', () => {
 
     expect(values?.map((value) => value.label)).toEqual(['b', 'd', 'a', 'c'])
   })
+
+  it('sorts stable sparse proxy-backed slices without dropping elements', () => {
+    const values = $.appendSlice(null, [
+      { group: 2, label: 'a' },
+      { group: 1, label: 'b' },
+      { group: 2, label: 'c' },
+      { group: 1, label: 'd' },
+    ])
+
+    SortStableFunc(values, (a, b) => a.group - b.group)
+
+    expect(Array.from(values ?? []).map((value) => value.label)).toEqual([
+      'b',
+      'd',
+      'a',
+      'c',
+    ])
+  })
 })
 
 describe('slices compatibility helpers', () => {
